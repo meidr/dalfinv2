@@ -10,14 +10,24 @@
         </p>
       </div>
       <button
-        class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-all shadow-md shadow-primary/20 hover:shadow-lg active:scale-95 text-sm"
+        @click="saveProfile"
+        :disabled="saving"
+        class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-all shadow-md shadow-primary/20 hover:shadow-lg active:scale-95 text-sm disabled:opacity-50"
       >
         <span class="material-symbols-outlined text-[18px]">save</span>
-        <span>Simpan Perubahan</span>
+        <span>{{ saving ? "Menyimpan..." : "Simpan Perubahan" }}</span>
       </button>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Loading -->
+    <div v-if="loading" class="p-12 text-center">
+      <div
+        class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"
+      ></div>
+      <p class="text-text-secondary text-sm mt-3">Memuat profil...</p>
+    </div>
+
+    <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Profile Card -->
       <div class="flex flex-col gap-6 lg:col-span-1">
         <div
@@ -25,21 +35,16 @@
         >
           <div class="relative group">
             <div
-              class="size-28 rounded-full bg-cover bg-center border-4 border-white dark:border-gray-700 shadow-md mb-4"
-              style="
-                background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuC6fj58EKDs12x21HTipDxffh3oyce58_8S36-1PZUEVSH0Apn9oH-MWwAXvFvCgfIwMBuY4TFQOBUpWvQvZCM2piBln7AVu9-OInn3YgI6I3HUUkanApn6BfexGFdWOiebeMvZYStp-ck_aZoHx2O-q5487Oop3186czgCW16wwA4Q7x-GmuXdolN1KCu6sXA7yEmVmPK-YYpc9A0S1I-DIt6LbQnenGu2khwnzRerxEQMeTs5KE-0nGmWzphphsHQujdpNoH7ZUP_&quot;);
-              "
-            ></div>
-            <button
-              class="absolute bottom-4 right-0 p-2 bg-white dark:bg-gray-800 rounded-full shadow-md border border-gray-200 dark:border-gray-600 hover:text-primary transition-colors"
+              class="size-28 rounded-full flex items-center justify-center text-3xl font-bold border-4 border-white dark:border-gray-700 shadow-md mb-4"
+              :class="getAvatarColor(user?.name)"
             >
-              <span class="material-symbols-outlined text-[18px]"
-                >photo_camera</span
-              >
-            </button>
+              {{ getInitials(user?.name) }}
+            </div>
           </div>
-          <h2 class="text-xl font-bold text-text-main">Admin Staff</h2>
-          <p class="text-text-secondary text-sm mb-4">admin@univ.ac.id</p>
+          <h2 class="text-xl font-bold text-text-main">
+            {{ user?.name || "Admin" }}
+          </h2>
+          <p class="text-text-secondary text-sm mb-4">{{ user?.email }}</p>
           <div class="flex gap-2 w-full">
             <span
               class="inline-flex w-full items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-100 dark:border-purple-800"
@@ -47,7 +52,7 @@
               <span class="material-symbols-outlined text-[16px]"
                 >security</span
               >
-              Administrator
+              {{ getRoleLabel(user?.role) }}
             </span>
           </div>
         </div>
@@ -61,19 +66,24 @@
           <div class="flex flex-col gap-4">
             <div class="flex items-center justify-between">
               <span class="text-sm text-text-secondary">Login Terakhir</span>
-              <span class="text-sm font-medium text-text-main"
-                >2 jam yang lalu</span
-              >
+              <span class="text-sm font-medium text-text-main">{{
+                formatLastLogin(user?.last_login_at)
+              }}</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-sm text-text-secondary">Total Login</span>
-              <span class="text-sm font-medium text-text-main">1,204</span>
+              <span class="text-sm text-text-secondary">Status Akun</span>
+              <span
+                class="text-sm font-medium"
+                :class="user?.is_active ? 'text-green-600' : 'text-red-600'"
+              >
+                {{ user?.is_active ? "Aktif" : "Non-Aktif" }}
+              </span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-sm text-text-secondary">Password Diubah</span>
-              <span class="text-sm font-medium text-text-main"
-                >3 bulan lalu</span
-              >
+              <span class="text-sm text-text-secondary">Dibuat Pada</span>
+              <span class="text-sm font-medium text-text-main">{{
+                formatDate(user?.created_at)
+              }}</span>
             </div>
           </div>
         </div>
@@ -92,23 +102,13 @@
             Informasi Pribadi
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1.5">
+            <div class="flex flex-col gap-1.5 md:col-span-2">
               <label class="text-xs font-bold text-text-secondary uppercase"
-                >Nama Depan</label
+                >Nama Lengkap</label
               >
               <input
                 type="text"
-                value="Admin"
-                class="px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-sidebar-light dark:border-gray-600 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-              />
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-bold text-text-secondary uppercase"
-                >Nama Belakang</label
-              >
-              <input
-                type="text"
-                value="Staff"
+                v-model="form.name"
                 class="px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-sidebar-light dark:border-gray-600 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all"
               />
             </div>
@@ -118,29 +118,8 @@
               >
               <input
                 type="email"
-                value="admin@univ.ac.id"
+                v-model="form.email"
                 class="px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-sidebar-light dark:border-gray-600 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-              />
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-bold text-text-secondary uppercase"
-                >No. Telepon</label
-              >
-              <input
-                type="text"
-                value="+62 812 3456 7890"
-                class="px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-sidebar-light dark:border-gray-600 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-              />
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-bold text-text-secondary uppercase"
-                >NIP / ID Karyawan</label
-              >
-              <input
-                type="text"
-                value="19850101 201001 1 001"
-                disabled
-                class="px-3 py-2 border border-border-light rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-text-secondary text-sm cursor-not-allowed"
               />
             </div>
           </div>
@@ -167,56 +146,224 @@
                 </p>
               </div>
               <button
+                @click="showPasswordModal = true"
                 class="text-primary hover:text-blue-700 text-sm font-bold"
               >
                 Update
               </button>
             </div>
-            <div
-              class="flex items-center justify-between p-4 border border-border-light rounded-lg"
-            >
-              <div>
-                <p class="font-bold text-text-main text-sm">
-                  Autentikasi Dua Faktor (2FA)
-                </p>
-                <p class="text-xs text-text-secondary">
-                  Tambahkan lapisan keamanan ekstra.
-                </p>
-              </div>
-              <div
-                class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
-              >
-                <input
-                  type="checkbox"
-                  name="toggle"
-                  id="toggle"
-                  class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300"
-                />
-                <label
-                  for="toggle"
-                  class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"
-                ></label>
-              </div>
-            </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div
+      v-if="showPasswordModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+      >
+        <div class="p-6 border-b border-border-light">
+          <h2 class="text-xl font-bold text-text-main">Ganti Password</h2>
+        </div>
+        <form @submit.prevent="changePassword" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >Password Lama</label
+            >
+            <input
+              v-model="passwordForm.current_password"
+              type="password"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >Password Baru</label
+            >
+            <input
+              v-model="passwordForm.new_password"
+              type="password"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >Konfirmasi Password Baru</label
+            >
+            <input
+              v-model="passwordForm.new_password_confirmation"
+              type="password"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              required
+            />
+          </div>
+          <div class="flex gap-3 pt-4">
+            <button
+              type="button"
+              @click="showPasswordModal = false"
+              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="savingPassword"
+              class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {{ savingPassword ? "Menyimpan..." : "Simpan" }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-/* Toggle Switch */
-.toggle-checkbox:checked {
-  right: 0;
-  border-color: #4ade80;
-}
-.toggle-checkbox:checked + .toggle-label {
-  background-color: #4ade80;
-}
-.toggle-checkbox {
-  right: auto;
-  left: 0;
-  transition: all 0.3s;
-}
-</style>
+<script setup>
+import { ref, onMounted, reactive } from "vue";
+import { useAuthStore } from "../../../stores/auth";
+import authService from "../../../services/authService";
+
+const authStore = useAuthStore();
+
+const loading = ref(true);
+const saving = ref(false);
+const savingPassword = ref(false);
+const showPasswordModal = ref(false);
+const user = ref(null);
+
+const form = reactive({
+  name: "",
+  email: "",
+});
+
+const passwordForm = reactive({
+  current_password: "",
+  new_password: "",
+  new_password_confirmation: "",
+});
+
+const fetchProfile = async () => {
+  try {
+    loading.value = true;
+    const response = await authService.getProfile();
+    if (response.success) {
+      user.value = response.data;
+      form.name = user.value.name;
+      form.email = user.value.email;
+    }
+  } catch (error) {
+    console.error("Failed to fetch profile:", error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const saveProfile = async () => {
+  try {
+    saving.value = true;
+    await authService.updateProfile({
+      name: form.name,
+      email: form.email,
+    });
+    await fetchProfile();
+    alert("Profil berhasil diperbarui!");
+  } catch (error) {
+    console.error("Failed to save profile:", error);
+    alert(
+      "Gagal menyimpan profil: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    saving.value = false;
+  }
+};
+
+const changePassword = async () => {
+  try {
+    if (passwordForm.new_password !== passwordForm.new_password_confirmation) {
+      alert("Konfirmasi password tidak cocok!");
+      return;
+    }
+    savingPassword.value = true;
+    await authService.changePassword({
+      current_password: passwordForm.current_password,
+      password: passwordForm.new_password,
+      password_confirmation: passwordForm.new_password_confirmation,
+    });
+    showPasswordModal.value = false;
+    passwordForm.current_password = "";
+    passwordForm.new_password = "";
+    passwordForm.new_password_confirmation = "";
+    alert("Password berhasil diubah!");
+  } catch (error) {
+    console.error("Failed to change password:", error);
+    alert(
+      "Gagal mengubah password: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    savingPassword.value = false;
+  }
+};
+
+const getInitials = (name) => {
+  if (!name) return "A";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+};
+
+const getAvatarColor = (name) => {
+  const colors = [
+    "bg-blue-100 text-blue-600",
+    "bg-purple-100 text-purple-600",
+    "bg-orange-100 text-orange-600",
+    "bg-green-100 text-green-600",
+  ];
+  if (!name) return colors[0];
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
+const getRoleLabel = (role) => {
+  const labels = {
+    admin: "Administrator",
+    dosen: "Dosen",
+    mahasiswa: "Mahasiswa",
+  };
+  return labels[role] || role;
+};
+
+const formatDate = (date) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const formatLastLogin = (date) => {
+  if (!date) return "Belum pernah";
+  const diff = Date.now() - new Date(date).getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours < 1) return "Baru saja";
+  if (hours < 24) return `${hours} jam yang lalu`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} hari yang lalu`;
+  return formatDate(date);
+};
+
+onMounted(() => {
+  fetchProfile();
+});
+</script>

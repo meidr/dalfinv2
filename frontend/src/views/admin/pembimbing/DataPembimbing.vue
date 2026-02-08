@@ -18,7 +18,7 @@
       >
         <div>
           <h3 class="text-text-main text-lg font-bold">
-            Mahasiswa Baru (Baru Isi Judul)
+            Mahasiswa Menunggu Pembimbing
           </h3>
           <p class="text-text-secondary text-xs">
             Menampilkan daftar mahasiswa yang menunggu penetapan pembimbing.
@@ -26,14 +26,7 @@
         </div>
         <div class="flex gap-2">
           <button
-            class="flex items-center gap-2 px-4 py-2 bg-sidebar-light border border-border-light rounded-lg text-xs font-bold text-text-secondary hover:bg-white transition-colors dark:bg-sidebar-light dark:hover:bg-sidebar-light/80"
-          >
-            <span class="material-symbols-outlined text-[16px]"
-              >filter_list</span
-            >
-            Filter
-          </button>
-          <button
+            @click="fetchPembimbing"
             class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg text-xs font-bold hover:bg-primary/20 transition-colors"
           >
             <span class="material-symbols-outlined text-[16px]">refresh</span>
@@ -42,8 +35,16 @@
         </div>
       </div>
 
+      <!-- Loading -->
+      <div v-if="loading" class="p-12 text-center">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"
+        ></div>
+        <p class="text-text-secondary text-sm mt-3">Memuat data...</p>
+      </div>
+
       <!-- Table -->
-      <div class="overflow-x-auto">
+      <div v-else class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr
@@ -67,26 +68,33 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
+            <tr v-if="skripsiList.length === 0">
+              <td colspan="3" class="p-12 text-center text-text-secondary">
+                Tidak ada mahasiswa yang menunggu penetapan pembimbing
+              </td>
+            </tr>
             <tr
-              v-for="i in 4"
-              :key="i"
+              v-for="item in skripsiList"
+              :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
               <td class="p-4 pl-6 align-top">
                 <div class="flex items-start gap-3">
                   <div
-                    class="bg-gray-200 size-10 rounded-full bg-cover bg-center border border-border-light shadow-sm shrink-0"
-                    style="
-                      background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCXvmzpNr4yS293bcSUOqs1k0_0T3xBHHwPvluP2og08U-Pmekxd-lNCbHkg4l_ebu9pQp84cfHsau6-I-Loo86_6lN4k7FAYpMXo2M8gLPbEmwMhxkImXktkSZuWnkqjuWbqooz7ty-6u73H6Ww1mo00MhCdgeUOEIo9ciWJAM13shkp7T-5f66DTAYns5Co-T2rBySywlsV7JMpyqqLNvqISxOJQ8Z_kdUpsLms_CGCqTmOhzaZq9rjsu2GBl23JEAP9HMC838l60&quot;);
-                    "
-                  ></div>
+                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                    :class="getAvatarColor(item.mahasiswa?.nama)"
+                  >
+                    {{ getInitials(item.mahasiswa?.nama) }}
+                  </div>
                   <div>
-                    <p class="font-bold text-text-main text-sm">Budi Santoso</p>
+                    <p class="font-bold text-text-main text-sm">
+                      {{ item.mahasiswa?.nama || "-" }}
+                    </p>
                     <p class="text-xs text-text-secondary font-medium">
-                      201910234
+                      {{ item.mahasiswa?.nim || "-" }}
                     </p>
                     <p class="text-[10px] text-text-secondary mt-1">
-                      Teknik Informatika
+                      {{ item.mahasiswa?.prodi?.nama || "-" }}
                     </p>
                   </div>
                 </div>
@@ -94,23 +102,19 @@
               <td class="p-4 align-top">
                 <div class="flex flex-col gap-2">
                   <p class="text-sm font-medium text-text-main leading-relaxed">
-                    Rancang Bangun Sistem Informasi Manajemen Aset Berbasis Web
-                    Menggunakan Framework Laravel pada PT. Maju Jaya
+                    {{ item.judul || "-" }}
                   </p>
                   <div class="flex gap-2">
                     <span
-                      class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30"
-                      >Baru Isi Judul</span
-                    >
-                    <span
-                      class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-700/50 dark:text-gray-400 dark:border-gray-600"
-                      >KBK: Rekayasa Perangkat Lunak</span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100"
+                      >{{ getStatusLabel(item.status) }}</span
                     >
                   </div>
                 </div>
               </td>
               <td class="p-4 pr-6 align-top text-right">
                 <button
+                  @click="openAssignModal(item)"
                   class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm shadow-primary/20"
                 >
                   Tetapkan
@@ -126,20 +130,28 @@
         class="p-4 border-t border-border-light flex items-center justify-between bg-gray-50/50 dark:bg-sidebar-light/50"
       >
         <p class="text-xs text-text-secondary">
-          Showing <span class="font-bold text-text-main">1-4</span> of
-          <span class="font-bold text-text-main">18</span> mahasiswa
+          Showing
+          <span class="font-bold text-text-main"
+            >{{ pagination.from || 0 }}-{{ pagination.to || 0 }}</span
+          >
+          of
+          <span class="font-bold text-text-main">{{ pagination.total }}</span>
+          mahasiswa
         </p>
         <div class="flex gap-2">
           <button
-            class="size-8 flex items-center justify-center rounded-md border border-border-light bg-white dark:bg-sidebar-light text-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-            disabled
+            @click="goToPage(pagination.current_page - 1)"
+            :disabled="pagination.current_page <= 1"
+            class="size-8 flex items-center justify-center rounded-md border border-border-light bg-white text-text-secondary hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[16px]"
               >chevron_left</span
             >
           </button>
           <button
-            class="size-8 flex items-center justify-center rounded-md border border-border-light bg-white dark:bg-sidebar-light text-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            @click="goToPage(pagination.current_page + 1)"
+            :disabled="pagination.current_page >= pagination.last_page"
+            class="size-8 flex items-center justify-center rounded-md border border-border-light bg-white text-text-secondary hover:bg-gray-50 transition-colors"
           >
             <span class="material-symbols-outlined text-[16px]"
               >chevron_right</span
@@ -148,5 +160,216 @@
         </div>
       </div>
     </div>
+
+    <!-- Assign Pembimbing Modal -->
+    <div
+      v-if="showAssignModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg"
+      >
+        <div class="p-6 border-b border-border-light">
+          <h2 class="text-xl font-bold text-text-main">Tetapkan Pembimbing</h2>
+          <p class="text-sm text-text-secondary mt-1">
+            {{ selectedSkripsi?.mahasiswa?.nama }} -
+            {{ selectedSkripsi?.judul }}
+          </p>
+        </div>
+        <form @submit.prevent="assignPembimbing" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >Pembimbing 1</label
+            >
+            <select
+              v-model="assignForm.pembimbing_1_id"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              required
+            >
+              <option value="">Pilih Dosen</option>
+              <option
+                v-for="dosen in dosenList"
+                :key="dosen.id"
+                :value="dosen.id"
+              >
+                {{ dosen.nama_lengkap }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >Pembimbing 2 (Opsional)</label
+            >
+            <select
+              v-model="assignForm.pembimbing_2_id"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              <option value="">Pilih Dosen</option>
+              <option
+                v-for="dosen in dosenList"
+                :key="dosen.id"
+                :value="dosen.id"
+              >
+                {{ dosen.nama_lengkap }}
+              </option>
+            </select>
+          </div>
+          <div class="flex gap-3 pt-4">
+            <button
+              type="button"
+              @click="showAssignModal = false"
+              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="saving"
+              class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {{ saving ? "Menyimpan..." : "Tetapkan" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, reactive } from "vue";
+import adminService from "../../../services/adminService";
+
+const loading = ref(true);
+const saving = ref(false);
+const skripsiList = ref([]);
+const dosenList = ref([]);
+const showAssignModal = ref(false);
+const selectedSkripsi = ref(null);
+
+const pagination = reactive({
+  current_page: 1,
+  last_page: 1,
+  total: 0,
+  from: 0,
+  to: 0,
+});
+
+const assignForm = reactive({
+  pembimbing_1_id: "",
+  pembimbing_2_id: "",
+});
+
+const fetchPembimbing = async () => {
+  try {
+    loading.value = true;
+    // Get skripsi that need pembimbing assignment (status: proposal, no pembimbing)
+    const params = {
+      page: pagination.current_page,
+      status: "proposal",
+    };
+    const response = await adminService.getSkripsi(params);
+    if (response.success) {
+      // Filter those without pembimbing
+      const data = response.data.data || response.data;
+      skripsiList.value = Array.isArray(data)
+        ? data.filter((s) => !s.pembimbing || s.pembimbing.length === 0)
+        : [];
+      if (response.data.current_page) {
+        Object.assign(pagination, {
+          current_page: response.data.current_page,
+          last_page: response.data.last_page,
+          total: response.data.total,
+          from: response.data.from,
+          to: response.data.to,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch pembimbing data:", error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const fetchDosen = async () => {
+  try {
+    const response = await adminService.getDosen({ per_page: 100 });
+    if (response.success) {
+      dosenList.value = response.data.data || response.data;
+    }
+  } catch (error) {
+    console.error("Failed to fetch dosen:", error);
+  }
+};
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= pagination.last_page) {
+    pagination.current_page = page;
+    fetchPembimbing();
+  }
+};
+
+const openAssignModal = (item) => {
+  selectedSkripsi.value = item;
+  assignForm.pembimbing_1_id = "";
+  assignForm.pembimbing_2_id = "";
+  showAssignModal.value = true;
+};
+
+const assignPembimbing = async () => {
+  try {
+    saving.value = true;
+    await adminService.assignPembimbing(selectedSkripsi.value.id, {
+      pembimbing_1_id: assignForm.pembimbing_1_id,
+      pembimbing_2_id: assignForm.pembimbing_2_id || null,
+    });
+    showAssignModal.value = false;
+    fetchPembimbing();
+  } catch (error) {
+    console.error("Failed to assign pembimbing:", error);
+    alert(
+      "Gagal menetapkan pembimbing: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    saving.value = false;
+  }
+};
+
+const getInitials = (name) => {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+};
+
+const getAvatarColor = (name) => {
+  const colors = [
+    "bg-blue-100 text-blue-600",
+    "bg-purple-100 text-purple-600",
+    "bg-orange-100 text-orange-600",
+    "bg-green-100 text-green-600",
+  ];
+  if (!name) return colors[0];
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
+const getStatusLabel = (status) => {
+  const labels = {
+    proposal: "Baru Isi Judul",
+    bimbingan: "Bimbingan",
+    sempro: "Seminar Proposal",
+  };
+  return labels[status] || status;
+};
+
+onMounted(() => {
+  fetchPembimbing();
+  fetchDosen();
+});
+</script>

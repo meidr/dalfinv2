@@ -14,12 +14,6 @@
           Kelola data dan riwayat bimbingan skripsi mahasiswa aktif.
         </p>
       </div>
-      <button
-        class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-blue-600 transition-all shadow-md shadow-primary/20 font-medium text-sm"
-      >
-        <span class="material-symbols-outlined text-[20px]">add</span>
-        Tambah Log
-      </button>
     </div>
 
     <div
@@ -34,27 +28,34 @@
           >
           <span
             class="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full"
-            >4 Aktif</span
+            >{{ pagination.total }} Data</span
           >
         </div>
         <div class="flex gap-2">
-          <button
-            class="flex items-center gap-1 px-3 py-1.5 rounded-md border border-border-light bg-white text-xs font-medium text-text-secondary hover:text-primary hover:border-primary transition-colors dark:bg-sidebar-light dark:border-gray-600 dark:hover:bg-gray-700"
-          >
-            <span class="material-symbols-outlined text-[16px]"
-              >filter_list</span
+          <div class="relative">
+            <input
+              v-model="searchQuery"
+              @input="debouncedSearch"
+              class="pl-9 pr-4 py-1.5 rounded-md border border-border-light bg-white text-xs w-48 focus:ring-1 focus:ring-primary"
+              placeholder="Cari mahasiswa..."
+            />
+            <span
+              class="material-symbols-outlined absolute left-2 top-1.5 text-[16px] text-text-secondary"
+              >search</span
             >
-            Filter
-          </button>
-          <button
-            class="flex items-center gap-1 px-3 py-1.5 rounded-md border border-border-light bg-white text-xs font-medium text-text-secondary hover:text-primary hover:border-primary transition-colors dark:bg-sidebar-light dark:border-gray-600 dark:hover:bg-gray-700"
-          >
-            <span class="material-symbols-outlined text-[16px]">download</span>
-            Export
-          </button>
+          </div>
         </div>
       </div>
-      <div class="overflow-x-auto">
+
+      <!-- Loading -->
+      <div v-if="loading" class="p-12 text-center">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"
+        ></div>
+        <p class="text-text-secondary text-sm mt-3">Memuat data...</p>
+      </div>
+
+      <div v-else class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr
@@ -83,62 +84,81 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
+            <tr v-if="bimbinganList.length === 0">
+              <td colspan="4" class="p-12 text-center text-text-secondary">
+                Tidak ada data bimbingan
+              </td>
+            </tr>
             <tr
-              v-for="i in 4"
-              :key="i"
+              v-for="item in bimbinganList"
+              :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
               <td class="p-4 md:pl-6">
                 <div class="flex items-center gap-4">
                   <div
-                    class="bg-gray-200 size-10 rounded-full bg-cover bg-center border border-border-light shadow-sm shrink-0"
-                    style="
-                      background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCXvmzpNr4yS293bcSUOqs1k0_0T3xBHHwPvluP2og08U-Pmekxd-lNCbHkg4l_ebu9pQp84cfHsau6-I-Loo86_6lN4k7FAYpMXo2M8gLPbEmwMhxkImXktkSZuWnkqjuWbqooz7ty-6u73H6Ww1mo00MhCdgeUOEIo9ciWJAM13shkp7T-5f66DTAYns5Co-T2rBySywlsV7JMpyqqLNvqISxOJQ8Z_kdUpsLms_CGCqTmOhzaZq9rjsu2GBl23JEAP9HMC838l60&quot;);
-                    "
-                  ></div>
+                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                    :class="getAvatarColor(item.mahasiswa?.nama)"
+                  >
+                    {{ getInitials(item.mahasiswa?.nama) }}
+                  </div>
                   <div>
                     <p
                       class="font-bold text-text-main text-sm group-hover:text-primary transition-colors"
                     >
-                      Budi Santoso
+                      {{ item.mahasiswa?.nama || "-" }}
                     </p>
                     <p
                       class="text-xs text-text-secondary font-medium font-mono mt-0.5"
                     >
-                      201910234
+                      {{ item.mahasiswa?.nim || "-" }}
                     </p>
-                    <p class="text-[10px] text-text-secondary mt-1">
-                      Teknik Informatika
+                    <p
+                      class="text-[10px] text-text-secondary mt-1 line-clamp-1"
+                    >
+                      {{ item.judul || "-" }}
                     </p>
                   </div>
                 </div>
               </td>
               <td class="p-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col gap-2">
                   <div
-                    class="bg-blue-100 flex items-center justify-center size-9 rounded-full text-primary border border-blue-200 shrink-0 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-300"
+                    v-for="pembimbing in item.pembimbing"
+                    :key="pembimbing.id"
+                    class="flex items-center gap-3"
                   >
-                    <span class="material-symbols-outlined text-[18px]"
-                      >person</span
+                    <div
+                      class="bg-blue-100 flex items-center justify-center size-8 rounded-full text-primary border border-blue-200 shrink-0"
                     >
-                  </div>
-                  <div>
-                    <p class="font-semibold text-text-main text-sm">
-                      Dr. Bambang Widjoyo
-                    </p>
-                    <div class="flex items-center gap-2 mt-0.5">
-                      <span
-                        class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
+                      <span class="material-symbols-outlined text-[16px]"
+                        >person</span
                       >
-                        Pembimbing 1
-                      </span>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-text-main text-xs">
+                        {{ pembimbing.dosen?.full_name || "-" }}
+                      </p>
+                      <div class="flex items-center gap-2 mt-0.5">
+                        <span
+                          class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-gray-100 text-gray-600 border border-gray-200"
+                        >
+                          {{
+                            pembimbing.jenis === "pembimbing_1"
+                              ? "Pembimbing 1"
+                              : "Pembimbing 2"
+                          }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </td>
               <td class="p-4 text-center">
                 <div class="inline-flex flex-col items-center justify-center">
-                  <span class="text-xl font-bold text-text-main">8</span>
+                  <span class="text-xl font-bold text-text-main">{{
+                    item.total_bimbingan || 0
+                  }}</span>
                   <span
                     class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold"
                     >Kali</span
@@ -148,27 +168,12 @@
               <td class="p-4 md:pr-6 text-right">
                 <div class="flex justify-end gap-1">
                   <button
-                    class="inline-flex items-center justify-center p-2 text-text-secondary hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
-                    title="Upload Scan Offline"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >cloud_upload</span
-                    >
-                  </button>
-                  <button
+                    @click="viewDetail(item)"
                     class="inline-flex items-center justify-center p-2 text-text-secondary hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
                     title="Lihat Detail"
                   >
                     <span class="material-symbols-outlined text-[20px]"
                       >visibility</span
-                    >
-                  </button>
-                  <button
-                    class="inline-flex items-center justify-center p-2 text-text-secondary hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
-                    title="Edit Log"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >edit_note</span
                     >
                   </button>
                 </div>
@@ -177,16 +182,20 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination -->
       <div
         class="p-4 border-t border-border-light flex items-center justify-between bg-gray-50/50 dark:bg-sidebar-light/50"
       >
-        <span class="text-xs text-text-secondary"
-          >Menampilkan 5 dari 24 mahasiswa</span
-        >
+        <span class="text-xs text-text-secondary">
+          Menampilkan {{ pagination.from || 0 }}-{{ pagination.to || 0 }} dari
+          {{ pagination.total }} data
+        </span>
         <div class="flex gap-1">
           <button
+            @click="goToPage(pagination.current_page - 1)"
+            :disabled="pagination.current_page <= 1"
             class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light transition-colors disabled:opacity-50"
-            disabled
           >
             <span class="material-symbols-outlined text-[18px]"
               >chevron_left</span
@@ -195,20 +204,12 @@
           <button
             class="size-8 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-xs shadow-sm shadow-primary/20"
           >
-            1
+            {{ pagination.current_page }}
           </button>
           <button
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light transition-colors text-xs dark:hover:bg-gray-700"
-          >
-            2
-          </button>
-          <button
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light transition-colors text-xs dark:hover:bg-gray-700"
-          >
-            3
-          </button>
-          <button
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light transition-colors dark:hover:bg-gray-700"
+            @click="goToPage(pagination.current_page + 1)"
+            :disabled="pagination.current_page >= pagination.last_page"
+            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light transition-colors"
           >
             <span class="material-symbols-outlined text-[18px]"
               >chevron_right</span
@@ -219,3 +220,96 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, reactive } from "vue";
+import { useRouter } from "vue-router";
+import adminService from "../../../services/adminService";
+
+const router = useRouter();
+const loading = ref(true);
+const bimbinganList = ref([]);
+const searchQuery = ref("");
+
+const pagination = reactive({
+  current_page: 1,
+  last_page: 1,
+  total: 0,
+  from: 0,
+  to: 0,
+});
+
+let searchTimeout = null;
+
+const fetchBimbingan = async () => {
+  try {
+    loading.value = true;
+    const params = {
+      page: pagination.current_page,
+      search: searchQuery.value,
+    };
+    const response = await adminService.getBimbingan(params);
+    if (response.success) {
+      bimbinganList.value = response.data.data || response.data;
+      if (response.data.current_page) {
+        Object.assign(pagination, {
+          current_page: response.data.current_page,
+          last_page: response.data.last_page,
+          total: response.data.total,
+          from: response.data.from,
+          to: response.data.to,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch bimbingan:", error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const debouncedSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    pagination.current_page = 1;
+    fetchBimbingan();
+  }, 300);
+};
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= pagination.last_page) {
+    pagination.current_page = page;
+    fetchBimbingan();
+  }
+};
+
+const viewDetail = (item) => {
+  router.push(`/admin/bimbingan/${item.id}`);
+};
+
+const getInitials = (name) => {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+};
+
+const getAvatarColor = (name) => {
+  const colors = [
+    "bg-blue-100 text-blue-600",
+    "bg-purple-100 text-purple-600",
+    "bg-orange-100 text-orange-600",
+    "bg-green-100 text-green-600",
+  ];
+  if (!name) return colors[0];
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
+onMounted(() => {
+  fetchBimbingan();
+});
+</script>

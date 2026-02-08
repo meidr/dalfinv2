@@ -13,7 +13,7 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div
-        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-shadow dark:bg-surface-light"
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-shadow"
       >
         <div class="flex items-center justify-between">
           <p
@@ -21,27 +21,24 @@
           >
             Siap Yudisium
           </p>
-          <div
-            class="bg-green-100 p-2 rounded-lg text-green-600 dark:bg-green-900/30 dark:text-green-400"
-          >
+          <div class="bg-green-100 p-2 rounded-lg text-green-600">
             <span class="material-symbols-outlined">how_to_reg</span>
           </div>
         </div>
         <div class="mt-2">
-          <p class="text-text-main text-3xl font-bold leading-tight">18</p>
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ stats.siap_yudisium }}
+          </p>
           <div class="flex items-center gap-1 mt-1">
-            <span
-              class="material-symbols-outlined text-green-600 text-[18px] dark:text-green-400"
+            <span class="material-symbols-outlined text-green-600 text-[18px]"
               >check_circle</span
             >
-            <p class="text-green-600 text-xs font-semibold dark:text-green-400">
-              Ready to process
-            </p>
+            <p class="text-green-600 text-xs font-semibold">Ready to process</p>
           </div>
         </div>
       </div>
       <div
-        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-shadow dark:bg-surface-light"
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-shadow"
       >
         <div class="flex items-center justify-between">
           <p
@@ -54,7 +51,9 @@
           </div>
         </div>
         <div class="mt-2">
-          <p class="text-text-main text-3xl font-bold leading-tight">42</p>
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ stats.sk_terbit_bulan_ini }}
+          </p>
           <div class="flex items-center gap-1 mt-1">
             <span
               class="material-symbols-outlined text-text-secondary text-[18px]"
@@ -67,43 +66,49 @@
         </div>
       </div>
       <div
-        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-shadow dark:bg-surface-light"
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-shadow"
       >
         <div class="flex items-center justify-between">
           <p
             class="text-text-secondary text-xs font-bold uppercase tracking-wider"
           >
-            Total Lulusan 2023
+            Total Lulusan {{ currentYear }}
           </p>
-          <div
-            class="bg-purple-100 p-2 rounded-lg text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
-          >
+          <div class="bg-purple-100 p-2 rounded-lg text-purple-600">
             <span class="material-symbols-outlined">school</span>
           </div>
         </div>
         <div class="mt-2">
-          <p class="text-text-main text-3xl font-bold leading-tight">564</p>
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ stats.total_lulusan }}
+          </p>
           <div class="flex items-center gap-1 mt-1">
-            <span
-              class="material-symbols-outlined text-purple-600 text-[18px] dark:text-purple-400"
+            <span class="material-symbols-outlined text-purple-600 text-[18px]"
               >trending_up</span
             >
-            <p
-              class="text-purple-600 text-xs font-semibold dark:text-purple-400"
-            >
-              +8% increase
+            <p class="text-purple-600 text-xs font-semibold">
+              +{{ stats.persentase_kenaikan }}% increase
             </p>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Loading -->
+    <div v-if="loading" class="p-12 text-center">
+      <div
+        class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"
+      ></div>
+      <p class="text-text-secondary text-sm mt-3">Memuat data...</p>
+    </div>
+
     <!-- Table Container -->
     <div
-      class="flex flex-col rounded-xl border border-border-light bg-surface-light overflow-hidden shadow-sm dark:bg-surface-light"
+      v-else
+      class="flex flex-col rounded-xl border border-border-light bg-surface-light overflow-hidden shadow-sm"
     >
       <div
-        class="p-6 border-b border-border-light flex flex-wrap gap-4 justify-between items-center bg-gray-50/50 dark:bg-sidebar-light/50"
+        class="p-6 border-b border-border-light flex flex-wrap gap-4 justify-between items-center bg-gray-50/50"
       >
         <div>
           <h3 class="text-text-main text-lg font-bold">
@@ -114,15 +119,20 @@
           </p>
         </div>
         <div class="flex gap-2">
-          <button
-            class="flex items-center gap-2 text-text-secondary hover:text-primary text-sm font-semibold px-4 py-2 rounded-lg transition-colors border border-border-light hover:border-primary/50 hover:bg-white dark:bg-sidebar-light dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
-          >
-            <span class="material-symbols-outlined text-[18px]"
-              >filter_list</span
+          <div class="relative">
+            <input
+              v-model="searchQuery"
+              @input="debouncedSearch"
+              class="pl-9 pr-4 py-2 rounded-lg border border-border-light bg-white text-sm w-64 focus:ring-1 focus:ring-primary"
+              placeholder="Cari mahasiswa..."
+            />
+            <span
+              class="material-symbols-outlined absolute left-2 top-2 text-[18px] text-text-secondary"
+              >search</span
             >
-            Filter
-          </button>
+          </div>
           <button
+            @click="exportData"
             class="flex items-center gap-2 text-white bg-primary hover:bg-primary/90 text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm shadow-primary/20"
           >
             <span class="material-symbols-outlined text-[18px]"
@@ -135,9 +145,7 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr
-              class="bg-sidebar-light/50 border-b border-border-light dark:bg-sidebar-light/50"
-            >
+            <tr class="bg-sidebar-light/50 border-b border-border-light">
               <th
                 class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase w-1/4"
               >
@@ -166,66 +174,30 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
-            <tr class="group hover:bg-sidebar-light/30 transition-colors">
-              <td class="p-4">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="bg-gray-200 size-10 rounded-full bg-cover bg-center border border-border-light shadow-sm"
-                    style="
-                      background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCXvmzpNr4yS293bcSUOqs1k0_0T3xBHHwPvluP2og08U-Pmekxd-lNCbHkg4l_ebu9pQp84cfHsau6-I-Loo86_6lN4k7FAYpMXo2M8gLPbEmwMhxkImXktkSZuWnkqjuWbqooz7ty-6u73H6Ww1mo00MhCdgeUOEIo9ciWJAM13shkp7T-5f66DTAYns5Co-T2rBySywlsV7JMpyqqLNvqISxOJQ8Z_kdUpsLms_CGCqTmOhzaZq9rjsu2GBl23JEAP9HMC838l60&quot;);
-                    "
-                  ></div>
-                  <div>
-                    <p class="font-bold text-text-main text-sm">Budi Santoso</p>
-                    <p class="text-xs text-text-secondary font-medium">
-                      201910234
-                    </p>
-                  </div>
-                </div>
-              </td>
-              <td class="p-4">
-                <p
-                  class="text-sm text-text-main font-medium line-clamp-2"
-                  title="Analisis Sentimen Pengguna Aplikasi E-Commerce Menggunakan Metode Naive Bayes"
-                >
-                  Analisis Sentimen Pengguna Aplikasi E-Commerce Menggunakan
-                  Metode Naive Bayes
-                </p>
-              </td>
-              <td class="p-4 text-xs font-medium text-text-secondary">
-                15 Okt 2023
-              </td>
-              <td class="p-4">
-                <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-500/30"
-                >
-                  <span
-                    class="size-1.5 rounded-full bg-green-600 dark:bg-green-400"
-                  ></span>
-                  Sudah Terbit Berita Acara
-                </span>
-              </td>
-              <td class="p-4 text-right">
-                <button
-                  class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm"
-                >
-                  Proses Yudisium
-                </button>
+            <tr v-if="yudisiumList.length === 0">
+              <td colspan="5" class="p-12 text-center text-text-secondary">
+                Tidak ada data
               </td>
             </tr>
-            <tr class="group hover:bg-sidebar-light/30 transition-colors">
+            <tr
+              v-for="item in yudisiumList"
+              :key="item.id"
+              class="group hover:bg-sidebar-light/30 transition-colors"
+            >
               <td class="p-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="bg-gray-200 size-10 rounded-full bg-cover bg-center border border-border-light shadow-sm"
-                    style="
-                      background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuDGtEzfJbqFw60krz6Rx-r9nY2eGR03hTU-JrE4a9UUCRSVRSIoqGGg9ZXSb-StEeDNGhLxU8KtR4mweFY8Q7hjyqvioiT8DQcg04eUjXkVjEOSS1iUMSWjTEXfnzoRTlGLItklfOGPbOxxJYCc0ue2fH_Ei6Cv0K8-9MpF6rk9zWPzsOxHZAhMlIkwjyYDzLFklK6THvb9PX22L8Cs5hq5TcdL-NVDoJNaqCX4xEmnOJJKx4GrNWlmXNXFGrwyr_shcZuEQtxq7b94&quot;);
-                    "
-                  ></div>
+                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold border border-border-light shadow-sm"
+                    :class="getAvatarColor(item.skripsi?.mahasiswa?.nama)"
+                  >
+                    {{ getInitials(item.skripsi?.mahasiswa?.nama) }}
+                  </div>
                   <div>
-                    <p class="font-bold text-text-main text-sm">Siti Aminah</p>
+                    <p class="font-bold text-text-main text-sm">
+                      {{ item.skripsi?.mahasiswa?.nama || "-" }}
+                    </p>
                     <p class="text-xs text-text-secondary font-medium">
-                      201910255
+                      {{ item.skripsi?.mahasiswa?.nim || "-" }}
                     </p>
                   </div>
                 </div>
@@ -233,70 +205,333 @@
               <td class="p-4">
                 <p
                   class="text-sm text-text-main font-medium line-clamp-2"
-                  title="Rancang Bangun Sistem Informasi Manajemen Aset Desa Berbasis Web"
+                  :title="item.skripsi?.judul"
                 >
-                  Rancang Bangun Sistem Informasi Manajemen Aset Desa Berbasis
-                  Web
+                  {{ item.skripsi?.judul || "-" }}
                 </p>
               </td>
               <td class="p-4 text-xs font-medium text-text-secondary">
-                14 Okt 2023
+                {{ formatDate(item.tanggal_ujian) }}
               </td>
               <td class="p-4">
                 <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-500/30"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold"
+                  :class="getStatusClass(item.status)"
                 >
                   <span
-                    class="size-1.5 rounded-full bg-green-600 dark:bg-green-400"
+                    class="size-1.5 rounded-full"
+                    :class="getStatusDot(item.status)"
                   ></span>
-                  Sudah Terbit Berita Acara
+                  {{ getStatusLabel(item.status) }}
                 </span>
               </td>
               <td class="p-4 text-right">
                 <button
-                  class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm"
+                  v-if="item.status === 'siap_yudisium'"
+                  @click="prosesYudisium(item)"
+                  :disabled="processing === item.id"
+                  class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50"
                 >
-                  Proses Yudisium
+                  {{
+                    processing === item.id ? "Memproses..." : "Proses Yudisium"
+                  }}
                 </button>
+                <span v-else class="text-xs text-green-600 font-medium">
+                  ✓ SK Terbit
+                </span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       <div
-        class="p-4 border-t border-border-light flex items-center justify-between bg-gray-50/50 dark:bg-sidebar-light/50"
+        class="p-4 border-t border-border-light flex items-center justify-between bg-gray-50/50"
       >
         <p class="text-xs text-text-secondary">
-          Menampilkan 5 dari 18 mahasiswa
+          Menampilkan {{ pagination.from || 0 }}-{{ pagination.to || 0 }} dari
+          {{ pagination.total }} mahasiswa
         </p>
         <div class="flex gap-2">
           <button
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            @click="goToPage(pagination.current_page - 1)"
+            :disabled="pagination.current_page <= 1"
+            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-sm">chevron_left</span>
           </button>
           <button
             class="size-8 flex items-center justify-center rounded-lg border border-primary bg-primary text-white text-xs font-bold"
           >
-            1
+            {{ pagination.current_page }}
           </button>
           <button
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light text-xs font-bold dark:border-gray-600 dark:hover:bg-gray-700"
-          >
-            2
-          </button>
-          <button
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light text-xs font-bold dark:border-gray-600 dark:hover:bg-gray-700"
-          >
-            3
-          </button>
-          <button
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            @click="goToPage(pagination.current_page + 1)"
+            :disabled="pagination.current_page >= pagination.last_page"
+            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light"
           >
             <span class="material-symbols-outlined text-sm">chevron_right</span>
           </button>
         </div>
       </div>
     </div>
+
+    <!-- Proses Yudisium Modal -->
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+      >
+        <div class="p-6 border-b border-border-light">
+          <h2 class="text-xl font-bold text-text-main">Proses SK Yudisium</h2>
+          <p class="text-sm text-text-secondary mt-1">
+            {{ selectedItem?.skripsi?.mahasiswa?.nama }}
+          </p>
+        </div>
+        <form @submit.prevent="submitYudisium" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >Nomor SK Yudisium</label
+            >
+            <input
+              v-model="yudisiumForm.nomor_sk"
+              type="text"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >Tanggal Yudisium</label
+            >
+            <input
+              v-model="yudisiumForm.tanggal"
+              type="date"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >IPK</label
+            >
+            <input
+              v-model="yudisiumForm.ipk"
+              type="number"
+              step="0.01"
+              min="0"
+              max="4"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-1"
+              >Predikat</label
+            >
+            <select
+              v-model="yudisiumForm.predikat"
+              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              required
+            >
+              <option value="memuaskan">Memuaskan</option>
+              <option value="sangat_memuaskan">Sangat Memuaskan</option>
+              <option value="cum_laude">Cum Laude</option>
+            </select>
+          </div>
+          <div class="flex gap-3 pt-4">
+            <button
+              type="button"
+              @click="showModal = false"
+              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="saving"
+              class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {{ saving ? "Menyimpan..." : "Proses Yudisium" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, reactive, computed } from "vue";
+import adminService from "../../../services/adminService";
+
+const loading = ref(true);
+const processing = ref(null);
+const saving = ref(false);
+const showModal = ref(false);
+const selectedItem = ref(null);
+const yudisiumList = ref([]);
+const searchQuery = ref("");
+
+const currentYear = computed(() => new Date().getFullYear());
+
+const stats = reactive({
+  siap_yudisium: 0,
+  sk_terbit_bulan_ini: 0,
+  total_lulusan: 0,
+  persentase_kenaikan: 0,
+});
+
+const pagination = reactive({
+  current_page: 1,
+  last_page: 1,
+  total: 0,
+  from: 0,
+  to: 0,
+});
+
+const yudisiumForm = reactive({
+  nomor_sk: "",
+  tanggal: "",
+  ipk: "",
+  predikat: "memuaskan",
+});
+
+let searchTimeout = null;
+
+const fetchYudisium = async () => {
+  try {
+    loading.value = true;
+    const params = {
+      page: pagination.current_page,
+      search: searchQuery.value,
+    };
+    const response = await adminService.getSKYudisium(params);
+    if (response.success) {
+      yudisiumList.value = response.data.data || response.data;
+      if (response.data.current_page) {
+        Object.assign(pagination, {
+          current_page: response.data.current_page,
+          last_page: response.data.last_page,
+          total: response.data.total,
+          from: response.data.from,
+          to: response.data.to,
+        });
+      }
+      if (response.stats) {
+        Object.assign(stats, response.stats);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch yudisium:", error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const debouncedSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    pagination.current_page = 1;
+    fetchYudisium();
+  }, 300);
+};
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= pagination.last_page) {
+    pagination.current_page = page;
+    fetchYudisium();
+  }
+};
+
+const prosesYudisium = (item) => {
+  selectedItem.value = item;
+  yudisiumForm.nomor_sk = "";
+  yudisiumForm.tanggal = new Date().toISOString().split("T")[0];
+  yudisiumForm.ipk = item.skripsi?.mahasiswa?.ipk || "";
+  yudisiumForm.predikat = "memuaskan";
+  showModal.value = true;
+};
+
+const submitYudisium = async () => {
+  try {
+    saving.value = true;
+    await adminService.createSKYudisium({
+      skripsi_id: selectedItem.value.skripsi_id,
+      nomor_sk: yudisiumForm.nomor_sk,
+      tanggal: yudisiumForm.tanggal,
+      ipk: yudisiumForm.ipk,
+      predikat: yudisiumForm.predikat,
+    });
+    showModal.value = false;
+    fetchYudisium();
+    alert("SK Yudisium berhasil diproses!");
+  } catch (error) {
+    console.error("Failed to process yudisium:", error);
+    alert(
+      "Gagal memproses yudisium: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    saving.value = false;
+  }
+};
+
+const exportData = () => {
+  alert("Fitur export akan segera tersedia");
+};
+
+const getInitials = (name) => {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+};
+
+const getAvatarColor = (name) => {
+  const colors = [
+    "bg-blue-100 text-blue-600",
+    "bg-purple-100 text-purple-600",
+    "bg-orange-100 text-orange-600",
+    "bg-green-100 text-green-600",
+  ];
+  if (!name) return colors[0];
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
+const formatDate = (date) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const getStatusClass = (status) => {
+  const classes = {
+    siap_yudisium: "bg-green-50 text-green-700 border border-green-200",
+    sk_terbit: "bg-blue-50 text-blue-700 border border-blue-200",
+  };
+  return classes[status] || "bg-gray-50 text-gray-600 border border-gray-100";
+};
+
+const getStatusDot = (status) => {
+  const dots = { siap_yudisium: "bg-green-600", sk_terbit: "bg-blue-600" };
+  return dots[status] || "bg-gray-600";
+};
+
+const getStatusLabel = (status) => {
+  const labels = { siap_yudisium: "Siap Yudisium", sk_terbit: "SK Terbit" };
+  return labels[status] || status;
+};
+
+onMounted(() => {
+  fetchYudisium();
+});
+</script>
