@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Jadwal Ujian Skripsi - Thesis Management System</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] bg-white dark:bg-background-dark dark:border-slate-800 px-10 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-8">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Sistem Skripsi</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="hidden md:flex items-center gap-9">
+<a class="text-[#111418] dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-primary text-sm font-bold leading-normal border-b-2 border-primary pb-1" href="#">Jadwal</a>
+<a class="text-[#111418] dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Pengajuan</a>
+<a class="text-[#111418] dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Nilai</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#f0f2f4] dark:bg-slate-800 text-[#111418] dark:text-white px-2.5">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-slate-200" data-alt="User profile avatar of a student" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCNAW1pXLYdqs-rHgiSmFhQEwUPvVYWKYR2N0QPZkffVmblb_QO58iHh69MF6LJB8oelzFXkQSrRDikl_MH75pP-rwyN9WKQbtcaPBNIJH8XDE7OmqsHkq5QUjsKKrLtRTT4-AD0wzpBi0YS-tLJhenQeQ3Gl5tPTTEyyU4ynJKm6s4hyhM2Vw7-dX78w3ckKcEDapo-jZHuYHajVhZ74axMMyGB9SduOXKyjBRKWQLmKk2e_TFyJrDsVQYogVXq9YBymmOkDI1ywyf");'></div>
+</div>
+</div>
+</header>
+<main class="flex flex-1 justify-center py-8">
+<div class="layout-content-container flex flex-col max-w-[1024px] w-full px-6 md:px-10">
+<!-- Breadcrumbs -->
+<nav class="flex flex-wrap gap-2 mb-4">
+<a class="text-[#617589] dark:text-slate-400 text-sm font-medium leading-normal flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-sm">home</span> Home
+                        </a>
+<span class="text-[#617589] dark:text-slate-500 text-sm font-medium leading-normal">/</span>
+<span class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Jadwal Ujian Skripsi</span>
+</nav>
+<!-- PageHeading -->
+<div class="flex flex-wrap justify-between items-end gap-3 mb-8">
+<div class="flex flex-col gap-2">
+<h1 class="text-[#111418] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Jadwal Ujian Skripsi</h1>
+<p class="text-[#617589] dark:text-slate-400 text-base font-normal leading-normal max-w-2xl">
+                                Pastikan Anda hadir 30 menit sebelum jadwal pelaksanaan dimulai dengan mengenakan pakaian formal sesuai ketentuan.
+                            </p>
+</div>
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold gap-2">
+<span class="material-symbols-outlined">download</span>
+<span class="truncate">Unduh Undangan</span>
+</button>
+</div>
+<!-- Main Exam Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] overflow-hidden border border-slate-100 dark:border-slate-800 mb-8">
+<div class="p-8">
+<div class="flex flex-col md:flex-row gap-8">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-4">
+<span class="px-3 py-1 bg-blue-100 text-primary dark:bg-primary/20 dark:text-primary text-xs font-bold rounded-full uppercase tracking-wider">Terjadwal</span>
+<span class="text-slate-400">•</span>
+<span class="text-slate-500 dark:text-slate-400 text-sm">Sidang Akhir (Skripsi)</span>
+</div>
+<h2 class="text-[#111418] dark:text-white text-2xl font-bold leading-tight mb-6">Analisis Perbandingan Performa Framework React dan Vue dalam Pembangunan Progressive Web Apps (PWA)</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-12">
+<div class="flex items-start gap-3">
+<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-primary">
+<span class="material-symbols-outlined">calendar_today</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Tanggal Pelaksanaan</p>
+<p class="text-[#111418] dark:text-white font-semibold">Senin, 25 November 2024</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-primary">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Waktu Sidang</p>
+<p class="text-[#111418] dark:text-white font-semibold">10:00 - 12:00 WIB</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-primary">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Tempat / Ruangan</p>
+<p class="text-[#111418] dark:text-white font-semibold">Ruang Sidang Utama - Gedung B Lt. 3</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-primary">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Dosen Pembimbing</p>
+<p class="text-[#111418] dark:text-white font-semibold">Dr. Ir. Budi Santoso, M.Kom.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full md:w-72">
+<div class="h-full bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-100 dark:border-slate-800">
+<h3 class="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">info</span>
+                                            Informasi Hasil
+                                        </h3>
+<!-- Show grade if exam finished -->
+<div class="flex flex-col items-center justify-center py-4">
+<p class="text-xs text-slate-500 dark:text-slate-400 text-center mb-2">Nilai Akhir belum tersedia hingga sidang selesai dilaksanakan.</p>
+<div class="text-4xl font-black text-slate-200 dark:text-slate-700">--</div>
+<p class="text-sm font-bold text-slate-400 dark:text-slate-600 mt-1">Pending Approval</p>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+<button class="w-full py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                                Lihat Berita Acara
+                                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SectionHeader: Tim Penguji -->
+<div class="flex items-center gap-2 px-4 pb-4 pt-4">
+<span class="material-symbols-outlined text-primary">groups</span>
+<h2 class="text-[#111418] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Dewan Penguji</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- Examiner 1 -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center text-center">
+<div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+<img alt="Avatar of Ketua Penguji" class="w-full h-full object-cover" data-alt="Portrait of a male professor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt6Ugoce89YqIKeqUUE0h9UUv4Dr6C5reecypPAokAqIwfeQxw1c_BFq8wQz_CMF9G0it1-HvKNC9SpsHNkGZ11Eea_-Q23cLtiev84Nlea8fEYJ6by1ba_NvZf4_7ivxdNsmFX3LVqpQhJVHrAiZvZozSEtIe7iXyRpwZf4sQju-8SCEkbNDxHV-nQIRSfC-Nla6l4pX0li9ZpQDyrJA9FQKRjEOnlYpHCtBkHrMq3d8_IhWqmvo-aGC8ABef9ejgyLtwr2-dAMhd"/>
+</div>
+<h4 class="text-primary text-xs font-bold uppercase tracking-widest mb-1">Ketua Penguji</h4>
+<p class="text-[#111418] dark:text-white font-bold text-base">Prof. Dr. Ahmad Dahlan, S.T., M.T.</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">NIP: 197805122003121002</p>
+</div>
+<!-- Examiner 2 -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center text-center">
+<div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+<img alt="Avatar of Sekretaris Penguji" class="w-full h-full object-cover" data-alt="Portrait of a female professor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSirXrK5myhxTaZVlzyMEicjvqhuYzYi352hWo3h96qDdpe57kkr68aTvMtFYhjaKYFlJg9bvFZ7vvCOLCXkHc-zVgAf7dnFzUY9J1DqPH6WE-AL-68kZOzhaMC4u8iM09GH4qJuqlTRO2KQydoGDNjV5udGJQv8scOTP6mI9dmNF2LBy92ugR1zJvNLDPoBceQEZjBPve5bWQdmCeeOxyH_njxkYUieoN_d_3CSj7R-0vQwxwsnJcIoMT6l1s3u-uQhmYsFvvvdUT"/>
+</div>
+<h4 class="text-primary text-xs font-bold uppercase tracking-widest mb-1">Sekretaris Penguji</h4>
+<p class="text-[#111418] dark:text-white font-bold text-base">Siti Aminah, M.Cs.</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">NIP: 198511202010122005</p>
+</div>
+<!-- Examiner 3 -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center text-center">
+<div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+<img alt="Avatar of Anggota Penguji" class="w-full h-full object-cover" data-alt="Portrait of a male professor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYVVY8I1h6qBMSMkOlYqn8kw0_p1d-YVo0p9WJrVkxaW6_oHSPR1p8aQCHVmaHPnJv4dT6X0sMRCUPS37fgHUyK2nV_Lyr2ZQ7oCy_AhCXA8QTAirDR5HItpWl0Euqo9KhZv0Etym_mLLddkXKJ8aSok0gKfjL2sRwAGTIK-BxMUtGR5smQAqmJT5xJC3rjutvWoaTWX4UUCRR0cZwzk7iqPjVNRqHaCP1PI2K9AuLgB_qJ38WJwCC0KTy2_B8PAQUOp5Nd7TnwAPx"/>
+</div>
+<h4 class="text-primary text-xs font-bold uppercase tracking-widest mb-1">Anggota Penguji</h4>
+<p class="text-[#111418] dark:text-white font-bold text-base">Hendra Kurniawan, Ph.D.</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">NIP: 198204042008011003</p>
+</div>
+</div>
+<!-- Additional Context Card -->
+<div class="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl p-6 flex flex-col md:flex-row items-center gap-6 mb-10">
+<div class="text-primary">
+<span class="material-symbols-outlined text-[48px]">fact_check</span>
+</div>
+<div class="flex-1">
+<h4 class="text-[#111418] dark:text-white font-bold text-lg mb-1">Daftar Kelengkapan Berkas</h4>
+<p class="text-slate-600 dark:text-slate-400 text-sm">Pastikan Anda telah mengunggah revisi proposal dan kelengkapan administrasi sebelum hari pelaksanaan ujian.</p>
+</div>
+<button class="px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-primary text-sm font-bold rounded-lg hover:shadow-md transition-all">
+                            Cek Berkas
+                        </button>
+</div>
+</div>
+</main>
+<footer class="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-background-dark py-8 px-10 text-center">
+<p class="text-slate-500 dark:text-slate-400 text-sm">© 2024 Thesis Management System. Dikelola oleh Biro Akademik &amp; Kemahasiswaan.</p>
+</footer>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lecturer Profile</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom tweaks for smooth transitions if needed */
+        .form-input:focus {
+            outline: none;
+            border-color: #137fec;
+            box-shadow: 0 0 0 1px #137fec;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111418] antialiased min-h-screen flex flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="bg-white dark:bg-[#1e2732] border-b border-[#f0f2f4] dark:border-[#2a3441] sticky top-0 z-50">
+<div class="max-w-[1280px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+<!-- Logo Section -->
+<div class="flex items-center gap-4 text-[#111418] dark:text-white">
+<div class="size-8 text-primary">
+<svg class="w-full h-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] hidden sm:block">Thesis Management System</h2>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-[#637588] dark:text-[#93a2b7] text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-[#637588] dark:text-[#93a2b7] text-sm font-medium hover:text-primary transition-colors" href="#">Mahasiswa</a>
+<a class="text-[#637588] dark:text-[#93a2b7] text-sm font-medium hover:text-primary transition-colors" href="#">Jadwal</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary py-5" href="#">Profil</a>
+</nav>
+<!-- User Actions -->
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center gap-3 pr-4 border-r border-[#f0f2f4] dark:border-[#2a3441]">
+<div class="text-right">
+<p class="text-xs font-bold text-[#111418] dark:text-white">Dr. Ahmad Fauzi</p>
+<p class="text-[10px] text-[#637588] dark:text-[#93a2b7]">Dosen Pembimbing</p>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-9 border border-[#f0f2f4]" data-alt="Small avatar of male lecturer wearing peci" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB6BThFUSq21xdvy7DoFKCmyh9scMBeqt07QcjXMhrqEZcdLz309KOBeFZuBtstKTJPaE7IIqlWQLOuL-OZdpXmbc0bjtS2hreqPozmDIX924tcwDjmZ6DappbfrHjr1zYwTaEMC7az0t6uQ7PBtCGVF2brb9nESaVX8h9BgGVKANAfhNaJl9f7CsSbcYm6aNmf_e944izGOL3OhOonlDj3AGNln7uBE-TOe0znPzLh6hsReQEbLTjDJC8P-tN2FCs64Zxqf9zymYjU");'>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-lg size-10 bg-[#f0f2f4] hover:bg-[#e0e2e4] dark:bg-[#2a3441] dark:hover:bg-[#3a4555] text-[#111418] dark:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[1280px] mx-auto px-6 lg:px-10 py-8">
+<!-- Breadcrumbs / Page Title -->
+<div class="mb-8">
+<div class="flex items-center gap-2 text-sm text-[#637588] mb-2">
+<span class="material-symbols-outlined text-[16px]">home</span>
+<span>/</span>
+<span>Pengaturan</span>
+<span>/</span>
+<span class="text-primary font-medium">Profil</span>
+</div>
+<h1 class="text-3xl font-bold text-[#111418] dark:text-white tracking-tight">Profil Dosen</h1>
+<p class="text-[#637588] mt-1">Kelola informasi pribadi dan keamanan akun Anda.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Data Diri (Profile) -->
+<div class="lg:col-span-4 space-y-6">
+<div class="bg-white dark:bg-[#1e2732] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a3441] overflow-hidden">
+<div class="h-32 bg-gradient-to-r from-primary/10 to-primary/30 relative">
+<div class="absolute -bottom-16 left-1/2 -translate-x-1/2 p-1.5 bg-white dark:bg-[#1e2732] rounded-full">
+<div class="size-32 rounded-full bg-cover bg-center border border-[#e5e7eb] dark:border-[#2a3441]" data-alt="Close up professional photo of male lecturer wearing black peci songkok" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAXvz2bJMCa2XPAeNBKDrSOFQtnaT9UOfYuLYQa8-1q5vB1693Cv3X3y2g51vxTMjSEfp6gi5qk6mPiDe9wyvoj8YxaPA-tFooJDfbE3FIFemFIcuwO3omF1gLVJksz-FpiGOYXqqDxAZTYnGqjgSp1UbVwNyn1Zx2ShwcEpCyRvGBdMw-G69KyVA6yuSukaMZma0tjLOPMpLfC0N5L6VjJBpjXFlvz4rSMJY09n7spPIr2_ovHr2fEyFuiyPdGBVhUIiOhyKLxdEdK");'>
+</div>
+</div>
+</div>
+<div class="pt-20 pb-8 px-6 text-center">
+<h2 class="text-xl font-bold text-[#111418] dark:text-white">Dr. Ahmad Fauzi, M.Kom</h2>
+<span class="inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold">
+<span class="size-1.5 rounded-full bg-green-600 animate-pulse"></span>
+                            Dosen Aktif
+                        </span>
+<div class="mt-8 flex flex-col gap-0 divider-y divide-[#f0f2f4] dark:divide-[#2a3441]">
+<div class="flex flex-col py-4 border-t border-[#f0f2f4] dark:border-[#2a3441]">
+<span class="text-xs font-medium text-[#637588] uppercase tracking-wider mb-1">NIDN / NIP</span>
+<span class="text-[#111418] dark:text-gray-200 font-medium font-mono">0012345678</span>
+</div>
+<div class="flex flex-col py-4 border-t border-[#f0f2f4] dark:border-[#2a3441]">
+<span class="text-xs font-medium text-[#637588] uppercase tracking-wider mb-1">Email Institusi</span>
+<span class="text-[#111418] dark:text-gray-200 font-medium">ahmad.fauzi@university.ac.id</span>
+</div>
+<div class="flex flex-col py-4 border-t border-[#f0f2f4] dark:border-[#2a3441]">
+<span class="text-xs font-medium text-[#637588] uppercase tracking-wider mb-1">Fakultas</span>
+<span class="text-[#111418] dark:text-gray-200 font-medium">Ilmu Komputer</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Optional Helper Card -->
+<div class="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-5 border border-blue-100 dark:border-blue-900/30 flex gap-4 items-start">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div>
+<h4 class="text-sm font-bold text-[#111418] dark:text-white mb-1">Butuh Bantuan?</h4>
+<p class="text-sm text-[#637588] leading-relaxed">
+                            Jika terdapat kesalahan data diri, silakan hubungi bagian administrasi akademik atau kirim tiket bantuan.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Right Column: Ganti Password -->
+<div class="lg:col-span-8">
+<div class="bg-white dark:bg-[#1e2732] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a3441] h-full flex flex-col">
+<div class="border-b border-[#f0f2f4] dark:border-[#2a3441] px-8 py-6">
+<h2 class="text-xl font-bold text-[#111418] dark:text-white">Ganti Password</h2>
+<p class="text-[#637588] text-sm mt-1">Pastikan password baru Anda aman dan mudah diingat.</p>
+</div>
+<div class="p-8 flex-1">
+<form class="max-w-xl flex flex-col gap-6">
+<!-- Current Password -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-[#111418] dark:text-gray-200" for="current_password">
+                                    Password Lama
+                                </label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#637588]">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<input class="w-full pl-10 pr-10 py-3 rounded-lg bg-[#f9fafb] dark:bg-[#111827] border border-[#d1d5db] dark:border-[#374151] text-[#111418] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm" id="current_password" placeholder="Masukkan password saat ini" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#637588] hover:text-[#111418] dark:hover:text-white cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<hr class="border-[#f0f2f4] dark:border-[#2a3441] my-2"/>
+<!-- New Password -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-[#111418] dark:text-gray-200" for="new_password">
+                                    Password Baru
+                                </label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#637588]">
+<span class="material-symbols-outlined text-[20px]">vpn_key</span>
+</div>
+<input class="w-full pl-10 pr-10 py-3 rounded-lg bg-[#f9fafb] dark:bg-[#111827] border border-[#d1d5db] dark:border-[#374151] text-[#111418] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm" id="new_password" placeholder="Minimal 8 karakter" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#637588] hover:text-[#111418] dark:hover:text-white cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+<p class="text-xs text-[#637588] mt-1 pl-1">
+                                    Tips: Gunakan kombinasi huruf besar, kecil, dan angka.
+                                </p>
+</div>
+<!-- Confirm Password -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-[#111418] dark:text-gray-200" for="confirm_password">
+                                    Konfirmasi Password Baru
+                                </label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#637588]">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</div>
+<input class="w-full pl-10 pr-10 py-3 rounded-lg bg-[#f9fafb] dark:bg-[#111827] border border-[#d1d5db] dark:border-[#374151] text-[#111418] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm" id="confirm_password" placeholder="Ulangi password baru" type="password"/>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="pt-6 flex flex-col sm:flex-row gap-4">
+<button class="flex-1 bg-primary hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-[20px]">save</span>
+                                    Update Password
+                                </button>
+<button class="sm:w-auto w-full bg-white dark:bg-[#2a3441] border border-[#d1d5db] dark:border-[#374151] text-[#111418] dark:text-white font-medium py-3 px-6 rounded-lg hover:bg-gray-50 dark:hover:bg-[#374151] transition-colors" type="button">
+                                    Batal
+                                </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Simple Footer -->
+<footer class="w-full py-6 mt-8 border-t border-[#f0f2f4] dark:border-[#2a3441] bg-white dark:bg-[#1e2732]">
+<div class="max-w-[1280px] mx-auto px-6 lg:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-sm text-[#637588]">© 2024 University Thesis Management System.</p>
+<div class="flex gap-6 text-sm text-[#637588]">
+<a class="hover:text-primary" href="#">Privacy Policy</a>
+<a class="hover:text-primary" href="#">Terms of Service</a>
+<a class="hover:text-primary" href="#">Help Center</a>
+</div>
+</div>
+</footer>
+</body></html>

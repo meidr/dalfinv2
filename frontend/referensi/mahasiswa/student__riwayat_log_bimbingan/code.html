@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student: Riwayat Log Bimbingan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen text-[#111418] dark:text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e5e7eb] dark:border-b-[#2a3441] bg-white dark:bg-[#1a2530] px-4 md:px-10 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Sistem Skripsi</h2>
+</div>
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-[#617589] dark:text-[#a1b0c0] hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Beranda</a>
+<a class="text-primary text-sm font-bold leading-normal border-b-2 border-primary pb-1" href="#">Log Bimbingan</a>
+<a class="text-[#617589] dark:text-[#a1b0c0] hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Jadwal Sidang</a>
+<a class="text-[#617589] dark:text-[#a1b0c0] hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Pengaturan</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="hidden lg:flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-[#617589] flex border-none bg-background-light dark:bg-[#2a3441] items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111418] dark:text-white focus:outline-0 focus:ring-0 border-none bg-background-light dark:bg-[#2a3441] focus:border-none h-full placeholder:text-[#617589] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Cari topik..." value=""/>
+</div>
+</label>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-bold text-[#111418] dark:text-white">Budi Santoso</p>
+<p class="text-[10px] text-[#617589]">Mahasiswa - 20201010</p>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" data-alt="User profile avatar of a student" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC6ZxkXViLMh5VmwZQmaB1JoAR1SobfLPdZ6dzFiKtnZwrTLo9Rk_gqutj2AXkG20yWZ1J4p1zX1l-h4mk5vvnaz44CHR0lbvZlORzoH4jug_Fil87sxZ84zBfDCoZ5ev_fcosYELudtF-QLtoN5J6KQo1xqEAJkZWBtLYDIDU3mtP7BZFNY2RqqcIvPapxMRaWUkx1ZeojFh0lSIfcabG58fwdT4l8pS_BAaaGaks-MsKAhDs8BkAdlgKruTbBwwZwaBioyCaV7HAb");'></div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center">
+<div class="w-full max-w-[1200px] px-4 md:px-10 py-8">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap items-center gap-2 mb-2">
+<a class="text-[#617589] dark:text-[#a1b0c0] text-sm font-medium hover:text-primary" href="#">Dashboard</a>
+<span class="material-symbols-outlined text-sm text-[#617589]">chevron_right</span>
+<span class="text-primary text-sm font-medium">Log Bimbingan</span>
+</div>
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between items-end gap-4 mb-8">
+<div class="flex min-w-72 flex-col gap-1">
+<h1 class="text-[#111418] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">Riwayat Log Bimbingan</h1>
+<p class="text-[#617589] dark:text-[#a1b0c0] text-base font-normal leading-normal">Pantau status bimbingan skripsi dan riwayat konsultasi Anda secara real-time.</p>
+</div>
+<button class="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined">add</span>
+<span class="truncate">Tambah Log</span>
+</button>
+</div>
+<!-- Filters/Chips -->
+<div class="bg-white dark:bg-[#1a2530] p-2 rounded-xl border border-[#e5e7eb] dark:border-[#2a3441] mb-6 shadow-sm overflow-x-auto">
+<div class="flex gap-2 items-center min-w-max">
+<div class="px-4 text-sm font-bold text-[#617589] dark:text-[#a1b0c0]">Filter Status:</div>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary text-white px-4">
+<p class="text-sm font-medium">Semua</p>
+<span class="material-symbols-outlined text-lg">expand_more</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-background-light dark:bg-[#2a3441] hover:bg-[#e2e8f0] px-4 transition-colors">
+<div class="size-2 rounded-full bg-green-500"></div>
+<p class="text-[#111418] dark:text-white text-sm font-medium">Disetujui</p>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-background-light dark:bg-[#2a3441] hover:bg-[#e2e8f0] px-4 transition-colors">
+<div class="size-2 rounded-full bg-amber-500"></div>
+<p class="text-[#111418] dark:text-white text-sm font-medium">Revisi</p>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-background-light dark:bg-[#2a3441] hover:bg-[#e2e8f0] px-4 transition-colors">
+<div class="size-2 rounded-full bg-blue-500"></div>
+<p class="text-[#111418] dark:text-white text-sm font-medium">Menunggu</p>
+</button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="bg-white dark:bg-[#1a2530] rounded-xl border border-[#e5e7eb] dark:border-[#2a3441] shadow-sm overflow-hidden @container">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-background-light/50 dark:bg-[#2a3441]/30 border-b border-[#e5e7eb] dark:border-[#2a3441]">
+<th class="px-6 py-4 text-[#617589] dark:text-[#a1b0c0] text-xs font-bold uppercase tracking-wider w-[15%]">Tanggal</th>
+<th class="px-6 py-4 text-[#617589] dark:text-[#a1b0c0] text-xs font-bold uppercase tracking-wider w-[40%]">Topik Bimbingan</th>
+<th class="px-6 py-4 text-[#617589] dark:text-[#a1b0c0] text-xs font-bold uppercase tracking-wider w-[25%]">Pembimbing</th>
+<th class="px-6 py-4 text-[#617589] dark:text-[#a1b0c0] text-xs font-bold uppercase tracking-wider w-[10%]">Status</th>
+<th class="px-6 py-4 text-[#617589] dark:text-[#a1b0c0] text-xs font-bold uppercase tracking-wider w-[10%] text-center">Aksi</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#e5e7eb] dark:divide-[#2a3441]">
+<!-- Row 1 -->
+<tr class="hover:bg-background-light/30 dark:hover:bg-[#2a3441]/10 transition-colors">
+<td class="px-6 py-5 text-[#617589] dark:text-[#a1b0c0] text-sm font-medium">12 Okt 2023</td>
+<td class="px-6 py-5">
+<p class="text-[#111418] dark:text-white text-sm font-bold">Bab 1: Latar Belakang &amp; Perumusan Masalah</p>
+<p class="text-xs text-[#617589] mt-0.5">Penambahan literatur terbaru tahun 2023</p>
+</td>
+<td class="px-6 py-5 flex items-center gap-3">
+<div class="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">AS</div>
+<span class="text-[#111418] dark:text-white text-sm font-medium">Dr. Ahmad Sudrajat</span>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                                                Disetujui
+                                            </span>
+</td>
+<td class="px-6 py-5 text-center">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors group" title="Lihat Dokumen">
+<span class="material-symbols-outlined text-2xl">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-background-light/30 dark:hover:bg-[#2a3441]/10 transition-colors">
+<td class="px-6 py-5 text-[#617589] dark:text-[#a1b0c0] text-sm font-medium">05 Okt 2023</td>
+<td class="px-6 py-5">
+<p class="text-[#111418] dark:text-white text-sm font-bold">Diskusi Metodologi Penelitian</p>
+<p class="text-xs text-[#617589] mt-0.5">Perbaikan pada alur diagram penelitian</p>
+</td>
+<td class="px-6 py-5 flex items-center gap-3">
+<div class="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">AS</div>
+<span class="text-[#111418] dark:text-white text-sm font-medium">Dr. Ahmad Sudrajat</span>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+                                                Revisi
+                                            </span>
+</td>
+<td class="px-6 py-5 text-center">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors" title="Lihat Dokumen">
+<span class="material-symbols-outlined text-2xl">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-background-light/30 dark:hover:bg-[#2a3441]/10 transition-colors">
+<td class="px-6 py-5 text-[#617589] dark:text-[#a1b0c0] text-sm font-medium">28 Sep 2023</td>
+<td class="px-6 py-5">
+<p class="text-[#111418] dark:text-white text-sm font-bold">Draft Proposal Awal</p>
+<p class="text-xs text-[#617589] mt-0.5">Pengajuan judul "Analisis UI/UX Sistem Terdistribusi"</p>
+</td>
+<td class="px-6 py-5 flex items-center gap-3">
+<div class="size-8 rounded-full bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-xs">SA</div>
+<span class="text-[#111418] dark:text-white text-sm font-medium">Prof. Siti Aminah</span>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                                                Disetujui
+                                            </span>
+</td>
+<td class="px-6 py-5 text-center">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors" title="Lihat Dokumen">
+<span class="material-symbols-outlined text-2xl">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-background-light/30 dark:hover:bg-[#2a3441]/10 transition-colors">
+<td class="px-6 py-5 text-[#617589] dark:text-[#a1b0c0] text-sm font-medium">21 Sep 2023</td>
+<td class="px-6 py-5">
+<p class="text-[#111418] dark:text-white text-sm font-bold">Revisi Rumusan Masalah</p>
+<p class="text-xs text-[#617589] mt-0.5">Penyesuaian batasan masalah penelitian</p>
+</td>
+<td class="px-6 py-5 flex items-center gap-3">
+<div class="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">AS</div>
+<span class="text-[#111418] dark:text-white text-sm font-medium">Dr. Ahmad Sudrajat</span>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                                                Disetujui
+                                            </span>
+</td>
+<td class="px-6 py-5 text-center">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors" title="Lihat Dokumen">
+<span class="material-symbols-outlined text-2xl">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-background-light/30 dark:hover:bg-[#2a3441]/10 transition-colors">
+<td class="px-6 py-5 text-[#617589] dark:text-[#a1b0c0] text-sm font-medium">14 Sep 2023</td>
+<td class="px-6 py-5">
+<p class="text-[#111418] dark:text-white text-sm font-bold">Konsultasi Judul &amp; Outline</p>
+<p class="text-xs text-[#617589] mt-0.5">Brainstorming arah penelitian tugas akhir</p>
+</td>
+<td class="px-6 py-5 flex items-center gap-3">
+<div class="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">AS</div>
+<span class="text-[#111418] dark:text-white text-sm font-medium">Dr. Ahmad Sudrajat</span>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+                                                Menunggu
+                                            </span>
+</td>
+<td class="px-6 py-5 text-center">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors opacity-50 cursor-not-allowed" disabled="" title="Dokumen belum diunggah">
+<span class="material-symbols-outlined text-2xl">visibility_off</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 flex items-center justify-between border-t border-[#e5e7eb] dark:border-[#2a3441]">
+<p class="text-sm text-[#617589] dark:text-[#a1b0c0]">Menampilkan 1-5 dari 12 log bimbingan</p>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg border border-[#e5e7eb] dark:border-[#2a3441] hover:bg-background-light dark:hover:bg-[#2a3441] transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-primary text-white text-sm font-bold">1</button>
+<button class="w-10 h-10 rounded-lg border border-[#e5e7eb] dark:border-[#2a3441] hover:bg-background-light dark:hover:bg-[#2a3441] transition-colors text-sm font-bold">2</button>
+<button class="w-10 h-10 rounded-lg border border-[#e5e7eb] dark:border-[#2a3441] hover:bg-background-light dark:hover:bg-[#2a3441] transition-colors text-sm font-bold">3</button>
+<button class="p-2 rounded-lg border border-[#e5e7eb] dark:border-[#2a3441] hover:bg-background-light dark:hover:bg-[#2a3441] transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Help Card -->
+<div class="mt-8 p-6 bg-primary/5 border border-primary/20 rounded-xl flex flex-col md:flex-row items-center gap-6">
+<div class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-3xl">info</span>
+</div>
+<div class="flex-1 text-center md:text-left">
+<h4 class="text-[#111418] dark:text-white font-bold mb-1">Butuh Bantuan?</h4>
+<p class="text-sm text-[#617589] dark:text-[#a1b0c0]">Jika terdapat ketidaksesuaian data atau kesulitan dalam melihat scan dokumen, silakan hubungi bagian administrasi prodi atau dosen pembimbing Anda.</p>
+</div>
+<button class="whitespace-nowrap px-6 py-2 border-2 border-primary text-primary text-sm font-bold rounded-lg hover:bg-primary hover:text-white transition-all">Hubungi Admin</button>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Thesis Detail Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        /* Hide scrollbar for horizontal scrolling areas */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-[#111418] dark:text-white flex flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="bg-white dark:bg-[#1a202c] border-b border-[#f0f2f4] dark:border-[#2d3748] sticky top-0 z-50">
+<div class="px-4 md:px-10 py-3 flex items-center justify-between max-w-[1440px] mx-auto w-full">
+<div class="flex items-center gap-4 text-[#111418] dark:text-white">
+<div class="size-8 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">school</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Thesis Management System</h2>
+</div>
+<div class="flex items-center gap-4 md:gap-8">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Messages</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Profile</a>
+</nav>
+<div class="flex items-center gap-3">
+<div class="hidden sm:block text-right">
+<p class="text-xs font-bold">Budi Santoso</p>
+<p class="text-[10px] text-gray-500 dark:text-gray-400">Student</p>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-white shadow-sm cursor-pointer" data-alt="User profile avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBFjppOnKb9wbmHHmumIRsjPiRFRl2TIIIvlMZpwuw9FKXepinRLxTSUROf9cu96rDOCa5fdgYBuL1KzEyqy1IjtBE6S6WYeeCTJmv26RBmqr-kmTkKfn9dNK47kAeD2EcrYHccoviRRbf-MOnRrWOOVMT9aHUNwK0DN7ANi9FQWX2KppN7YTsO0pyt2b7RXdd_VHBjOT6qVNgzVb_nWZqZem2e59ChyrMvDP3N6hu7Cq6NHd27jtAuRGJEhB_ShjExPA76ug9U2fOk");'>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 w-full max-w-[1200px] mx-auto p-4 md:px-8 md:py-8 flex flex-col gap-6">
+<!-- Page Heading & Context -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3 flex-wrap">
+<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">On Track</span>
+<span class="text-gray-400 text-sm">/</span>
+<span class="text-gray-500 dark:text-gray-400 text-sm font-medium">Informatics Engineering</span>
+</div>
+<h1 class="text-2xl md:text-3xl font-bold leading-tight text-gray-900 dark:text-white">Analisis Sentimen Pengguna Twitter Terhadap Kebijakan WFH</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal">
+                        Student: <span class="font-semibold text-gray-700 dark:text-gray-300">Budi Santoso (12345678)</span>
+</p>
+</div>
+<div class="hidden md:block">
+<!-- Contextual generic image related to thesis topic -->
+<div class="w-16 h-16 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">analytics</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<div class="border-b border-gray-200 dark:border-gray-700">
+<nav aria-label="Tabs" class="-mb-px flex space-x-6 overflow-x-auto no-scrollbar">
+<a class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors" href="#">
+                    Profil Saya
+                </a>
+<a class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors" href="#">
+                    Skripsi
+                </a>
+<a class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors" href="#">
+                    Pembimbing
+                </a>
+<a aria-current="page" class="border-primary text-primary whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm" href="#">
+                    Timeline
+                </a>
+<a class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors" href="#">
+                    Dokumen
+                </a>
+<a class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors" href="#">
+                    Nilai
+                </a>
+</nav>
+</div>
+<!-- Horizontal Timeline Tracker -->
+<section class="bg-white dark:bg-[#1a202c] rounded-xl p-8 shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto">
+<div class="min-w-[800px]"> <!-- Ensure horizontal scrolling on small screens -->
+<div class="relative flex items-center justify-between w-full">
+<!-- Progress Bar Background Line -->
+<div class="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 rounded-full -z-0"></div>
+<!-- Progress Bar Active Line (Calculated for ~50% progress for 4th stage) -->
+<div class="absolute top-1/2 left-0 w-[50%] h-1 bg-gradient-to-r from-green-500 to-primary -translate-y-1/2 rounded-full -z-0"></div>
+<!-- Stage 1: Judul (Done) -->
+<div class="relative z-10 flex flex-col items-center group">
+<div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shadow-md border-4 border-white dark:border-[#1a202c]">
+<span class="material-symbols-outlined text-xl font-bold">check</span>
+</div>
+<p class="mt-3 text-sm font-semibold text-green-600 dark:text-green-400">Judul</p>
+<span class="text-[10px] text-gray-400">Approved</span>
+</div>
+<!-- Stage 2: Dospem (Done) -->
+<div class="relative z-10 flex flex-col items-center group">
+<div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shadow-md border-4 border-white dark:border-[#1a202c]">
+<span class="material-symbols-outlined text-xl font-bold">check</span>
+</div>
+<p class="mt-3 text-sm font-semibold text-green-600 dark:text-green-400">Dospem</p>
+<span class="text-[10px] text-gray-400">Assigned</span>
+</div>
+<!-- Stage 3: SK Tugas (Done) -->
+<div class="relative z-10 flex flex-col items-center group">
+<div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shadow-md border-4 border-white dark:border-[#1a202c]">
+<span class="material-symbols-outlined text-xl font-bold">check</span>
+</div>
+<p class="mt-3 text-sm font-semibold text-green-600 dark:text-green-400">SK Tugas</p>
+<span class="text-[10px] text-gray-400">Issued</span>
+</div>
+<!-- Stage 4: Sempro (Current) -->
+<div class="relative z-10 flex flex-col items-center group">
+<div class="absolute w-10 h-10 rounded-full bg-primary/30 animate-ping"></div>
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-lg border-4 border-white dark:border-[#1a202c] relative">
+<span class="material-symbols-outlined text-xl">event_note</span>
+</div>
+<p class="mt-3 text-sm font-bold text-primary">Sempro</p>
+<span class="text-[10px] text-primary font-medium">In Progress</span>
+</div>
+<!-- Stage 5: Ujian (Future) -->
+<div class="relative z-10 flex flex-col items-center group">
+<div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shadow-sm border-4 border-white dark:border-[#1a202c]">
+<span class="text-sm font-bold">5</span>
+</div>
+<p class="mt-3 text-sm font-medium text-gray-400">Ujian</p>
+</div>
+<!-- Stage 6: Berita Acara (Future) -->
+<div class="relative z-10 flex flex-col items-center group">
+<div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shadow-sm border-4 border-white dark:border-[#1a202c]">
+<span class="text-sm font-bold">6</span>
+</div>
+<p class="mt-3 text-sm font-medium text-gray-400 text-center w-20 leading-tight">Berita Acara</p>
+</div>
+<!-- Stage 7: Yudisium (Future) -->
+<div class="relative z-10 flex flex-col items-center group">
+<div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shadow-sm border-4 border-white dark:border-[#1a202c]">
+<span class="material-symbols-outlined text-xl">flag</span>
+</div>
+<p class="mt-3 text-sm font-medium text-gray-400">Yudisium</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Detail Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left: Current Stage Details (2 Columns) -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+<!-- Current Stage Card -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+<div class="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="w-2 h-8 bg-primary rounded-full"></span>
+<h3 class="text-lg font-bold">Stage Detail: Seminar Proposal (Sempro)</h3>
+</div>
+<div class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 rounded text-xs font-bold">
+                            SCHEDULED
+                        </div>
+</div>
+<div class="p-6">
+<div class="flex flex-col md:flex-row gap-6">
+<!-- Image/Map Placeholder -->
+<div class="w-full md:w-1/3 aspect-video md:aspect-square bg-gray-100 rounded-lg bg-cover bg-center relative group overflow-hidden" data-alt="Map location or room preview for seminar" data-location="Jakarta, Indonesia" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDsD-JfJ6FboQALNOS7QliJo0xfGb1v9dH0RYZNdi5pBoIiu34Xs9fWt0kd-LlyGlKSeB_OUaJ57YRogWPXe0LLBneJFmZB0AFngC_pUaHhlql6oL72LvPCcmLDIwE6xDksQE-PPuU3rjIyaAP_LtBvKA9TrBnd9neJ6yYhwVA2KGUy761RcsDD7jMu6nv8A2PEeK_KV7Vspv30oCXe0h8Jfs0Kz1mwRT7v2O76HBpsaS4_LE2YAr55OeAxZXmoyheySuhUrh1rzajD");'>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-white text-xs font-medium">View Room Location</span>
+</div>
+</div>
+<!-- Info Grid -->
+<div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
+<div>
+<p class="text-xs text-gray-500 uppercase font-semibold mb-1">Date &amp; Time</p>
+<div class="flex items-center gap-2 text-gray-800 dark:text-gray-200">
+<span class="material-symbols-outlined text-primary text-xl">calendar_month</span>
+<span class="font-medium">24 October 2023</span>
+</div>
+<div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 mt-1 pl-7">
+<span class="text-sm">09:00 - 11:00 WIB</span>
+</div>
+</div>
+<div>
+<p class="text-xs text-gray-500 uppercase font-semibold mb-1">Location</p>
+<div class="flex items-center gap-2 text-gray-800 dark:text-gray-200">
+<span class="material-symbols-outlined text-primary text-xl">location_on</span>
+<span class="font-medium">Room A-302</span>
+</div>
+<div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 mt-1 pl-7">
+<span class="text-sm">Main Building, 3rd Floor</span>
+</div>
+</div>
+<div class="md:col-span-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+<p class="text-xs text-gray-500 uppercase font-semibold mb-3">Examiners Panel</p>
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-gray-200 bg-cover" data-alt="Examiner 1 Avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAYokr2OJ2pKQIACkCQspZJRizkB5QBKKnPJq2MgJrXNYuV6x0S87i93A35kWKjD4N5cGAx6NLO2t7DCE6LMx6XJLzEN7reD7cyh3b3CSJaBmUXmzlOOQYF00PrUi6eECiwFyeXCNjCh4m09EGSD2u3lRbDrdMVPQajhXmN-15rkDaG5c8PCWvzQmy5bJrILepsvYsjWSzfNb_ResYDi51lZD77Ij6chfKUYkVoEj8eZhjl2uC29sVh4M_oTqBPyS2tSYF9RkYjp2tw");'></div>
+<div>
+<p class="text-sm font-semibold">Dr. Asep Suherman, M.Kom</p>
+<p class="text-xs text-gray-500">Chief Examiner</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-gray-200 bg-cover" data-alt="Examiner 2 Avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA3yYzgfx-bxu64K2f21mCQdp8Gvm7vjHJeVfB5yiJzfPcWUu9H0DOIKEu9U7ujO1SIjzwIWvfTBSuN24RzpFsmFDNsEIKnq_uzsena54VwbY4ubGMt940AzS2OKp73aBs1ygJkX-PpbClCGj_YIerV84O2NMAhcc1cUeh-ldMQUcoxDvGrwBHTNC2I6tSjWBq4eiSpSCHsXhDpzmZoKmtFID2f20SX9FEXSrd7Ty4v0amTa3zQKUpbFikaOXtIprw9Y0ZKvwvY0AeZ");'></div>
+<div>
+<p class="text-sm font-semibold">Siti Aminah, S.T., M.T.</p>
+<p class="text-xs text-gray-500">Secretary Examiner</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Documents for this stage (Read Only) -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-bold">Stage Documents</h3>
+<span class="text-xs font-medium text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">Read Only</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<div class="flex items-center gap-3">
+<div class="bg-red-50 text-red-500 p-2 rounded">
+<span class="material-symbols-outlined text-xl">picture_as_pdf</span>
+</div>
+<div>
+<p class="text-sm font-medium">Draft_Proposal_Final_v3.pdf</p>
+<p class="text-xs text-gray-500">Uploaded on 20 Oct 2023</p>
+</div>
+</div>
+<button class="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">download</span> Download
+                            </button>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<div class="flex items-center gap-3">
+<div class="bg-blue-50 text-blue-500 p-2 rounded">
+<span class="material-symbols-outlined text-xl">description</span>
+</div>
+<div>
+<p class="text-sm font-medium">Lembar_Persetujuan.docx</p>
+<p class="text-xs text-gray-500">Uploaded on 22 Oct 2023</p>
+</div>
+</div>
+<button class="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">download</span> Download
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Activity Log & Quick Status (1 Column) -->
+<div class="flex flex-col gap-6">
+<!-- Recent Activity -->
+<div class="bg-white dark:bg-[#1a202c] rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 h-full">
+<h3 class="text-lg font-bold mb-5">Recent Activity</h3>
+<div class="relative pl-2">
+<!-- Vertical line for activity -->
+<div class="absolute top-2 bottom-2 left-[19px] w-[2px] bg-gray-100 dark:bg-gray-700"></div>
+<div class="space-y-6">
+<!-- Item 1 -->
+<div class="relative flex items-start gap-4">
+<div class="z-10 mt-1 flex-shrink-0">
+<div class="h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-white dark:ring-[#1a202c]"></div>
+</div>
+<div>
+<p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-semibold">Seminar Scheduled</span></p>
+<p class="text-xs text-gray-500 mt-0.5">Admin Staff set the schedule for Seminar Proposal.</p>
+<p class="text-[10px] text-gray-400 mt-1">Today, 08:30 AM</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="relative flex items-start gap-4">
+<div class="z-10 mt-1 flex-shrink-0">
+<div class="h-2.5 w-2.5 rounded-full bg-green-500 ring-4 ring-white dark:ring-[#1a202c]"></div>
+</div>
+<div>
+<p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-semibold">Documents Verified</span></p>
+<p class="text-xs text-gray-500 mt-0.5">Academic Dept verified all uploaded documents.</p>
+<p class="text-[10px] text-gray-400 mt-1">Yesterday, 14:20 PM</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="relative flex items-start gap-4">
+<div class="z-10 mt-1 flex-shrink-0">
+<div class="h-2.5 w-2.5 rounded-full bg-gray-300 ring-4 ring-white dark:ring-[#1a202c]"></div>
+</div>
+<div>
+<p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-semibold">Advisor Approval</span></p>
+<p class="text-xs text-gray-500 mt-0.5">Dr. Asep approved the proposal draft.</p>
+<p class="text-[10px] text-gray-400 mt-1">20 Oct, 09:15 AM</p>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="relative flex items-start gap-4">
+<div class="z-10 mt-1 flex-shrink-0">
+<div class="h-2.5 w-2.5 rounded-full bg-gray-300 ring-4 ring-white dark:ring-[#1a202c]"></div>
+</div>
+<div>
+<p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-semibold">SK Tugas Issued</span></p>
+<p class="text-xs text-gray-500 mt-0.5">Official assignment letter generated.</p>
+<p class="text-[10px] text-gray-400 mt-1">15 Oct, 11:00 AM</p>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-8 py-2 text-sm text-primary font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors">
+                        View All History
+                    </button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

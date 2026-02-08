@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Riwayat Bimbingan Skripsi | Student View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .status-pill {
+            @apply flex min-w-[100px] items-center justify-center rounded-full h-7 px-3 text-xs font-semibold uppercase tracking-wider;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-[#111418] dark:text-white transition-colors duration-200">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 w-full border-b border-[#dbe0e6] dark:border-slate-800 bg-white dark:bg-slate-900 px-4 md:px-10 lg:px-40 py-3 transition-colors duration-200">
+<div class="flex items-center justify-between max-w-[1200px] mx-auto">
+<div class="flex items-center gap-3">
+<div class="text-primary">
+<svg class="size-8" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h1 class="text-lg font-bold tracking-tight hidden sm:block">SISKRI</h1>
+</div>
+<nav class="flex items-center gap-6 lg:gap-8">
+<a class="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity" href="#">Beranda</a>
+<a class="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity" href="#">Skripsi Saya</a>
+<a class="text-sm font-bold text-primary border-b-2 border-primary pb-1" href="#">Bimbingan</a>
+<a class="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity" href="#">Jadwal</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center rounded-full size-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<div class="rounded-full size-10 bg-cover bg-center border-2 border-primary/20" data-alt="Student Profile Avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCv8SAJj2Lb1cHtaqFmKTtyT_sh5TimzR4pBEPSHmqUoQxyW52emERRSJrXIn2dBgHiGD7nikuJHPRrZuojkbSvGX5tp5Hk1phYt3UEWkekdJuxQnIAVF9jeeYN7sCOryfw1ydv7Y6lUIeocpUd0tj8fByj0D-d65ehMCoM4VDFWIl2aHEJ7zsvu3MaR-XGIhovDbaNM9jmPCADYLt7WFcj2zy9bjcVNhJRnkVX_U95K0VVydBKXn9dy20sqJIxcUf4fYjcIQpgbvLk");'></div>
+</div>
+</div>
+</header>
+<main class="max-w-[1200px] mx-auto px-4 md:px-10 lg:px-40 py-10">
+<!-- Page Heading -->
+<div class="mb-8">
+<div class="flex items-center gap-2 text-primary text-sm font-medium mb-2">
+<span>Skripsi Saya</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-[#617589]">Log Bimbingan</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-[#111418] dark:text-white text-3xl font-black leading-tight tracking-tight">Riwayat Bimbingan</h2>
+<p class="text-[#617589] dark:text-slate-400 text-base font-normal mt-1">Pantau kemajuan dan catatan konsultasi dengan pembimbing secara real-time.</p>
+</div>
+</div>
+</div>
+<!-- Summary Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+<div class="bg-white dark:bg-slate-900 flex flex-col gap-2 rounded-xl p-6 border border-[#dbe0e6] dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-3 mb-1">
+<span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">forum</span>
+<p class="text-[#617589] dark:text-slate-400 text-sm font-medium">Total Sesi Bimbingan</p>
+</div>
+<p class="text-[#111418] dark:text-white text-3xl font-bold">12 <span class="text-sm font-normal text-[#617589]">Sesi</span></p>
+</div>
+<div class="bg-white dark:bg-slate-900 flex flex-col gap-2 rounded-xl p-6 border border-[#dbe0e6] dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-3 mb-1">
+<span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">assignment_turned_in</span>
+<p class="text-[#617589] dark:text-slate-400 text-sm font-medium">Status Terakhir</p>
+</div>
+<p class="text-[#111418] dark:text-white text-xl font-bold leading-tight">Menunggu Persetujuan Bab 3</p>
+</div>
+<div class="bg-primary flex flex-col gap-2 rounded-xl p-6 shadow-lg shadow-primary/20 lg:col-span-1 md:col-span-2">
+<div class="flex items-center gap-3 mb-1">
+<span class="material-symbols-outlined text-white bg-white/20 p-2 rounded-lg">timer</span>
+<p class="text-white/80 text-sm font-medium">Progress Penyelesaian</p>
+</div>
+<div class="flex items-center gap-4">
+<p class="text-white text-3xl font-bold">65%</p>
+<div class="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
+<div class="bg-white h-full w-[65%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section Header -->
+<div class="flex items-center justify-between px-2 mb-4">
+<h3 class="text-[#111418] dark:text-white text-xl font-bold leading-tight flex items-center gap-2">
+<span class="material-symbols-outlined">history</span>
+                Log Konsultasi
+            </h3>
+<div class="flex items-center gap-2">
+<span class="text-xs text-[#617589]">Urutkan berdasarkan: </span>
+<select class="text-xs border-none bg-transparent font-bold text-primary focus:ring-0 cursor-pointer">
+<option>Terbaru</option>
+<option>Terlama</option>
+</select>
+</div>
+</div>
+<!-- Log Table -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-[#dbe0e6] dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-[#dbe0e6] dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+<th class="px-6 py-4 text-[#111418] dark:text-slate-200 text-sm font-bold uppercase tracking-wider w-[140px]">Tanggal</th>
+<th class="px-6 py-4 text-[#111418] dark:text-slate-200 text-sm font-bold uppercase tracking-wider min-w-[300px]">Topik / Bahasan</th>
+<th class="px-6 py-4 text-[#111418] dark:text-slate-200 text-sm font-bold uppercase tracking-wider">Pembimbing</th>
+<th class="px-6 py-4 text-[#111418] dark:text-slate-200 text-sm font-bold uppercase tracking-wider text-center">Status</th>
+<th class="px-6 py-4 text-[#617589] dark:text-slate-400 text-sm font-bold uppercase tracking-wider text-right">Dokumen</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#dbe0e6] dark:divide-slate-800">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-medium text-[#111418] dark:text-slate-300">12 Okt 2023</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col gap-1">
+<span class="text-sm font-semibold text-[#111418] dark:text-white">Revisi Metodologi Penelitian</span>
+<span class="text-xs text-[#617589] dark:text-slate-400 line-clamp-1">Penyempurnaan instrumen penelitian dan kriteria inklusi responden.</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">A</div>
+<span class="text-sm text-[#111418] dark:text-slate-300">Dr. Andi (P1)</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex justify-center">
+<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 status-pill">Disetujui</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-bold transition-colors">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span class="hidden sm:inline">Lihat</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-medium text-[#111418] dark:text-slate-300">05 Okt 2023</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col gap-1">
+<span class="text-sm font-semibold text-[#111418] dark:text-white">Pembahasan Bab 3: Metodologi</span>
+<span class="text-xs text-[#617589] dark:text-slate-400 line-clamp-1">Penentuan desain penelitian deskriptif kuantitatif.</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">A</div>
+<span class="text-sm text-[#111418] dark:text-slate-300">Dr. Andi (P1)</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex justify-center">
+<span class="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 status-pill">Revisi</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-bold transition-colors">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span class="hidden sm:inline">Lihat</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-medium text-[#111418] dark:text-slate-300">28 Sep 2023</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col gap-1">
+<span class="text-sm font-semibold text-[#111418] dark:text-white">Diskusi Latar Belakang</span>
+<span class="text-xs text-[#617589] dark:text-slate-400 line-clamp-1">Pemantapan urgensi masalah dan state of the art.</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="size-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-bold">S</div>
+<span class="text-sm text-[#111418] dark:text-slate-300">Prof. Siti (P2)</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex justify-center">
+<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 status-pill">Disetujui</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-bold transition-colors">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span class="hidden sm:inline">Lihat</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-5">
+<span class="text-sm font-medium text-[#111418] dark:text-slate-300">14 Sep 2023</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex flex-col gap-1">
+<span class="text-sm font-semibold text-[#111418] dark:text-white">Pengajuan Judul Skripsi</span>
+<span class="text-xs text-[#617589] dark:text-slate-400 line-clamp-1">Optimasi Algoritma Random Forest pada dataset medis.</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<div class="size-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">A</div>
+<span class="text-sm text-[#111418] dark:text-slate-300">Dr. Andi (P1)</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex justify-center">
+<span class="bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300 status-pill">Menunggu</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<span class="text-xs text-[#617589] italic">Belum Ada</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer/Pagination -->
+<div class="px-6 py-4 border-t border-[#dbe0e6] dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900">
+<p class="text-xs text-[#617589] dark:text-slate-400">Menampilkan 4 dari 12 sesi bimbingan</p>
+<div class="flex items-center gap-1">
+<button class="size-8 rounded border border-[#dbe0e6] dark:border-slate-700 flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="size-8 rounded bg-primary text-white flex items-center justify-center text-xs font-bold shadow-sm">1</button>
+<button class="size-8 rounded border border-[#dbe0e6] dark:border-slate-700 flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs">2</button>
+<button class="size-8 rounded border border-[#dbe0e6] dark:border-slate-700 flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs">3</button>
+<button class="size-8 rounded border border-[#dbe0e6] dark:border-slate-700 flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Info -->
+<div class="mt-8 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 flex gap-4 items-start">
+<span class="material-symbols-outlined text-primary">info</span>
+<div class="flex flex-col gap-1">
+<p class="text-sm font-bold text-[#111418] dark:text-white">Informasi Penting</p>
+<p class="text-xs text-blue-800 dark:text-blue-300/80 leading-relaxed">
+                    Siswa hanya dapat melihat riwayat bimbingan. Jika terdapat ketidaksesuaian data atau dokumen yang belum terunggah, silakan hubungi bagian administrasi prodi atau dosen pembimbing terkait.
+                </p>
+</div>
+</div>
+</main>
+<footer class="mt-20 border-t border-[#dbe0e6] dark:border-slate-800 py-10">
+<div class="max-w-[1200px] mx-auto px-4 md:px-10 lg:px-40 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-2 opacity-60">
+<span class="material-symbols-outlined text-[18px]">school</span>
+<p class="text-sm">© 2023 Sistem Manajemen Skripsi. Terintegrasi SIAKAD.</p>
+</div>
+<div class="flex gap-6">
+<a class="text-xs text-[#617589] hover:text-primary transition-colors" href="#">Bantuan</a>
+<a class="text-xs text-[#617589] hover:text-primary transition-colors" href="#">Kebijakan Privasi</a>
+<a class="text-xs text-[#617589] hover:text-primary transition-colors" href="#">Hubungi Kami</a>
+</div>
+</div>
+</footer>
+</body></html>

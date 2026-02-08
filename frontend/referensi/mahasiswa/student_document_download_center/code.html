@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Document Download Center</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111418] dark:text-white overflow-x-hidden transition-colors duration-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e5e7eb] dark:border-b-gray-800 bg-white dark:bg-[#111418] px-10 py-3 shadow-sm">
+<div class="flex items-center gap-4 text-[#111418] dark:text-white">
+<div class="size-8 text-primary flex items-center justify-center rounded-lg bg-primary/10">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<h2 class="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Thesis Portal</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="hidden md:flex items-center gap-9">
+<a class="text-[#637588] dark:text-gray-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Home</a>
+<a class="text-[#111418] dark:text-white font-semibold text-sm leading-normal" href="#">My Thesis</a>
+<a class="text-[#637588] dark:text-gray-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Profile</a>
+<a class="text-[#637588] dark:text-gray-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Logout</a>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-transparent hover:border-primary cursor-pointer transition-all" data-alt="Student profile picture placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCSmV_xiNHkXpWK50poGbxsfTtMm5h8SvUSKnGdC2RWUW60V97ITSyzmtXrz--6tzHggESOaTkxFoDTzwbjz6hLofhBdhuqff49mLQTjXBoGUaDu5ykrjzveHbtwpsdNxYKRkrDFZ5LYurdEIkw3EGC-iAJylMbBMMpHHKxKN88fqitffy5NXBn2o7OA7RsJ5Q_Ri7_0QVKYJ_kLlHTvhhkz5zcBvHUv-mPIb_9bXsfP9sk3wnYMHBIi-IzpWPYX76dx-MdDggAuY0O");'></div>
+</div>
+</header>
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 md:px-12 lg:px-40 flex flex-1 justify-center py-8">
+<div class="layout-content-container flex flex-col max-w-[1024px] flex-1 w-full gap-6">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 px-4 text-sm">
+<a class="text-[#637588] dark:text-gray-400 hover:text-primary transition-colors font-medium" href="#">Home</a>
+<span class="text-[#637588] dark:text-gray-600">/</span>
+<a class="text-[#637588] dark:text-gray-400 hover:text-primary transition-colors font-medium" href="#">Skripsi</a>
+<span class="text-[#637588] dark:text-gray-600">/</span>
+<span class="text-[#111418] dark:text-white font-medium">Detail Skripsi</span>
+</div>
+<!-- PageHeading -->
+<div class="flex flex-wrap justify-between gap-3 px-4">
+<div class="flex flex-col gap-2">
+<h1 class="text-[#111418] dark:text-white text-3xl md:text-4xl font-bold leading-tight tracking-[-0.033em]">Detail Skripsi</h1>
+<p class="text-[#637588] dark:text-gray-400 text-base font-normal leading-normal">Access and manage all documents related to your final thesis.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-semibold border border-green-200 dark:border-green-800">
+                                Active Status
+                            </span>
+</div>
+</div>
+<!-- Tabs -->
+<div class="w-full px-4 sticky top-[72px] z-40 bg-background-light dark:bg-background-dark pt-2">
+<div class="flex border-b border-[#dbe0e6] dark:border-gray-700 gap-8 overflow-x-auto no-scrollbar">
+<a class="group flex flex-col items-center justify-center border-b-[3px] border-b-transparent pb-[13px] pt-4 min-w-fit" href="#">
+<p class="text-[#637588] dark:text-gray-400 group-hover:text-[#111418] dark:group-hover:text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">Informasi Umum</p>
+</a>
+<a class="group flex flex-col items-center justify-center border-b-[3px] border-b-transparent pb-[13px] pt-4 min-w-fit" href="#">
+<p class="text-[#637588] dark:text-gray-400 group-hover:text-[#111418] dark:group-hover:text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">Bimbingan</p>
+</a>
+<!-- Active Tab -->
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-primary pb-[13px] pt-4 min-w-fit" href="#">
+<p class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">Dokumen</p>
+</a>
+<a class="group flex flex-col items-center justify-center border-b-[3px] border-b-transparent pb-[13px] pt-4 min-w-fit" href="#">
+<p class="text-[#637588] dark:text-gray-400 group-hover:text-[#111418] dark:group-hover:text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">Jadwal</p>
+</a>
+</div>
+</div>
+<!-- Content Card: Documents Table -->
+<div class="px-4 py-2 @container">
+<div class="flex flex-col overflow-hidden rounded-xl border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-[#1a202c] shadow-sm">
+<!-- Table Header for Context -->
+<div class="px-6 py-5 border-b border-[#dbe0e6] dark:border-gray-700 flex justify-between items-center bg-white dark:bg-[#1a202c]">
+<div>
+<h3 class="text-lg font-bold text-[#111418] dark:text-white">Official Documents</h3>
+<p class="text-sm text-[#637588] dark:text-gray-400 mt-1">Download official decrees and records for your thesis.</p>
+</div>
+<div class="hidden sm:block">
+<button class="flex items-center gap-2 text-sm font-medium text-primary hover:text-blue-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">help</span>
+                                        Help Center
+                                    </button>
+</div>
+</div>
+<!-- Table Wrapper -->
+<div class="overflow-x-auto w-full">
+<table class="w-full min-w-[700px]">
+<thead>
+<tr class="bg-[#f9fafb] dark:bg-gray-800/50 border-b border-[#dbe0e6] dark:border-gray-700">
+<th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#637588] dark:text-gray-400 w-[35%]">
+                                                Document Name
+                                            </th>
+<th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#637588] dark:text-gray-400 w-[25%]">
+                                                Type / Size
+                                            </th>
+<th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#637588] dark:text-gray-400 w-[20%]">
+                                                Issued Date
+                                            </th>
+<th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#637588] dark:text-gray-400 w-[20%]">
+                                                Action
+                                            </th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#dbe0e6] dark:divide-gray-700">
+<!-- Row 1 -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-white font-semibold text-sm">SK Tugas Akhir</p>
+<p class="text-[#637588] dark:text-gray-400 text-xs mt-0.5">Surat Keputusan Pembimbing</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                                    PDF • 245 KB
+                                                </div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#111418] dark:text-gray-300 text-sm">12 Jan 2024</p>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="inline-flex items-center justify-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-[#dbe0e6] dark:border-gray-600 px-4 py-2 text-sm font-semibold text-[#111418] dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary transition-all focus:ring-2 focus:ring-primary focus:ring-offset-1">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                                    Download
+                                                </button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-white font-semibold text-sm">Dokumen Konsultasi</p>
+<p class="text-[#637588] dark:text-gray-400 text-xs mt-0.5">Log aktivitas bimbingan</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                                    PDF • 1.2 MB
+                                                </div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#111418] dark:text-gray-300 text-sm">10 Feb 2024</p>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="inline-flex items-center justify-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-[#dbe0e6] dark:border-gray-600 px-4 py-2 text-sm font-semibold text-[#111418] dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary transition-all focus:ring-2 focus:ring-primary focus:ring-offset-1">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                                    Download
+                                                </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-white font-semibold text-sm">Nota Bimbingan</p>
+<p class="text-[#637588] dark:text-gray-400 text-xs mt-0.5">Persetujuan sidang</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                                    PDF • 500 KB
+                                                </div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#111418] dark:text-gray-300 text-sm">15 Mar 2024</p>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="inline-flex items-center justify-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-[#dbe0e6] dark:border-gray-600 px-4 py-2 text-sm font-semibold text-[#111418] dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary transition-all focus:ring-2 focus:ring-primary focus:ring-offset-1">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                                    Download
+                                                </button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-white font-semibold text-sm">Berita Acara Sidang</p>
+<p class="text-[#637588] dark:text-gray-400 text-xs mt-0.5">Hasil kelulusan sidang</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                                    PDF • 320 KB
+                                                </div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#111418] dark:text-gray-300 text-sm">20 Apr 2024</p>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="inline-flex items-center justify-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-[#dbe0e6] dark:border-gray-600 px-4 py-2 text-sm font-semibold text-[#111418] dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary transition-all focus:ring-2 focus:ring-primary focus:ring-offset-1">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                                    Download
+                                                </button>
+</td>
+</tr>
+<!-- Row 5 (Pending State) -->
+<tr class="bg-gray-50 dark:bg-gray-900/50">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4 opacity-60">
+<div class="size-10 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-gray-300 font-semibold text-sm">SK Yudisium</p>
+<p class="text-[#637588] dark:text-gray-500 text-xs mt-0.5">Surat Kelulusan Resmi</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+<span class="size-1.5 rounded-full bg-gray-400"></span>
+                                                    Processing
+                                                </div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#637588] dark:text-gray-500 text-sm italic">Not issued yet</p>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="inline-flex items-center justify-center gap-2 rounded-lg bg-transparent border border-dashed border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-400 dark:text-gray-600 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+                                                    Locked
+                                                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination placeholder -->
+<div class="px-6 py-4 border-t border-[#dbe0e6] dark:border-gray-700 bg-[#f9fafb] dark:bg-gray-800/50 flex justify-between items-center">
+<span class="text-xs text-[#637588] dark:text-gray-400">Showing 5 of 5 documents</span>
+<div class="flex gap-2">
+<!-- Placeholder for pagination if list grows -->
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

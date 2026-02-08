@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Siakad Thesis - Pusat Dokumen Resmi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen text-[#111418] dark:text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- TopNavBar Component -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#f0f2f4] dark:border-gray-800 bg-white dark:bg-background-dark px-10 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-4 text-[#111418] dark:text-white">
+<div class="size-6 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">school</span>
+</div>
+<h2 class="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Siakad Thesis</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<nav class="flex items-center gap-9">
+<a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Pengajuan</a>
+<a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Bimbingan</a>
+<a class="text-primary text-sm font-bold leading-normal border-b-2 border-primary pb-1" href="#">Dokumen Resmi</a>
+</nav>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-gray-200" data-alt="Student profile avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPuvuI1Xhk6jRnh_y3bSI67vZN5wtZnMvecvrXchkaF3AhZ7LyGoH7JG-D4ZBSAE_ArRJTlzvXKgLppxPGs_NHz8lMdzC8WQCTzxEsA160lt04V2xAjdYwQxhg-TawG734L-Tyf7Xo2SEhG4GTaweSmgygZK68nro4WjWEYpCIeKweqetQa1byqkKDTS1G0c4cibU5ksMjCI2xvRFwg6rClVj73wNfLjFosyqC0iXWzgFi6tYLyarZIxeXQQVk_GrA23vx6Z2VafWo");'></div>
+</div>
+</header>
+<main class="flex flex-1 justify-center py-10 px-6 sm:px-10 md:px-20 lg:px-40">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1 gap-6">
+<!-- PageHeading Component -->
+<div class="flex flex-wrap justify-between gap-3 px-4">
+<div class="flex min-w-72 flex-col gap-2">
+<h1 class="text-[#111418] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Pusat Dokumen Resmi</h1>
+<p class="text-[#617589] dark:text-gray-400 text-base font-normal leading-normal">Unduh semua dokumen resmi terkait administrasi tugas akhir Anda di sini.</p>
+</div>
+</div>
+<!-- Search and Filters Section -->
+<div class="flex flex-col gap-2">
+<!-- SearchBar Component -->
+<div class="px-4 py-1">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-[#617589] flex border-none bg-white dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111418] dark:text-white focus:outline-0 focus:ring-0 border-none bg-white dark:bg-gray-800 focus:border-none h-full placeholder:text-[#617589] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal shadow-sm" placeholder="Cari dokumen berdasarkan nama atau nomor surat..." value=""/>
+</div>
+</label>
+</div>
+<!-- Chips Component -->
+<div class="flex gap-3 px-4 py-2 flex-wrap">
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-5 cursor-pointer">
+<p class="text-sm font-semibold leading-normal">Semua</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-gray-800 text-[#111418] dark:text-white px-5 cursor-pointer hover:bg-gray-50 border border-gray-100 dark:border-gray-700">
+<p class="text-sm font-medium leading-normal">SK Tugas</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-gray-800 text-[#111418] dark:text-white px-5 cursor-pointer hover:bg-gray-50 border border-gray-100 dark:border-gray-700">
+<p class="text-sm font-medium leading-normal">Nota Bimbingan</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-gray-800 text-[#111418] dark:text-white px-5 cursor-pointer hover:bg-gray-50 border border-gray-100 dark:border-gray-700">
+<p class="text-sm font-medium leading-normal">Berita Acara</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-gray-800 text-[#111418] dark:text-white px-5 cursor-pointer hover:bg-gray-50 border border-gray-100 dark:border-gray-700">
+<p class="text-sm font-medium leading-normal">SK Yudisium</p>
+</div>
+</div>
+</div>
+<!-- Document List Container -->
+<div class="flex flex-col bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-[#f0f2f4] dark:border-gray-700">
+<!-- ListItem 1 -->
+<div class="flex items-center gap-4 px-6 min-h-[80px] py-4 justify-between border-b border-[#f0f2f4] dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">gavel</span>
+</div>
+<div class="flex flex-col justify-center">
+<div class="flex items-center gap-2">
+<p class="text-[#111418] dark:text-white text-base font-bold leading-normal line-clamp-1">SK Tugas Pembimbing &amp; Penguji</p>
+<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Baru</span>
+</div>
+<p class="text-[#617589] dark:text-gray-400 text-sm font-normal leading-normal">No: 442/UN31.1.2/KP/2023 • Diterbitkan: 12 Okt 2023 • 245 KB</p>
+</div>
+</div>
+<div class="shrink-0">
+<button class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal w-fit hover:bg-primary/90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-sm">download</span>
+<span class="truncate">Download PDF</span>
+</button>
+</div>
+</div>
+<!-- ListItem 2 -->
+<div class="flex items-center gap-4 px-6 min-h-[80px] py-4 justify-between border-b border-[#f0f2f4] dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">description</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#111418] dark:text-white text-base font-bold leading-normal line-clamp-1">Nota Dinas Pembimbingan Skripsi</p>
+<p class="text-[#617589] dark:text-gray-400 text-sm font-normal leading-normal">No: 102/ND/FT/2023 • Diterbitkan: 05 Sep 2023 • 188 KB</p>
+</div>
+</div>
+<div class="shrink-0">
+<button class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal w-fit hover:bg-primary/90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-sm">download</span>
+<span class="truncate">Download PDF</span>
+</button>
+</div>
+</div>
+<!-- ListItem 3 -->
+<div class="flex items-center gap-4 px-6 min-h-[80px] py-4 justify-between border-b border-[#f0f2f4] dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">article</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#111418] dark:text-white text-base font-bold leading-normal line-clamp-1">Berita Acara Seminar Proposal</p>
+<p class="text-[#617589] dark:text-gray-400 text-sm font-normal leading-normal">No: 78/BA/2023 • Diterbitkan: 15 Agu 2023 • 312 KB</p>
+</div>
+</div>
+<div class="shrink-0">
+<button class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal w-fit hover:bg-primary/90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-sm">download</span>
+<span class="truncate">Download PDF</span>
+</button>
+</div>
+</div>
+<!-- ListItem 4 (Disabled/Not Ready Example) -->
+<div class="flex items-center gap-4 px-6 min-h-[80px] py-4 justify-between hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors opacity-60">
+<div class="flex items-center gap-4">
+<div class="text-gray-400 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">verified_user</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#111418] dark:text-white text-base font-bold leading-normal line-clamp-1">SK Yudisium &amp; Kelulusan</p>
+<p class="text-[#617589] dark:text-gray-400 text-sm font-normal leading-normal italic">Belum tersedia - Dokumen sedang dalam proses validasi kaprodi.</p>
+</div>
+</div>
+<div class="shrink-0">
+<button class="flex min-w-[120px] max-w-[480px] cursor-not-allowed items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-gray-200 dark:bg-gray-700 text-[#617589] text-sm font-bold leading-normal w-fit" disabled="">
+<span class="material-symbols-outlined text-sm">lock</span>
+<span class="truncate">Belum Siap</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Help / Notice Card -->
+<div class="mx-4 p-6 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 flex items-start gap-4">
+<span class="material-symbols-outlined text-primary text-2xl">info</span>
+<div class="flex flex-col gap-1">
+<p class="text-primary font-bold text-sm">Butuh Bantuan?</p>
+<p class="text-blue-800/80 dark:text-blue-200 text-sm leading-relaxed">Jika terdapat kesalahan data pada dokumen resmi Anda, harap segera hubungi bagian administrasi fakultas atau lapor melalui sistem pengaduan bimbingan.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Simple Footer -->
+<footer class="mt-auto py-8 text-center border-t border-[#f0f2f4] dark:border-gray-800">
+<p class="text-[#617589] dark:text-gray-500 text-xs">© 2023 Siakad Thesis Management System. Hak Cipta Dilindungi.</p>
+</footer>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Dashboard - SISKRIPSI</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "surface-light": "#ffffff",
+              "surface-dark": "#1a242d",
+            },
+            fontFamily: {
+              "display": ["Lexend", "sans-serif"]
+            },
+            borderRadius: {
+              "DEFAULT": "0.375rem", 
+              "lg": "0.5rem", 
+              "xl": "0.75rem", 
+              "2xl": "1rem",
+              "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-white font-display min-h-screen flex flex-col overflow-x-hidden">
+<!-- Navigation Bar -->
+<header class="sticky top-0 z-50 bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-gray-800 shadow-sm">
+<div class="max-w-[960px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+<!-- Logo Section -->
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-[#111418] dark:text-white">SISKRIPSI</h1>
+</div>
+<!-- Desktop Menu -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="flex items-center gap-2 text-primary font-bold text-sm relative group" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dashboard</span>
+<span class="absolute -bottom-[22px] left-0 w-full h-[2px] bg-primary rounded-t-full"></span>
+</a>
+<a class="flex items-center gap-2 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]">book</span>
+<span>Skripsi Saya</span>
+</a>
+<a class="flex items-center gap-2 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span>Profil</span>
+</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="hidden sm:flex items-center justify-center gap-2 h-9 px-4 rounded-full border border-gray-200 dark:border-gray-700 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium transition-colors text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span>Logout</span>
+</button>
+<!-- Mobile Menu Icon -->
+<button class="md:hidden p-2 text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[960px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-6">
+<!-- Page Heading -->
+<section class="flex flex-col gap-1">
+<h2 class="text-3xl font-bold tracking-tight text-[#111418] dark:text-white">Selamat Datang, Budi Santoso</h2>
+<p class="text-gray-500 dark:text-gray-400 text-base">Pantau progres skripsi Anda dan selesaikan tahapan berikutnya.</p>
+</section>
+<!-- Thesis Summary Card -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+<div class="p-6 md:p-8 flex flex-col md:flex-row gap-8">
+<!-- Left: Info & Title -->
+<div class="flex-1 flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-primary text-xs font-bold uppercase tracking-wide">
+                            Skripsi Anda
+                        </span>
+<div class="flex items-center gap-1 text-gray-400 text-xs">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Terakhir update: 2 Hari yang lalu</span>
+</div>
+</div>
+<div>
+<h3 class="text-2xl font-bold leading-snug text-[#111418] dark:text-white mb-2">
+                            Analisis Penerapan Algoritma Machine Learning pada Sistem Prediksi Cuaca Berbasis IoT
+                        </h3>
+<p class="text-gray-500 dark:text-gray-400 text-sm">
+                            Pembimbing: Dr. Rina Kurniawati, M.Kom
+                        </p>
+</div>
+<div class="mt-auto pt-4 flex items-center gap-2">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900 text-green-700 dark:text-green-400 text-sm font-semibold">
+<span class="material-symbols-outlined text-[18px] filled">check_circle</span>
+                            Status: Sudah Sempro
+                        </div>
+</div>
+</div>
+<!-- Right: Visual Progress -->
+<div class="flex-1 md:max-w-[320px] bg-gray-50 dark:bg-gray-800/50 rounded-lg p-5 flex flex-col justify-center gap-4">
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Progres Keseluruhan</span>
+<span class="text-2xl font-bold text-primary">50%</span>
+</div>
+<!-- Progress Track -->
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-2">
+<div class="bg-primary h-2.5 rounded-full transition-all duration-500" style="width: 50%"></div>
+</div>
+<!-- Milestones -->
+<div class="flex justify-between text-xs text-gray-400 dark:text-gray-500 font-medium">
+<div class="flex flex-col items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span>Proposal</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span>Sempro</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+<span>Semhas</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+<span>Sidang</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Action / Next Steps -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Main Action Card -->
+<div class="lg:col-span-2 bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 md:p-8 flex flex-col justify-center relative overflow-hidden group">
+<!-- Decorative gradient background -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/5 to-transparent rounded-bl-full pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-6">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-2 text-primary font-semibold text-sm">
+<span class="material-symbols-outlined text-[20px] animate-pulse">priority_high</span>
+<span>Perhatian Diperlukan</span>
+</div>
+<h2 class="text-2xl font-bold text-[#111418] dark:text-white">
+                                Informasi Tahap Aktif
+                            </h2>
+</div>
+</div>
+<div class="prose prose-blue max-w-none text-gray-600 dark:text-gray-300 leading-relaxed">
+<p>
+                            Selamat! Anda telah menyelesaikan Seminar Proposal. Langkah selanjutnya yang harus Anda lakukan adalah melakukan <strong>Revisi Pasca Sempro</strong> sesuai dengan catatan dari dosen penguji.
+                        </p>
+<p class="mt-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-md border-l-4 border-primary">
+<span class="font-bold">Deadline Revisi:</span> 2 Minggu lagi (24 Oktober 2023)
+                        </p>
+</div>
+<div class="pt-2">
+<button class="inline-flex items-center justify-center h-12 px-6 rounded-lg bg-primary hover:bg-blue-600 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all transform active:scale-95 group-hover:translate-x-1">
+<span>Lihat Detail Skripsi</span>
+<span class="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Side Widget: Quick Actions / Stats -->
+<div class="flex flex-col gap-4">
+<div class="bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<p class="text-sm text-gray-500 dark:text-gray-400">Total Dokumen</p>
+<p class="text-xl font-bold text-[#111418] dark:text-white">12 Berkas</p>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-500">
+<span class="material-symbols-outlined">forum</span>
+</div>
+<div>
+<p class="text-sm text-gray-500 dark:text-gray-400">Bimbingan</p>
+<p class="text-xl font-bold text-[#111418] dark:text-white">8 Sesi</p>
+</div>
+</div>
+<div class="flex-1 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-sm p-6 text-white relative overflow-hidden flex flex-col justify-end" data-alt="Abstract dark pattern background for aesthetic widget">
+<div class="absolute top-0 left-0 w-full h-full opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
+<div class="relative z-10">
+<p class="text-gray-300 text-sm mb-1">Butuh Bantuan?</p>
+<p class="font-bold mb-3">Hubungi Admin Prodi</p>
+<button class="text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm py-2 px-3 rounded text-white transition-colors">
+                            Kontak Admin
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

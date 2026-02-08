@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Profile - ThesisSys</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "text-main": "#111418",
+              "text-secondary": "#617589",
+              "border-light": "#f0f2f4",
+            },
+            fontFamily: {
+              "display": ["Lexend", "sans-serif"],
+              "body": ["Noto Sans", "sans-serif"],
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "2xl": "1rem",
+              "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main font-display antialiased min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light bg-white px-6 lg:px-10 py-3 shadow-sm">
+<div class="flex items-center gap-4 text-text-main">
+<div class="size-8 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">school</span>
+</div>
+<h2 class="text-text-main text-lg font-bold leading-tight tracking-[-0.015em]">ThesisSys</h2>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex flex-1 justify-center gap-8">
+<a class="text-text-main hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Dashboard</a>
+<a class="text-text-main hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">My Thesis</a>
+<a class="text-primary text-sm font-bold leading-normal border-b-2 border-primary pb-0.5" href="#">Profil</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="hidden md:block">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
+<span class="truncate">Logout</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-white shadow-sm cursor-pointer" data-alt="User profile thumbnail showing a smiling student" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAWcYT9Kwa7tNrGRtoVa8l_klvCeL9nA2nG0bd6qLkBHys8CZwZJ8Mhp9To8G6D9g7U8Xv-7CyQLlN7V00TQOmCmA6E41dV1XCsRNT2Uw2O25wmSQEp7B793fEff3IwxMH_3GaaJXsNxS81wps_kByLZw6Jv5uPl6wRLv_YgIjkpSkeEOg7dVSQpuME5VPb5qxwboJfboieVnPyuNUs2WOLlSql5DJdq68oIxm0sKOb3tIkTH2kMMvMiYbGNoU_u3CaNh1u0jhKFBHt");'>
+</div>
+<button class="md:hidden text-text-main">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[1200px] mx-auto px-4 md:px-8 py-8 md:py-12">
+<!-- Page Title -->
+<div class="mb-8">
+<h1 class="text-text-main tracking-tight text-[32px] font-bold leading-tight">Profil Mahasiswa</h1>
+<p class="text-text-secondary text-sm font-normal mt-1">Kelola informasi akun dan keamanan anda.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left Column: Data Diri (Profile Card) -->
+<section class="lg:col-span-4 w-full">
+<div class="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden border border-border-light">
+<!-- Cover Background Pattern -->
+<div class="h-24 w-full bg-gradient-to-r from-blue-500 to-primary relative overflow-hidden" data-alt="Abstract blue gradient background pattern">
+<div class="absolute inset-0 bg-white/10"></div>
+</div>
+<div class="px-6 pb-8 -mt-12 flex flex-col items-center">
+<!-- Profile Image -->
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-32 border-4 border-white shadow-md mb-4" data-alt="Close up portrait of a male student with glasses" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA8y9CNh5MhBGZObdkg3traTlC22PfVNf0UpUeKu8xQNOufwkWI1Y63GZh3m7OzpWXCiQEbNNkUjiKpw4iWuqQP-w0uPD9_Kng2qJZZPWnFLsDss1NWHDsdMIaW-ajIFcnrfXgDl9FKxxykFN03ELfe0NKGmH1EbjbTBKLX1MBIZHqFrOSBObEaGjeV8d_dVn-vNWwWc4tRPKdpUZ09Nzg2PhBJpAhw0Mu8Mixs6KprZrAL5CzKeNhCKeRezkDR7SoQbdqBSVMepy0r");'>
+</div>
+<button class="absolute bottom-4 right-0 bg-white text-text-secondary hover:text-primary rounded-full p-1.5 shadow-md border border-gray-100 transition-colors" title="Change Picture">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+</button>
+</div>
+<div class="text-center w-full mb-6">
+<h3 class="text-text-main text-xl font-bold leading-tight mb-1">Budi Santoso</h3>
+<p class="text-text-secondary text-sm font-medium">Teknik Informatika</p>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 mt-3 rounded-full bg-green-50 text-green-700 text-xs font-bold border border-green-100">
+<span class="size-2 rounded-full bg-green-500 animate-pulse"></span>
+                                Mahasiswa Aktif
+                            </span>
+</div>
+<div class="w-full flex flex-col gap-3">
+<div class="flex items-center justify-between p-3 bg-background-light rounded-lg">
+<span class="text-text-secondary text-sm">NIM</span>
+<span class="text-text-main font-medium text-sm font-body">12345678</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-background-light rounded-lg">
+<span class="text-text-secondary text-sm">Angkatan</span>
+<span class="text-text-main font-medium text-sm font-body">2020</span>
+</div>
+<div class="flex flex-col gap-1 p-3 bg-background-light rounded-lg">
+<span class="text-text-secondary text-xs uppercase tracking-wider font-bold">Email Institusi</span>
+<span class="text-text-main font-medium text-sm truncate font-body">budi.s@university.ac.id</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Ganti Password Form -->
+<section class="lg:col-span-8 w-full">
+<div class="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border-light p-6 md:p-8">
+<div class="flex items-center gap-3 mb-6 border-b border-border-light pb-4">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">lock_reset</span>
+</div>
+<div>
+<h2 class="text-text-main text-lg font-bold leading-tight">Ganti Password</h2>
+<p class="text-text-secondary text-sm">Pastikan akun anda tetap aman dengan mengganti password secara berkala.</p>
+</div>
+</div>
+<form class="flex flex-col gap-6 max-w-2xl">
+<!-- Alert Box -->
+<div class="flex gap-3 bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800">
+<span class="material-symbols-outlined text-blue-600">info</span>
+<p>Password baru harus terdiri dari minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka.</p>
+</div>
+<!-- Current Password -->
+<label class="flex flex-col gap-2">
+<p class="text-text-main text-sm font-semibold">Password Lama</p>
+<div class="relative flex items-center">
+<input class="w-full rounded-lg border border-[#dbe0e6] bg-white h-12 pl-4 pr-12 text-text-main text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 font-body" placeholder="Masukkan password saat ini" type="password"/>
+<button class="absolute right-0 h-full px-3 text-text-secondary hover:text-text-main transition-colors flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+</div>
+</label>
+<div class="h-px bg-border-light w-full my-1"></div>
+<!-- New Password -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<label class="flex flex-col gap-2">
+<p class="text-text-main text-sm font-semibold">Password Baru</p>
+<div class="relative flex items-center">
+<input class="w-full rounded-lg border border-[#dbe0e6] bg-white h-12 pl-4 pr-12 text-text-main text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 font-body" placeholder="Buat password baru" type="password"/>
+<button class="absolute right-0 h-full px-3 text-text-secondary hover:text-text-main transition-colors flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+</div>
+</label>
+<label class="flex flex-col gap-2">
+<p class="text-text-main text-sm font-semibold">Konfirmasi Password</p>
+<div class="relative flex items-center">
+<input class="w-full rounded-lg border border-[#dbe0e6] bg-white h-12 pl-4 pr-12 text-text-main text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 font-body" placeholder="Ulangi password baru" type="password"/>
+<button class="absolute right-0 h-full px-3 text-text-secondary hover:text-text-main transition-colors flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-xl">visibility_off</span>
+</button>
+</div>
+</label>
+</div>
+<!-- Actions -->
+<div class="flex justify-end pt-4 gap-4">
+<button class="px-6 py-2.5 rounded-lg text-text-secondary font-bold hover:bg-gray-100 transition-colors text-sm" type="button">
+                                Batal
+                            </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-primary/90 transition-colors shadow-sm shadow-blue-200 text-sm flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-lg">save</span>
+                                Update Password
+                            </button>
+</div>
+</form>
+</div>
+</section>
+</div>
+</main>
+</body></html>

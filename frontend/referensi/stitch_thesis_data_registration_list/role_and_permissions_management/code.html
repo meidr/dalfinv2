@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Role and Permissions Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-white h-screen overflow-hidden flex">
+<!-- Slim Sidebar -->
+<aside class="w-20 h-full bg-white dark:bg-[#1e2732] border-r border-[#dbe0e6] dark:border-gray-700 flex flex-col items-center py-6 gap-8 z-10 flex-shrink-0">
+<!-- Logo -->
+<div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30 cursor-pointer">
+<span class="material-symbols-outlined">school</span>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-4 w-full px-2">
+<a class="flex flex-col items-center justify-center p-3 rounded-xl text-[#617589] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center p-3 rounded-xl text-[#617589] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">book_2</span>
+</a>
+<a class="flex flex-col items-center justify-center p-3 rounded-xl text-[#617589] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
+</a>
+<!-- Active State -->
+<a class="flex flex-col items-center justify-center p-3 rounded-xl bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined fill-1">verified_user</span>
+</a>
+<a class="flex flex-col items-center justify-center p-3 rounded-xl text-[#617589] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+</a>
+</nav>
+<!-- Bottom Actions -->
+<div class="mt-auto flex flex-col gap-4 w-full px-2">
+<div class="size-10 rounded-full bg-cover bg-center self-center cursor-pointer border-2 border-transparent hover:border-primary transition-all" data-alt="User profile photo of a man smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA91s6dUSNhKSug676R96pM6DYrTwypKJX7zxZIrJnNhSzqp0filQqTxYjiZU5ixw2n0z6cdMsj_T_q0QygShMmbRn_zv-xuZdoBVTp_u9wjnpDrbzifgQN4iS_19JZeZLn9yKnn7LDMRbUda_ifBGoINHoWANtsU9TdzdR1DhtTYWnOfcCgcMUYsjjgpvgKLyH1JizeY_w19tf50Oyk_1mtcaWSNNB_8uUG9uH833pEN_UPnsyJ-AiHAiwr1jv0IhZj1r-nCcwHtbC');"></div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<!-- Header / Breadcrumbs -->
+<header class="px-8 pt-8 pb-4">
+<div class="flex flex-wrap gap-2 items-center text-sm font-medium mb-6">
+<a class="text-[#617589] hover:text-primary transition-colors" href="#">Home</a>
+<span class="text-[#617589]">/</span>
+<a class="text-[#617589] hover:text-primary transition-colors" href="#">Settings</a>
+<span class="text-[#617589]">/</span>
+<span class="text-primary font-semibold">Roles</span>
+</div>
+<div class="flex flex-wrap justify-between items-end gap-4">
+<div class="flex flex-col gap-2 max-w-2xl">
+<h1 class="text-[#111418] dark:text-white text-3xl font-bold leading-tight tracking-[-0.033em]">Manajemen Role &amp; Hak Akses</h1>
+<p class="text-[#617589] text-base font-normal leading-normal">Configure user roles, assign permission sets, and manage access levels for the thesis system.</p>
+</div>
+<button class="flex items-center gap-2 cursor-pointer overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold shadow-sm shadow-blue-200 dark:shadow-none">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="truncate">Add New Role</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto px-8 pb-8">
+<!-- Filters -->
+<div class="flex flex-col sm:flex-row gap-4 mb-6">
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#617589]">search</span>
+<input class="w-full h-12 pl-12 pr-4 rounded-lg bg-white dark:bg-[#1e2732] border border-[#dbe0e6] dark:border-gray-700 text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="Search roles by name or description..."/>
+</div>
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#617589] pointer-events-none">expand_more</span>
+<select class="w-full h-12 pl-4 pr-10 appearance-none rounded-lg bg-white dark:bg-[#1e2732] border border-[#dbe0e6] dark:border-gray-700 text-[#111418] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all cursor-pointer">
+<option value="">Filter by Access Level</option>
+<option value="full">Full Access</option>
+<option value="write">Write Access</option>
+<option value="read">Read Only</option>
+</select>
+</div>
+</div>
+<!-- Table -->
+<div class="bg-white dark:bg-[#1e2732] rounded-lg border border-[#dbe0e6] dark:border-gray-700 shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full min-w-[800px]">
+<thead>
+<tr class="bg-[#f8f9fa] dark:bg-[#252f3e] border-b border-[#dbe0e6] dark:border-gray-700">
+<th class="px-6 py-4 text-left text-xs font-bold text-[#617589] uppercase tracking-wider w-[20%]">Role Name</th>
+<th class="px-6 py-4 text-left text-xs font-bold text-[#617589] uppercase tracking-wider w-[30%]">Description</th>
+<th class="px-6 py-4 text-left text-xs font-bold text-[#617589] uppercase tracking-wider w-[15%]">Users</th>
+<th class="px-6 py-4 text-left text-xs font-bold text-[#617589] uppercase tracking-wider w-[20%]">Permission Summary</th>
+<th class="px-6 py-4 text-right text-xs font-bold text-[#617589] uppercase tracking-wider w-[15%]">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#dbe0e6] dark:divide-gray-700">
+<!-- Row 1 -->
+<tr class="group hover:bg-[#f6faff] dark:hover:bg-gray-800 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">admin_panel_settings</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-white text-sm font-semibold">Staff Admin</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#617589] text-sm leading-relaxed">Full system control, configuration, and user management.</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-[#111418] dark:text-white text-sm font-medium">5</span>
+<div class="flex -space-x-2 overflow-hidden">
+<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-[#1e2732] bg-gray-200 bg-cover" data-alt="User avatar 1" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDLMWoOuyGec_4G7da2q3qmyLwZyd1_yRhvA3JCrg6t5ZaPqFrAF1Qt-OOTxsTKa_oEND-WYfb-Rm9grwm5LbMTatLGeudWIreozGLYTNasq4WWLUBIpja_aCOKXmV4SalzIMn5_Jb7f8zEpn7iR7hFKSQB3LN4LkCOKVa1_R9mGblJWJV9xi60w6BpdwQLyXo-XMKNcsH5N2WDeA1nZkGFAZVUNBX0Uid537fkf0-aGumSscYIQ5NEWUqI7Wwl6IkKybupcNHAhJQL')"></div>
+<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-[#1e2732] bg-gray-200 bg-cover" data-alt="User avatar 2" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBXVYS27XjJT-Lnh5lXrMo8s22g7raCDWfPufHIjG9AuT_WOdMsCqoe2KQRLr4Xs7zvfV3SeX4zMHQpj1JGU4oN8ryhdJWVultu-jtSxAf8A0S-NUJZpXe0Jq6Jkg0ITwUh7jFihBHA13gFXAvPgWTM_XkZmpFD9eqhNtWXCvWZEoG2hpJFY1frn6EctAINs7q-EIn3omb6tlYyUtwfcBVp3gVq6d_pA2ruKgXsvzZ7k_5c7not7c_YELTnQzR-wpRVSkekbydzqBG3')"></div>
+<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-[#1e2732] bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500">+3</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                        Full Access
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 rounded-lg text-[#617589] hover:bg-[#eef2f6] hover:text-primary dark:hover:bg-gray-700 dark:hover:text-white transition-colors" title="Manage Users">
+<span class="material-symbols-outlined text-[20px]">group_add</span>
+</button>
+<button class="p-2 rounded-lg text-[#617589] hover:bg-[#eef2f6] hover:text-primary dark:hover:bg-gray-700 dark:hover:text-white transition-colors" title="Edit Permissions">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-[#f6faff] dark:hover:bg-gray-800 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">school</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-white text-sm font-semibold">Dosen</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#617589] text-sm leading-relaxed">Can grade theses, review submissions, and provide feedback.</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-[#111418] dark:text-white text-sm font-medium">120</span>
+<span class="text-xs text-[#617589]">Active users</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                            Grading
+                                        </span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                            Review
+                                        </span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 rounded-lg text-[#617589] hover:bg-[#eef2f6] hover:text-primary dark:hover:bg-gray-700 dark:hover:text-white transition-colors" title="Manage Users">
+<span class="material-symbols-outlined text-[20px]">group_add</span>
+</button>
+<button class="p-2 rounded-lg text-[#617589] hover:bg-[#eef2f6] hover:text-primary dark:hover:bg-gray-700 dark:hover:text-white transition-colors" title="Edit Permissions">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-[#f6faff] dark:hover:bg-gray-800 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-white text-sm font-semibold">Mahasiswa</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#617589] text-sm leading-relaxed">Can submit proposals, view grades, and check thesis status.</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-[#111418] dark:text-white text-sm font-medium">850</span>
+<span class="text-xs text-[#617589]">Active users</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                        Limited
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 rounded-lg text-[#617589] hover:bg-[#eef2f6] hover:text-primary dark:hover:bg-gray-700 dark:hover:text-white transition-colors" title="Manage Users">
+<span class="material-symbols-outlined text-[20px]">group_add</span>
+</button>
+<button class="p-2 rounded-lg text-[#617589] hover:bg-[#eef2f6] hover:text-primary dark:hover:bg-gray-700 dark:hover:text-white transition-colors" title="Edit Permissions">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 (Example of Guest/Inactive) -->
+<tr class="group hover:bg-[#f6faff] dark:hover:bg-gray-800 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">visibility</span>
+</div>
+<div>
+<p class="text-[#111418] dark:text-white text-sm font-semibold">External Reviewer</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-[#617589] text-sm leading-relaxed">Access limited to assigned thesis documents for read-only review.</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-[#111418] dark:text-white text-sm font-medium">12</span>
+<span class="text-xs text-[#617589]">Active users</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
+                                        Read Only
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 rounded-lg text-[#617589] hover:bg-[#eef2f6] hover:text-primary dark:hover:bg-gray-700 dark:hover:text-white transition-colors" title="Manage Users">
+<span class="material-symbols-outlined text-[20px]">group_add</span>
+</button>
+<button class="p-2 rounded-lg text-[#617589] hover:bg-[#eef2f6] hover:text-primary dark:hover:bg-gray-700 dark:hover:text-white transition-colors" title="Edit Permissions">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-[#dbe0e6] dark:border-gray-700 flex items-center justify-between">
+<p class="text-sm text-[#617589]">Showing <span class="font-medium text-[#111418] dark:text-white">1</span> to <span class="font-medium text-[#111418] dark:text-white">4</span> of <span class="font-medium text-[#111418] dark:text-white">4</span> roles</p>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-sm rounded-md border border-[#dbe0e6] dark:border-gray-600 text-[#617589] hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50" disabled="">Previous</button>
+<button class="px-3 py-1 text-sm rounded-md border border-[#dbe0e6] dark:border-gray-600 text-[#617589] hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50" disabled="">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

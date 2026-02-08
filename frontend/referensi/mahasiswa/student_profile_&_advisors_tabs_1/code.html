@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Thesis Portal - Profile &amp; Advisors</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-white transition-colors duration-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#f0f2f4] dark:border-gray-800 bg-white dark:bg-[#111418] px-10 py-3 shadow-sm">
+<div class="flex items-center gap-4 text-[#111418] dark:text-white">
+<div class="size-8 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">school</span>
+</div>
+<h2 class="text-[#111418] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Thesis Portal</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="hidden md:flex items-center gap-9">
+<a class="text-[#111418] dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-primary text-sm font-bold leading-normal" href="#">Thesis</a>
+<a class="text-[#111418] dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Schedule</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center text-[#111418] dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full p-2">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white dark:border-gray-700 shadow-sm" data-alt="User profile avatar showing a smiling student" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBA3LvEArAddsMKhp9w7UySaAdop8yp3wcZR6DKMJgJ7MzYkvAy4dmxlg9344vXMhWVlp3GB0JBClRV2VUpOpHNJrnsRA3x7bzxNIqZtf2ZXEriMP29XWIThw5Psg-JXsZdj1x4QLU-ezWKR1l0rnSTjVztizUyBvRg3SDbArrnUrqg5e5p8zBakvY-xelYh_WINhDex9UVYway6eV4nGCn-KwSJPybuLIocvrHOtU-u7L8LEh-Zf0y_3cXddP_n61jucU1-CiXIoHW");'></div>
+</div>
+</div>
+</header>
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[1200px] flex-1">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 p-4 items-center">
+<a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary hover:underline" href="#">Home</a>
+<span class="material-symbols-outlined text-[#617589] dark:text-gray-400 text-sm">chevron_right</span>
+<a class="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary hover:underline" href="#">Thesis</a>
+<span class="material-symbols-outlined text-[#617589] dark:text-gray-400 text-sm">chevron_right</span>
+<span class="text-[#111418] dark:text-white text-sm font-medium leading-normal">Detail Skripsi</span>
+</div>
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between gap-3 p-4 mb-4">
+<div class="flex min-w-72 flex-col gap-2">
+<h1 class="text-[#111418] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Detail Skripsi</h1>
+<p class="text-[#617589] dark:text-gray-400 text-base font-normal leading-normal">Manage student thesis details and view advisors.</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 px-4 py-2 rounded-lg font-bold text-sm transition-colors">
+<span class="material-symbols-outlined text-lg">download</span>
+                                Download SK
+                            </button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="pb-6">
+<div class="flex border-b border-[#dbe0e6] dark:border-gray-700 px-4 gap-8 overflow-x-auto">
+<a class="group flex flex-col items-center justify-center border-b-[3px] border-b-primary pb-[13px] pt-4 min-w-[100px]" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">person</span>
+<p class="text-[#111418] dark:text-white text-sm font-bold leading-normal tracking-[0.015em]">Profil Saya</p>
+</div>
+</a>
+<a class="group flex flex-col items-center justify-center border-b-[3px] border-b-transparent hover:border-b-gray-300 dark:hover:border-b-gray-600 pb-[13px] pt-4 min-w-[100px]" href="#advisors">
+<div class="flex items-center gap-2 text-[#617589] dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200">
+<span class="material-symbols-outlined text-xl">supervisor_account</span>
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Pembimbing</p>
+</div>
+</a>
+<a class="group flex flex-col items-center justify-center border-b-[3px] border-b-transparent hover:border-b-gray-300 dark:hover:border-b-gray-600 pb-[13px] pt-4 min-w-[100px]" href="#">
+<div class="flex items-center gap-2 text-[#617589] dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200">
+<span class="material-symbols-outlined text-xl">article</span>
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Judul &amp; Abstrak</p>
+</div>
+</a>
+<a class="group flex flex-col items-center justify-center border-b-[3px] border-b-transparent hover:border-b-gray-300 dark:hover:border-b-gray-600 pb-[13px] pt-4 min-w-[100px]" href="#">
+<div class="flex items-center gap-2 text-[#617589] dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200">
+<span class="material-symbols-outlined text-xl">history_edu</span>
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Log Bimbingan</p>
+</div>
+</a>
+</div>
+</div>
+<!-- Content Area: Variant 1 - Profil Saya -->
+<div class="px-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+<div class="flex items-center justify-between pb-4 pt-2">
+<h2 class="text-[#111418] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Informasi Mahasiswa</h2>
+<button class="text-sm text-primary font-semibold hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">edit</span>
+                                Edit Profile
+                             </button>
+</div>
+<div class="bg-white dark:bg-[#1a2632] rounded-xl border border-[#dbe0e6] dark:border-gray-700 overflow-hidden shadow-sm">
+<div class="p-6 md:p-8 flex flex-col md:flex-row gap-8 items-start">
+<!-- Avatar Column -->
+<div class="flex flex-col items-center gap-4 w-full md:w-auto min-w-[200px]">
+<div class="relative group">
+<div class="size-40 rounded-full bg-cover bg-center border-4 border-background-light dark:border-gray-600 shadow-md" data-alt="Large student profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDUPM1Y1TwDJ-kTRBW7wG6a_WrkZncFMl5K_zNvkHc8XJh2A2yWHtixzb4niIyKCmAxpT8HctaqE4QOXdvPDAdCeaMn5oruz0JHTg_k2zhDEGcgJWRBVlaOSTEtCzq7xxzreBK0bIji2F-PIis62mYsQiDX3YkTwbDUF5gaLoDxRTZuzlvexSVnOtSzr6M6t63_WR2Ko3n5qxdBGmpzTMuducMJoTdlLglMUtZpmAcJvA8qcGVjv1U3Q1TavxFusKv0mC17abWIKWXz");'></div>
+<div class="absolute bottom-2 right-2 bg-green-500 rounded-full p-1.5 border-2 border-white dark:border-[#1a2632]" title="Active Status"></div>
+</div>
+<div class="text-center">
+<span class="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10">Mahasiswa Aktif</span>
+</div>
+</div>
+<!-- Details Column -->
+<div class="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+<div class="flex flex-col gap-1">
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">Nama Lengkap</p>
+<p class="text-[#111418] dark:text-white text-lg font-semibold">Andi Saputra</p>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">NIM (Nomor Induk Mahasiswa)</p>
+<p class="text-[#111418] dark:text-white text-lg font-semibold font-mono">190102033</p>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">Program Studi</p>
+<p class="text-[#111418] dark:text-white text-lg font-semibold">S1 Teknik Informatika</p>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">Angkatan</p>
+<p class="text-[#111418] dark:text-white text-lg font-semibold">2020</p>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">Email Institusi</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400 text-sm">mail</span>
+<p class="text-[#111418] dark:text-white text-base">andi.190102033@student.univ.ac.id</p>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium">Semester Saat Ini</p>
+<p class="text-[#111418] dark:text-white text-lg font-semibold">8 (Akhir)</p>
+</div>
+<div class="col-span-1 md:col-span-2 pt-4 border-t border-dashed border-gray-200 dark:border-gray-700">
+<p class="text-[#617589] dark:text-gray-400 text-sm font-medium mb-2">Topik Penelitian</p>
+<p class="text-[#111418] dark:text-white text-base italic leading-relaxed">"Implementasi Deep Learning untuk Deteksi Penyakit Tanaman Padi Menggunakan Convolutional Neural Network (CNN) pada Platform Mobile"</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Spacer / Visual Divider for presentation purposes -->
+<div class="px-4 py-8 flex items-center gap-4 opacity-50">
+<div class="h-px bg-gray-300 dark:bg-gray-700 flex-1"></div>
+<span class="text-xs uppercase tracking-widest text-gray-400 font-bold">Content of "Pembimbing" Tab</span>
+<div class="h-px bg-gray-300 dark:bg-gray-700 flex-1"></div>
+</div>
+<!-- Content Area: Variant 2 - Pembimbing (Displayed below for design visibility) -->
+<div class="px-4 pb-12" id="advisors">
+<div class="flex items-center justify-between pb-4 pt-2">
+<h2 class="text-[#111418] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Dosen Pembimbing</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Card Pembimbing 1 -->
+<div class="flex flex-col bg-white dark:bg-[#1a2632] rounded-xl border border-[#dbe0e6] dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4 border-b border-[#f0f2f4] dark:border-gray-700 p-4 bg-gray-50/50 dark:bg-white/5">
+<span class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/30 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-300 ring-1 ring-inset ring-purple-700/10">Pembimbing 1</span>
+<span class="text-xs text-gray-500 dark:text-gray-400 ml-auto flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+                                        Disetujui
+                                    </span>
+</div>
+<div class="p-5 flex flex-col gap-4">
+<div class="flex items-start gap-4">
+<div class="size-16 rounded-full bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-600" data-alt="Portrait of Advisor 1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCHjHmEifaOwP0cxxlwJLqLPbzacXNkMqAKgcbt6rqaBHV7U8EOj3Vp2uE-YQqKd4bsiuN9xU-ua883PNKQ94_jMZQF53384j2QLEopdyCFYabef6lA0vnhasrbk2zxI-eenuv6VKekRIZI6D_HIbgyfkQOfgPVZimuJAOZgpQp8NUCqLzPXspoDh6jUR059WuudXK0jOOiOejPKyui_YkWDfnTmDS5fV6_H49QzBnKr5IMxVugSU6xTsCMnv9lFjAb8AuJ4zHN5iLo");'></div>
+<div>
+<p class="text-[#111418] dark:text-white text-lg font-bold leading-snug">Dr. Budi Santoso, M.Kom.</p>
+<p class="text-primary text-sm font-medium">Lektor Kepala</p>
+<p class="text-[#617589] dark:text-gray-400 text-xs mt-1">Departemen Ilmu Komputer</p>
+</div>
+</div>
+<div class="space-y-3 mt-2 bg-background-light dark:bg-black/20 p-3 rounded-lg">
+<div class="flex justify-between items-center">
+<span class="text-[#617589] dark:text-gray-400 text-sm">NIP</span>
+<span class="text-[#111418] dark:text-white text-sm font-mono font-medium">198001012005011002</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-[#617589] dark:text-gray-400 text-sm">Status</span>
+<span class="text-green-600 dark:text-green-400 text-sm font-medium flex items-center gap-1">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                                Active
+                                            </span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-2">
+<button class="flex items-center justify-center gap-2 rounded-lg border border-[#dbe0e6] dark:border-gray-600 px-4 py-2 text-sm font-bold text-[#111418] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+                                            Chat
+                                        </button>
+<button class="flex items-center justify-center gap-2 rounded-lg border border-[#dbe0e6] dark:border-gray-600 px-4 py-2 text-sm font-bold text-[#111418] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                            Jadwal
+                                        </button>
+</div>
+</div>
+</div>
+<!-- Card Pembimbing 2 -->
+<div class="flex flex-col bg-white dark:bg-[#1a2632] rounded-xl border border-[#dbe0e6] dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4 border-b border-[#f0f2f4] dark:border-gray-700 p-4 bg-gray-50/50 dark:bg-white/5">
+<span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10">Pembimbing 2</span>
+<span class="text-xs text-gray-500 dark:text-gray-400 ml-auto flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+                                        Disetujui
+                                    </span>
+</div>
+<div class="p-5 flex flex-col gap-4">
+<div class="flex items-start gap-4">
+<div class="size-16 rounded-full bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-600" data-alt="Portrait of Advisor 2" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDQIMLV61IC5NMp2u5j8-3KtV0i4P5H1cikyiSihFZ8xmEWDtWKwuCsj64jk4DyYT9gsctN3gJiyvbK-9ArIByDosLHK0bHGxvQdhHLywSd2pvGBaoHZ8mr0epz_AjrFFq9nQO6KurBE6hGjWcdoP-wh4YioZ8dgqaKc0DGk6kbvfSjY5TBwv1UP_JtivyQbIxex94uKtx6xllfPHKiSOnGXzWhweO1yE4IRq0QuvU-LPcJD6RNoypccEOwXcPbmBKf2cO1pObdp9-g");'></div>
+<div>
+<p class="text-[#111418] dark:text-white text-lg font-bold leading-snug">Siti Aminah, M.T.</p>
+<p class="text-primary text-sm font-medium">Lektor</p>
+<p class="text-[#617589] dark:text-gray-400 text-xs mt-1">Departemen Teknik Elektro</p>
+</div>
+</div>
+<div class="space-y-3 mt-2 bg-background-light dark:bg-black/20 p-3 rounded-lg">
+<div class="flex justify-between items-center">
+<span class="text-[#617589] dark:text-gray-400 text-sm">NIDN</span>
+<span class="text-[#111418] dark:text-white text-sm font-mono font-medium">0412038801</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-[#617589] dark:text-gray-400 text-sm">Status</span>
+<span class="text-green-600 dark:text-green-400 text-sm font-medium flex items-center gap-1">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                                Active
+                                            </span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-2">
+<button class="flex items-center justify-center gap-2 rounded-lg border border-[#dbe0e6] dark:border-gray-600 px-4 py-2 text-sm font-bold text-[#111418] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+                                            Chat
+                                        </button>
+<button class="flex items-center justify-center gap-2 rounded-lg border border-[#dbe0e6] dark:border-gray-600 px-4 py-2 text-sm font-bold text-[#111418] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                            Jadwal
+                                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
