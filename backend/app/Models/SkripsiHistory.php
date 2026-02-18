@@ -19,6 +19,7 @@ class SkripsiHistory extends Model
         'status_baru',
         'alasan',
         'keterangan',
+        'verification_status',
         'updated_by',
     ];
 

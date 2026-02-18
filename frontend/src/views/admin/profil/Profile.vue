@@ -119,7 +119,8 @@
               <input
                 type="email"
                 v-model="form.email"
-                class="px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-sidebar-light dark:border-gray-600 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                disabled
+                class="px-3 py-2 border border-border-light rounded-lg bg-gray-50 dark:bg-sidebar-light dark:border-gray-600 text-sm text-text-secondary cursor-not-allowed outline-none"
               />
             </div>
           </div>
@@ -158,69 +159,71 @@
     </div>
 
     <!-- Password Modal -->
-    <div
-      v-if="showPasswordModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
+    <Transition name="modal-fade">
       <div
-        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+        v-if="showPasswordModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
-        <div class="p-6 border-b border-border-light">
-          <h2 class="text-xl font-bold text-text-main">Ganti Password</h2>
+        <div
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+        >
+          <div class="p-6 border-b border-border-light">
+            <h2 class="text-xl font-bold text-text-main">Ganti Password</h2>
+          </div>
+          <form @submit.prevent="changePassword" class="p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Password Lama</label
+              >
+              <input
+                v-model="passwordForm.current_password"
+                type="password"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Password Baru</label
+              >
+              <input
+                v-model="passwordForm.new_password"
+                type="password"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Konfirmasi Password Baru</label
+              >
+              <input
+                v-model="passwordForm.new_password_confirmation"
+                type="password"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                @click="showPasswordModal = false"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                :disabled="savingPassword"
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {{ savingPassword ? "Menyimpan..." : "Simpan" }}
+              </button>
+            </div>
+          </form>
         </div>
-        <form @submit.prevent="changePassword" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Password Lama</label
-            >
-            <input
-              v-model="passwordForm.current_password"
-              type="password"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Password Baru</label
-            >
-            <input
-              v-model="passwordForm.new_password"
-              type="password"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Konfirmasi Password Baru</label
-            >
-            <input
-              v-model="passwordForm.new_password_confirmation"
-              type="password"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </div>
-          <div class="flex gap-3 pt-4">
-            <button
-              type="button"
-              @click="showPasswordModal = false"
-              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              :disabled="savingPassword"
-              class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-            >
-              {{ savingPassword ? "Menyimpan..." : "Simpan" }}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -251,7 +254,7 @@ const passwordForm = reactive({
 const fetchProfile = async () => {
   try {
     loading.value = true;
-    const response = await authService.getProfile();
+    const response = await authService.getUser();
     if (response.success) {
       user.value = response.data;
       form.name = user.value.name;
@@ -267,10 +270,13 @@ const fetchProfile = async () => {
 const saveProfile = async () => {
   try {
     saving.value = true;
-    await authService.updateProfile({
+    const response = await authService.updateProfile({
       name: form.name,
-      email: form.email,
     });
+    // Update localStorage so navbar reflects changes
+    if (response.success && response.data) {
+      localStorage.setItem("user", JSON.stringify(response.data));
+    }
     await fetchProfile();
     alert("Profil berhasil diperbarui!");
   } catch (error) {
@@ -291,11 +297,11 @@ const changePassword = async () => {
       return;
     }
     savingPassword.value = true;
-    await authService.changePassword({
-      current_password: passwordForm.current_password,
-      password: passwordForm.new_password,
-      password_confirmation: passwordForm.new_password_confirmation,
-    });
+    await authService.changePassword(
+      passwordForm.current_password,
+      passwordForm.new_password,
+      passwordForm.new_password_confirmation,
+    );
     showPasswordModal.value = false;
     passwordForm.current_password = "";
     passwordForm.new_password = "";

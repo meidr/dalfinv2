@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Nota Bimbingan Skripsi</title>
     <style>
         * {
@@ -10,96 +11,127 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 11pt;
-            line-height: 1.4;
+            font-size: 12pt;
+            line-height: 1.5;
             color: #000;
-            padding: 20px 30px;
+            padding: 10px 55px 25px 55px;
         }
-        .header {
+
+        /* Kop Surat */
+        .kop {
             text-align: center;
-            border-bottom: 3px double #000;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 6px;
         }
-        .header h1 {
-            font-size: 14pt;
-            font-weight: bold;
-            margin-bottom: 5px;
+
+        .kop img {
+            width: 100%;
         }
-        .header h2 {
-            font-size: 15pt;
-            font-weight: bold;
-        }
-        .title {
+
+        /* Judul */
+        .judul {
             text-align: center;
-            margin: 20px 0;
+            margin: 6px 0 15px 0;
         }
-        .title h3 {
+
+        .judul h3 {
             font-size: 14pt;
-            font-weight: bold;
+            letter-spacing: 2px;
             text-decoration: underline;
+            margin-bottom: 2px;
         }
+
+        .judul p {
+            font-size: 11pt;
+        }
+
+        /* Info Mahasiswa */
         table.info {
             width: 100%;
-            margin: 15px 0;
+            margin: 10px 0 15px 0;
+            border-collapse: collapse;
         }
+
         table.info td {
-            padding: 3px 5px;
+            padding: 2px 5px;
             vertical-align: top;
+            font-size: 11pt;
         }
-        table.info td:first-child {
+
+        table.info td.label {
             width: 140px;
         }
-        table.info td:nth-child(2) {
+
+        table.info td.sep {
             width: 15px;
+            text-align: center;
         }
+
+        /* Tabel Bimbingan */
         table.bimbingan {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
+            margin: 10px 0;
             font-size: 10pt;
         }
+
         table.bimbingan th,
         table.bimbingan td {
             border: 1px solid #000;
-            padding: 6px 8px;
+            padding: 5px 8px;
             text-align: left;
+            vertical-align: top;
         }
+
         table.bimbingan th {
             background-color: #f0f0f0;
             font-weight: bold;
             text-align: center;
+            font-size: 10pt;
         }
+
         table.bimbingan td.center {
             text-align: center;
         }
+
+        /* Summary */
         .summary {
-            margin: 20px 0;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
+            margin: 15px 0;
+            font-size: 11pt;
         }
+
+        /* Tanda Tangan */
         .signatures {
-            margin-top: 30px;
+            margin-top: 25px;
             width: 100%;
         }
+
         .signatures table {
             width: 100%;
+            border-collapse: collapse;
         }
+
         .signatures td {
-            width: 50%;
             text-align: center;
             vertical-align: top;
-            padding: 10px;
+            padding: 5px 10px;
+            font-size: 11pt;
         }
+
         .signatures .name {
             font-weight: bold;
             text-decoration: underline;
-            margin-top: 60px;
+            margin-top: 70px;
             display: inline-block;
         }
+
+        .signatures .nip {
+            font-size: 10pt;
+        }
+
+        /* Footer */
         .footer {
             margin-top: 30px;
             font-size: 9pt;
@@ -108,94 +140,142 @@
         }
     </style>
 </head>
+
 <body>
-    <div class="header">
-        <h1>UNIVERSITAS NEGERI</h1>
-        <h2>FAKULTAS TEKNIK</h2>
-        <p style="font-size: 10pt;">Jl. Pendidikan No. 1, Kota Pendidikan 12345</p>
+
+    {{-- Kop Surat --}}
+    <div class="kop">
+        <img src="{{ public_path('images/kop surat.jpg') }}">
     </div>
 
-    <div class="title">
-        <h3>KARTU/NOTA BIMBINGAN SKRIPSI</h3>
-        <p style="font-size: 10pt; margin-top: 5px;">Nomor: {{ $nota->nomor }}</p>
+    {{-- Judul --}}
+    <div class="judul">
+        <h3>KARTU / NOTA BIMBINGAN SKRIPSI</h3>
+        <p>Nomor: {{ $nota->nomor }}</p>
     </div>
 
+    {{-- Info Mahasiswa --}}
     <table class="info">
         <tr>
-            <td>Nama Mahasiswa</td>
-            <td>:</td>
+            <td class="label">Nama Mahasiswa</td>
+            <td class="sep">:</td>
             <td><strong>{{ $skripsi->mahasiswa->nama }}</strong></td>
         </tr>
         <tr>
-            <td>NIM</td>
-            <td>:</td>
+            <td class="label">NIM</td>
+            <td class="sep">:</td>
             <td>{{ $skripsi->mahasiswa->nim }}</td>
         </tr>
         <tr>
-            <td>Program Studi</td>
-            <td>:</td>
+            <td class="label">Program Studi</td>
+            <td class="sep">:</td>
             <td>{{ $skripsi->mahasiswa->prodi->nama ?? '-' }}</td>
         </tr>
         <tr>
-            <td>Judul Skripsi</td>
-            <td>:</td>
+            <td class="label">Fakultas</td>
+            <td class="sep">:</td>
+            <td>{{ $skripsi->mahasiswa->prodi->fakultas ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label">Judul Skripsi</td>
+            <td class="sep">:</td>
             <td>{{ $skripsi->judul }}</td>
         </tr>
+        @php
+            $pembimbing1 = $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first();
+            $pembimbing2 = $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first();
+        @endphp
         <tr>
-            <td>Pembimbing I</td>
-            <td>:</td>
-            <td>{{ $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first()?->dosen->nama_lengkap ?? '-' }}</td>
+            <td class="label">Pembimbing I</td>
+            <td class="sep">:</td>
+            <td>{{ $pembimbing1?->dosen->full_name ?? '-' }}</td>
         </tr>
-        <tr>
-            <td>Pembimbing II</td>
-            <td>:</td>
-            <td>{{ $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first()?->dosen->nama_lengkap ?? '-' }}</td>
-        </tr>
+        @if ($pembimbing2)
+            <tr>
+                <td class="label">Pembimbing II</td>
+                <td class="sep">:</td>
+                <td>{{ $pembimbing2->dosen->full_name ?? '-' }}</td>
+            </tr>
+        @endif
     </table>
 
+    {{-- Tabel Bimbingan --}}
     <table class="bimbingan">
         <thead>
             <tr>
                 <th style="width: 30px;">No</th>
-                <th style="width: 80px;">Tanggal</th>
-                <th>Topik/Materi Bimbingan</th>
-                <th style="width: 100px;">Paraf Dosen</th>
+                <th style="width: 75px;">Tanggal</th>
+                <th>Topik / Materi Bimbingan</th>
+                <th style="width: 90px;">Pembimbing</th>
+                <th style="width: 60px;">Status</th>
+                <th style="width: 80px;">Paraf Dosen</th>
             </tr>
         </thead>
         <tbody>
             @forelse($bimbingan as $index => $b)
-            <tr>
-                <td class="center">{{ $index + 1 }}</td>
-                <td class="center">{{ \Carbon\Carbon::parse($b->tanggal)->format('d/m/Y') }}</td>
-                <td>{{ $b->topik }}@if($b->deskripsi)<br><small>{{ Str::limit($b->deskripsi, 100) }}</small>@endif</td>
-                <td class="center">✓</td>
-            </tr>
+                <tr>
+                    <td class="center">{{ $index + 1 }}</td>
+                    <td class="center">{{ \Carbon\Carbon::parse($b->tanggal)->format('d/m/Y') }}</td>
+                    <td>
+                        <strong>{{ $b->topik }}</strong>
+                        @if ($b->deskripsi)
+                            <br><span style="font-size: 9pt;">{{ $b->deskripsi }}</span>
+                        @endif
+                        @if ($b->catatan_dosen)
+                            <br><em style="font-size: 9pt; color: #333;">Catatan: {{ $b->catatan_dosen }}</em>
+                        @endif
+                    </td>
+                    <td class="center" style="font-size: 9pt;">{{ $b->dosen->full_name ?? ($b->dosen->nama ?? '-') }}
+                    </td>
+                    <td class="center">
+                        @if ($b->status === 'approved')
+                            Disetujui
+                        @elseif($b->status === 'revision')
+                            Revisi
+                        @elseif($b->status === 'rejected')
+                            Ditolak
+                        @else
+                            Menunggu
+                        @endif
+                    </td>
+                    <td class="center">
+                        @if ($b->status === 'approved')
+                            ✓
+                        @else
+                            &nbsp;
+                        @endif
+                    </td>
+                </tr>
             @empty
-            <tr>
-                <td colspan="4" class="center">Belum ada catatan bimbingan</td>
-            </tr>
+                <tr>
+                    <td colspan="6" class="center">Belum ada catatan bimbingan</td>
+                </tr>
             @endforelse
         </tbody>
     </table>
 
+    {{-- Summary --}}
     <div class="summary">
         <p><strong>Total Bimbingan:</strong> {{ $bimbingan->count() }} kali</p>
         <p><strong>Tanggal Cetak:</strong> {{ $tanggal }}</p>
     </div>
 
+    {{-- Tanda Tangan Pembimbing --}}
     <div class="signatures">
         <table>
             <tr>
                 <td>
                     <p>Pembimbing I,</p>
-                    <p class="name">{{ $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first()?->dosen->nama_lengkap ?? '________________' }}</p>
-                    <p style="font-size: 10pt;">NIP. {{ $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first()?->dosen->nip ?? '-' }}</p>
+                    <p class="name">{{ $pembimbing1?->dosen->full_name ?? '________________' }}</p>
+                    <p class="nip">NIP/NIY. {{ $pembimbing1?->dosen->nip ?? '-' }}</p>
                 </td>
-                <td>
-                    <p>Pembimbing II,</p>
-                    <p class="name">{{ $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first()?->dosen->nama_lengkap ?? '________________' }}</p>
-                    <p style="font-size: 10pt;">NIP. {{ $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first()?->dosen->nip ?? '-' }}</p>
-                </td>
+                @if ($pembimbing2)
+                    <td>
+                        <p>Pembimbing II,</p>
+                        <p class="name">{{ $pembimbing2->dosen->full_name ?? '________________' }}</p>
+                        <p class="nip">NIP/NIY. {{ $pembimbing2->dosen->nip ?? '-' }}</p>
+                    </td>
+                @endif
             </tr>
         </table>
     </div>
@@ -204,4 +284,5 @@
         <p>Dokumen ini dicetak secara otomatis oleh Sistem Informasi Skripsi</p>
     </div>
 </body>
+
 </html>

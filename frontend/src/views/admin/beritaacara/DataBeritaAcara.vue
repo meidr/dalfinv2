@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="max-w-7xl mx-auto flex flex-col gap-8 animate-fade-in-up">
     <div
       class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
     >
@@ -90,10 +90,10 @@
     <!-- Table Container -->
     <div
       v-else
-      class="flex flex-col rounded-xl border border-border-light bg-surface-light overflow-hidden shadow-sm"
+      class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
     >
       <div
-        class="p-5 border-b border-border-light flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/50"
+        class="p-5 border-b border-border-light flex flex-col md:flex-row justify-between items-center gap-4"
       >
         <div class="relative w-full md:w-80">
           <span
@@ -103,7 +103,7 @@
           <input
             v-model="searchQuery"
             @input="debouncedSearch"
-            class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-background-light text-text-main placeholder-text-secondary dark:bg-background"
             placeholder="Cari Mahasiswa atau NIM..."
             type="text"
           />
@@ -120,7 +120,7 @@
             :class="
               filterStatus === ''
                 ? 'bg-primary text-white'
-                : 'bg-sidebar-light text-text-secondary border border-border-light'
+                : 'bg-background-light text-text-secondary border border-border-light hover:bg-gray-100 dark:bg-background dark:hover:bg-gray-700'
             "
             class="px-4 py-1.5 rounded-full text-xs font-bold shrink-0 transition-colors"
           >
@@ -131,7 +131,7 @@
             :class="
               filterStatus === 'belum_cetak'
                 ? 'bg-primary text-white'
-                : 'bg-sidebar-light text-text-secondary border border-border-light'
+                : 'bg-background-light text-text-secondary border border-border-light hover:bg-gray-100 dark:bg-background dark:hover:bg-gray-700'
             "
             class="px-4 py-1.5 rounded-full text-xs font-bold shrink-0 transition-colors"
           >
@@ -142,7 +142,7 @@
             :class="
               filterStatus === 'selesai'
                 ? 'bg-primary text-white'
-                : 'bg-sidebar-light text-text-secondary border border-border-light'
+                : 'bg-background-light text-text-secondary border border-border-light hover:bg-gray-100 dark:bg-background dark:hover:bg-gray-700'
             "
             class="px-4 py-1.5 rounded-full text-xs font-bold shrink-0 transition-colors"
           >
@@ -151,34 +151,16 @@
         </div>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-sidebar-light/50 border-b border-border-light">
-              <th
-                class="p-4 pl-6 text-[10px] font-bold tracking-widest text-text-secondary uppercase"
-              >
-                Mahasiswa
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase w-1/3"
-              >
-                Judul Skripsi
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase whitespace-nowrap"
-              >
-                Tanggal Ujian
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase"
-              >
-                Hasil
-              </th>
-              <th
-                class="p-4 pr-6 text-[10px] font-bold tracking-widest text-text-secondary uppercase text-right"
-              >
-                Aksi
-              </th>
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead
+            class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
+          >
+            <tr>
+              <th class="px-6 py-4">Mahasiswa</th>
+              <th class="px-6 py-4">Judul Skripsi</th>
+              <th class="px-6 py-4">Tanggal Ujian</th>
+              <th class="px-6 py-4">Hasil</th>
+              <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
@@ -192,10 +174,10 @@
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
-              <td class="p-4 pl-6">
+              <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold"
+                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                     :class="getAvatarColor(item.skripsi?.mahasiswa?.nama)"
                   >
                     {{ getInitials(item.skripsi?.mahasiswa?.nama) }}
@@ -210,14 +192,13 @@
                   </div>
                 </div>
               </td>
-              <td class="p-4">
-                <p
-                  class="text-sm text-text-main font-medium line-clamp-2 leading-snug"
-                >
-                  {{ item.skripsi?.judul || "-" }}
-                </p>
+              <td
+                class="px-6 py-4 max-w-xs truncate"
+                :title="item.skripsi?.judul"
+              >
+                {{ item.skripsi?.judul || "-" }}
               </td>
-              <td class="p-4 whitespace-nowrap">
+              <td class="px-6 py-4">
                 <div class="flex flex-col">
                   <span class="text-sm font-bold text-text-main">{{
                     formatDate(item.tanggal_ujian)
@@ -227,15 +208,15 @@
                   }}</span>
                 </div>
               </td>
-              <td class="p-4">
+              <td class="px-6 py-4">
                 <span
-                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
                   :class="getHasilClass(item.hasil)"
                 >
                   {{ getHasilLabel(item.hasil) }}
                 </span>
               </td>
-              <td class="p-4 pr-6 text-right">
+              <td class="px-6 py-4 text-right">
                 <button
                   v-if="item.hasil === 'lulus' && !item.berita_acara_tercetak"
                   @click="generateBA(item)"
@@ -273,17 +254,26 @@
         </table>
       </div>
       <div
-        class="p-4 border-t border-border-light flex justify-between items-center bg-gray-50/50"
+        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
       >
-        <p class="text-xs text-text-secondary font-medium">
-          Menampilkan {{ pagination.from || 0 }}-{{ pagination.to || 0 }} dari
-          {{ pagination.total }} data
+        <p class="text-sm text-text-secondary">
+          Menampilkan
+          <span class="font-medium text-text-main">{{
+            pagination.from || 0
+          }}</span>
+          sampai
+          <span class="font-medium text-text-main">{{
+            pagination.to || 0
+          }}</span>
+          dari
+          <span class="font-medium text-text-main">{{ pagination.total }}</span>
+          data
         </p>
         <div class="flex gap-2">
           <button
             @click="goToPage(pagination.current_page - 1)"
             :disabled="pagination.current_page <= 1"
-            class="p-1.5 rounded-lg border border-border-light bg-white hover:bg-gray-50 disabled:opacity-50 text-text-secondary transition-all"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[18px]"
               >chevron_left</span
@@ -292,7 +282,7 @@
           <button
             @click="goToPage(pagination.current_page + 1)"
             :disabled="pagination.current_page >= pagination.last_page"
-            class="p-1.5 rounded-lg border border-border-light bg-white hover:bg-gray-50 text-text-secondary transition-all"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[18px]"
               >chevron_right</span
@@ -384,9 +374,7 @@ const goToPage = (page) => {
 const generateBA = async (item) => {
   try {
     generating.value = item.id;
-    const response = await adminService.getBeritaAcaraPdf(
-      item.seminar_id || item.id,
-    );
+    const response = await adminService.generateBeritaAcara(item.id);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     window.open(url, "_blank");
@@ -401,23 +389,36 @@ const generateBA = async (item) => {
 
 const downloadBA = async (item) => {
   try {
-    const response = await adminService.getBeritaAcaraPdf(
-      item.seminar_id || item.id,
-    );
+    const response = await adminService.getBeritaAcaraPdf(item.id);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = `berita-acara-${item.skripsi?.mahasiswa?.nim || item.id}.pdf`;
     link.click();
+    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("Failed to download BA:", error);
     alert("Gagal download Berita Acara");
   }
 };
 
-const exportExcel = () => {
-  alert("Fitur export Excel akan segera tersedia");
+const exportExcel = async () => {
+  try {
+    const params = { status: filterStatus.value };
+    const response = await adminService.exportBeritaAcaraExcel(params);
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Rekap_Berita_Acara.csv");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to export:", error);
+    alert("Gagal mengexport data");
+  }
 };
 
 const getInitials = (name) => {

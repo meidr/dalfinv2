@@ -16,11 +16,19 @@ class Penguji extends Model
         'dosen_id',
         'peran',
         'nilai',
+        'nilai_mt',
+        'nilai_ms',
+        'nilai_pm',
+        'nilai_pi',
         'catatan',
     ];
 
     protected $casts = [
         'nilai' => 'decimal:2',
+        'nilai_mt' => 'decimal:2',
+        'nilai_ms' => 'decimal:2',
+        'nilai_pm' => 'decimal:2',
+        'nilai_pi' => 'decimal:2',
     ];
 
     const PERAN_KETUA = 'ketua';

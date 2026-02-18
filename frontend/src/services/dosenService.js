@@ -45,6 +45,29 @@ export const dosenService = {
   async rejectBimbingan(bimbinganId, catatanDosen) {
     return this.updateBimbinganStatus(bimbinganId, "rejected", catatanDosen);
   },
+
+  async downloadOfficialPdf(skripsiId, type) {
+    return api.get(`/dosen/bimbingan/${skripsiId}/pdf/${type}`, {
+      responseType: "blob",
+    });
+  },
+
+  // Jadwal
+  async getJadwal(params = {}) {
+    const response = await api.get("/dosen/jadwal", { params });
+    return response.data;
+  },
+
+  // Seminar Detail & Nilai
+  async getSeminarDetail(seminarId) {
+    const response = await api.get(`/dosen/seminar/${seminarId}`);
+    return response.data;
+  },
+
+  async submitNilai(seminarId, data) {
+    const response = await api.put(`/dosen/seminar/${seminarId}/nilai`, data);
+    return response.data;
+  },
 };
 
 export default dosenService;

@@ -39,7 +39,24 @@ class SkripsiController extends Controller
         }
 
         $perPage = $request->get('per_page', 15);
-        $skripsi = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        if ($sortBy === 'mahasiswa_nama') {
+            $query->join('mahasiswa', 'skripsi.mahasiswa_id', '=', 'mahasiswa.id')
+                ->orderBy('mahasiswa.nama', $sortOrder)
+                ->select('skripsi.*');
+        } else {
+            $allowedSorts = ['created_at', 'judul', 'status'];
+            if (in_array($sortBy, $allowedSorts)) {
+                $query->orderBy($sortBy, $sortOrder);
+            } else {
+                $query->orderBy('created_at', 'desc');
+            }
+        }
+
+        $skripsi = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -58,7 +75,24 @@ class SkripsiController extends Controller
             'abstrak' => 'nullable|string',
             'kata_kunci' => 'nullable|string',
             'status' => 'nullable|string',
+            'file_skripsi' => 'nullable|file|mimes:pdf,doc,docx|max:10240', // 10MB
         ]);
+
+        // Logic to validate file presence based on status
+        $requiredFileStatuses = ['proposal', 'sempro', 'semhas', 'revisi'];
+        if (in_array($request->status, $requiredFileStatuses) && !$request->hasFile('file_skripsi')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File skripsi wajib diupload untuk status ' . $request->status
+            ], 422);
+        }
+
+        $filePath = null;
+        if ($request->hasFile('file_skripsi')) {
+            $file = $request->file('file_skripsi');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('skripsi_files', $fileName, 'public');
+        }
 
         $skripsi = Skripsi::create([
             'mahasiswa_id' => $request->mahasiswa_id,
@@ -66,6 +100,7 @@ class SkripsiController extends Controller
             'abstrak' => $request->abstrak,
             'kata_kunci' => $request->kata_kunci,
             'status' => $request->status ?? 'pengajuan',
+            'file_skripsi' => $filePath,
             'tanggal_daftar' => now(),
             'semester_daftar' => $this->getCurrentSemester(),
             'is_active' => true,
@@ -116,28 +151,87 @@ class SkripsiController extends Controller
             'kata_kunci' => 'nullable|string',
             'status' => 'sometimes|string',
             'catatan_admin' => 'nullable|string',
+            'file_skripsi' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
+
+        // Logic to validate file presence based on status
+        $requiredFileStatuses = ['proposal', 'sempro', 'semhas', 'revisi'];
+        $newStatus = $request->input('status', $skripsi->status);
+
+        if (in_array($newStatus, $requiredFileStatuses)) {
+            // Check if file already exists OR new file is uploaded
+            if (!$skripsi->file_skripsi && !$request->hasFile('file_skripsi')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File skripsi wajib diupload untuk status ' . $newStatus
+                ], 422);
+            }
+        }
 
         $oldTitle = $skripsi->judul;
         $oldStatus = $skripsi->status;
 
-        $skripsi->fill($request->only([
-            'judul', 'abstrak', 'kata_kunci', 'status', 'catatan_admin'
-        ]));
+        $fillData = $request->only([
+            'judul',
+            'abstrak',
+            'kata_kunci',
+            'status',
+            'catatan_admin'
+        ]);
 
-        // Update progress based on status
-        $skripsi->progress_percentage = $this->calculateProgress($skripsi->status);
+        if ($request->hasFile('file_skripsi')) {
+            // Delete old file if exists
+            if ($skripsi->file_skripsi && \Illuminate\Support\Facades\Storage::disk('public')->exists($skripsi->file_skripsi)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($skripsi->file_skripsi);
+            }
+            $file = $request->file('file_skripsi');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fillData['file_skripsi'] = $file->storeAs('skripsi_files', $fileName, 'public');
+        }
+
+        // Check for sensitive changes (Status or Title)
+        $needsVerification = false;
+        if ($oldTitle !== $request->judul || $oldStatus !== $newStatus) {
+            $needsVerification = true;
+
+            // Create pending history record
+            $skripsi->history()->create([
+                'judul_lama' => $oldTitle,
+                'judul_baru' => $request->judul,
+                'status_lama' => $oldStatus,
+                'status_baru' => $newStatus,
+                'alasan' => $request->alasan, // Ensure 'alasan' is sent from frontend
+                'verification_status' => 'pending',
+                'updated_by' => $request->user()->id,
+            ]);
+
+            // Remove sensitive fields from direct update
+            unset($fillData['judul']);
+            unset($fillData['status']);
+        }
+
+        $skripsi->fill($fillData);
+
+        // Update progress based on status ONLY if status was actually updated (not pending)
+        if (!$needsVerification) {
+            $skripsi->progress_percentage = $this->calculateProgress($skripsi->status);
+        }
 
         $skripsi->save();
 
-        // Log history if title or status changed
-        if ($oldTitle !== $skripsi->judul || $oldStatus !== $skripsi->status) {
-            $skripsi->logHistory($oldTitle, $oldStatus, $request->alasan, $request->user());
-        }
+        // Log history if title or status changed (This original log logic is now handled by verification logic above,
+        // but we might want to keep it for non-sensitive changes if any?
+        // Actually, the requirement status/title change needs verification.
+        // If we want to log other things, we might need another mechanism,
+        // but for now I will assume this replaces the immediate log)
+
+        $message = $needsVerification
+            ? 'Perubahan status/judul berhasil diajukan dan menunggu verifikasi admin.'
+            : 'Data skripsi berhasil diperbarui';
 
         return response()->json([
             'success' => true,
-            'message' => 'Skripsi berhasil diperbarui',
+            'message' => $message,
             'data' => $skripsi->load(['mahasiswa', 'pembimbing.dosen'])
         ]);
     }
@@ -147,12 +241,16 @@ class SkripsiController extends Controller
      */
     public function destroy(Skripsi $skripsi)
     {
-        $skripsi->is_active = false;
-        $skripsi->save();
+        // Delete related data (Cascade)
+        $skripsi->bimbingan()->delete();
+        $skripsi->skTugas()->delete();
+
+        // Delete the Skripsi record permanently
+        $skripsi->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Skripsi berhasil dihapus'
+            'message' => 'Skripsi berhasil dihapus permanen beserta data terkait'
         ]);
     }
 
@@ -186,6 +284,7 @@ class SkripsiController extends Controller
             'sempro' => 25,
             'bimbingan' => 50,
             'semhas' => 70,
+            'ujian' => 80,
             'sidang' => 85,
             'revisi' => 90,
             'lulus' => 100,

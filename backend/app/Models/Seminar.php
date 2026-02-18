@@ -19,6 +19,7 @@ class Seminar extends Model
         'ruangan',
         'status',
         'nilai',
+        'hasil',
         'catatan',
     ];
 
@@ -30,11 +31,13 @@ class Seminar extends Model
 
     const JENIS_SEMPRO = 'sempro';
     const JENIS_SEMHAS = 'semhas';
+    const JENIS_SIDANG = 'sidang';
 
     const STATUS_TERJADWAL = 'terjadwal';
     const STATUS_BERLANGSUNG = 'berlangsung';
     const STATUS_SELESAI = 'selesai';
     const STATUS_BATAL = 'batal';
+    const STATUS_PENDING = 'pending';
 
     /**
      * Get the skripsi

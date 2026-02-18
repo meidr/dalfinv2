@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="max-w-7xl mx-auto flex flex-col gap-8 animate-fade-in-up">
     <div class="flex flex-col gap-1">
       <h1 class="text-text-main text-3xl font-bold leading-tight">
         Manajemen SK Yudisium
@@ -105,72 +105,55 @@
     <!-- Table Container -->
     <div
       v-else
-      class="flex flex-col rounded-xl border border-border-light bg-surface-light overflow-hidden shadow-sm"
+      class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
     >
       <div
-        class="p-6 border-b border-border-light flex flex-wrap gap-4 justify-between items-center bg-gray-50/50"
+        class="p-5 border-b border-border-light flex flex-col md:flex-row gap-4 items-center justify-between"
       >
         <div>
           <h3 class="text-text-main text-lg font-bold">
             Daftar Mahasiswa Siap Yudisium
           </h3>
-          <p class="text-text-secondary text-xs">
+          <p class="text-text-secondary text-sm">
             Mahasiswa dengan status 'Sudah Terbit Berita Acara'.
           </p>
         </div>
-        <div class="flex gap-2">
-          <div class="relative">
+        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+          <div class="relative w-full md:w-64">
             <input
               v-model="searchQuery"
               @input="debouncedSearch"
-              class="pl-9 pr-4 py-2 rounded-lg border border-border-light bg-white text-sm w-64 focus:ring-1 focus:ring-primary"
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-background-light text-text-main placeholder-text-secondary dark:bg-background"
               placeholder="Cari mahasiswa..."
             />
             <span
-              class="material-symbols-outlined absolute left-2 top-2 text-[18px] text-text-secondary"
+              class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-secondary"
               >search</span
             >
           </div>
           <button
-            @click="exportData"
-            class="flex items-center gap-2 text-white bg-primary hover:bg-primary/90 text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm shadow-primary/20"
+            @click="exportPdf"
+            :disabled="exporting"
+            class="flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary/90 text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm shadow-primary/20 w-full md:w-auto disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[18px]"
-              >file_download</span
+              >picture_as_pdf</span
             >
-            Export Data
+            {{ exporting ? "Mengunduh..." : "Export PDF" }}
           </button>
         </div>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-sidebar-light/50 border-b border-border-light">
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase w-1/4"
-              >
-                Mahasiswa
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase w-1/3"
-              >
-                Judul Skripsi
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase"
-              >
-                Tanggal Ujian
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase"
-              >
-                Status
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase text-right"
-              >
-                Aksi
-              </th>
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead
+            class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
+          >
+            <tr>
+              <th class="px-6 py-4">Mahasiswa</th>
+              <th class="px-6 py-4">Judul Skripsi</th>
+              <th class="px-6 py-4">Tanggal Ujian</th>
+              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
@@ -184,10 +167,10 @@
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
-              <td class="p-4">
+              <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold border border-border-light shadow-sm"
+                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold border border-border-light shadow-sm shrink-0"
                     :class="getAvatarColor(item.skripsi?.mahasiswa?.nama)"
                   >
                     {{ getInitials(item.skripsi?.mahasiswa?.nama) }}
@@ -202,30 +185,28 @@
                   </div>
                 </div>
               </td>
-              <td class="p-4">
-                <p
-                  class="text-sm text-text-main font-medium line-clamp-2"
-                  :title="item.skripsi?.judul"
-                >
-                  {{ item.skripsi?.judul || "-" }}
-                </p>
+              <td
+                class="px-6 py-4 max-w-xs truncate"
+                :title="item.skripsi?.judul"
+              >
+                {{ item.skripsi?.judul || "-" }}
               </td>
-              <td class="p-4 text-xs font-medium text-text-secondary">
+              <td class="px-6 py-4 text-xs font-medium text-text-secondary">
                 {{ formatDate(item.tanggal_ujian) }}
               </td>
-              <td class="p-4">
+              <td class="px-6 py-4">
                 <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
                   :class="getStatusClass(item.status)"
                 >
                   <span
-                    class="size-1.5 rounded-full"
+                    class="w-1.5 h-1.5 rounded-full"
                     :class="getStatusDot(item.status)"
                   ></span>
                   {{ getStatusLabel(item.status) }}
                 </span>
               </td>
-              <td class="p-4 text-right">
+              <td class="px-6 py-4 text-right">
                 <button
                   v-if="item.status === 'siap_yudisium'"
                   @click="prosesYudisium(item)"
@@ -236,38 +217,58 @@
                     processing === item.id ? "Memproses..." : "Proses Yudisium"
                   }}
                 </button>
-                <span v-else class="text-xs text-green-600 font-medium">
-                  ✓ SK Terbit
-                </span>
+                <div v-else class="flex items-center gap-2">
+                  <button
+                    @click="generateSK(item)"
+                    :disabled="generatingId === item.id"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-all disabled:opacity-50"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >picture_as_pdf</span
+                    >
+                    {{
+                      generatingId === item.id ? "Generating..." : "Generate SK"
+                    }}
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       <div
-        class="p-4 border-t border-border-light flex items-center justify-between bg-gray-50/50"
+        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
       >
-        <p class="text-xs text-text-secondary">
-          Menampilkan {{ pagination.from || 0 }}-{{ pagination.to || 0 }} dari
-          {{ pagination.total }} mahasiswa
+        <p class="text-sm text-text-secondary">
+          Menampilkan
+          <span class="font-medium text-text-main">{{
+            pagination.from || 0
+          }}</span>
+          sampai
+          <span class="font-medium text-text-main">{{
+            pagination.to || 0
+          }}</span>
+          dari
+          <span class="font-medium text-text-main">{{ pagination.total }}</span>
+          mahasiswa
         </p>
         <div class="flex gap-2">
           <button
             @click="goToPage(pagination.current_page - 1)"
             :disabled="pagination.current_page <= 1"
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light disabled:opacity-50"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-sm">chevron_left</span>
           </button>
           <button
-            class="size-8 flex items-center justify-center rounded-lg border border-primary bg-primary text-white text-xs font-bold"
+            class="px-3 py-1.5 rounded-md bg-primary text-white text-sm font-medium"
           >
             {{ pagination.current_page }}
           </button>
           <button
             @click="goToPage(pagination.current_page + 1)"
             :disabled="pagination.current_page >= pagination.last_page"
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-sm">chevron_right</span>
           </button>
@@ -276,89 +277,91 @@
     </div>
 
     <!-- Proses Yudisium Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
+    <Transition name="modal-fade">
       <div
-        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+        v-if="showModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
-        <div class="p-6 border-b border-border-light">
-          <h2 class="text-xl font-bold text-text-main">Proses SK Yudisium</h2>
-          <p class="text-sm text-text-secondary mt-1">
-            {{ selectedItem?.skripsi?.mahasiswa?.nama }}
-          </p>
+        <div
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+        >
+          <div class="p-6 border-b border-border-light">
+            <h2 class="text-xl font-bold text-text-main">Proses SK Yudisium</h2>
+            <p class="text-sm text-text-secondary mt-1">
+              {{ selectedItem?.skripsi?.mahasiswa?.nama }}
+            </p>
+          </div>
+          <form @submit.prevent="submitYudisium" class="p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Nomor SK Yudisium</label
+              >
+              <input
+                v-model="yudisiumForm.nomor_sk"
+                type="text"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Tanggal Yudisium</label
+              >
+              <input
+                v-model="yudisiumForm.tanggal"
+                type="date"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >IPK</label
+              >
+              <input
+                v-model="yudisiumForm.ipk"
+                type="number"
+                step="0.01"
+                min="0"
+                max="4"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Predikat</label
+              >
+              <select
+                v-model="yudisiumForm.predikat"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              >
+                <option value="memuaskan">Memuaskan</option>
+                <option value="sangat_memuaskan">Sangat Memuaskan</option>
+                <option value="cum_laude">Cum Laude</option>
+              </select>
+            </div>
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                @click="showModal = false"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                :disabled="saving"
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {{ saving ? "Menyimpan..." : "Proses Yudisium" }}
+              </button>
+            </div>
+          </form>
         </div>
-        <form @submit.prevent="submitYudisium" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Nomor SK Yudisium</label
-            >
-            <input
-              v-model="yudisiumForm.nomor_sk"
-              type="text"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Tanggal Yudisium</label
-            >
-            <input
-              v-model="yudisiumForm.tanggal"
-              type="date"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >IPK</label
-            >
-            <input
-              v-model="yudisiumForm.ipk"
-              type="number"
-              step="0.01"
-              min="0"
-              max="4"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Predikat</label
-            >
-            <select
-              v-model="yudisiumForm.predikat"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            >
-              <option value="memuaskan">Memuaskan</option>
-              <option value="sangat_memuaskan">Sangat Memuaskan</option>
-              <option value="cum_laude">Cum Laude</option>
-            </select>
-          </div>
-          <div class="flex gap-3 pt-4">
-            <button
-              type="button"
-              @click="showModal = false"
-              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              :disabled="saving"
-              class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-            >
-              {{ saving ? "Menyimpan..." : "Proses Yudisium" }}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -369,6 +372,8 @@ import adminService from "../../../services/adminService";
 const loading = ref(true);
 const processing = ref(null);
 const saving = ref(false);
+const exporting = ref(false);
+const generatingId = ref(null);
 const showModal = ref(false);
 const selectedItem = ref(null);
 const yudisiumList = ref([]);
@@ -478,8 +483,53 @@ const submitYudisium = async () => {
   }
 };
 
-const exportData = () => {
-  alert("Fitur export akan segera tersedia");
+const exportPdf = async () => {
+  try {
+    exporting.value = true;
+    const response = await adminService.exportRekapYudisiumPdf();
+    const url = window.URL.createObjectURL(
+      new Blob([response.data], { type: "application/pdf" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Rekap_SK_Yudisium.pdf");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to export PDF:", error);
+    alert("Gagal mengexport PDF");
+  } finally {
+    exporting.value = false;
+  }
+};
+
+const generateSK = async (item) => {
+  try {
+    generatingId.value = item.id;
+    const skripsiId = item.skripsi_id || item.skripsi?.id;
+    const response = await adminService.generateSKYudisiumPdf(skripsiId);
+    const url = window.URL.createObjectURL(
+      new Blob([response.data], { type: "application/pdf" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    const nim = item.skripsi?.mahasiswa?.nim || "unknown";
+    link.setAttribute("download", `SK_Yudisium_${nim}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to generate SK:", error);
+    alert(
+      "Gagal generate SK Yudisium: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    generatingId.value = null;
+  }
 };
 
 const getInitials = (name) => {

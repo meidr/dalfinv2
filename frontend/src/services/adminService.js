@@ -24,12 +24,46 @@ export const adminService = {
   },
 
   async updateSkripsi(id, data) {
-    const response = await api.put(`/admin/skripsi/${id}`, data);
+    // Note: Laravel can sometimes struggle with PUT + FormData.
+    // Usually it's better to POST to /{id} with _method=PUT.
+    // Here we assume the frontend code adds _method: PUT if needed,
+    // OR we change method to POST here if it is FormData.
+
+    let method = "put";
+    let url = `/admin/skripsi/${id}`;
+
+    if (data instanceof FormData) {
+      method = "post"; // Use POST for FormData to handle file uploads correctly
+      // Ensure _method is set in FormData if not already
+      if (!data.has("_method")) {
+        data.append("_method", "PUT");
+      }
+    }
+
+    const response = await api[method](url, data);
     return response.data;
   },
 
   async deleteSkripsi(id) {
     const response = await api.delete(`/admin/skripsi/${id}`);
+    return response.data;
+  },
+
+  // Skripsi Verification
+  async getSkripsiVerification(params = {}) {
+    const response = await api.get("/admin/skripsi-verification", { params });
+    return response.data;
+  },
+
+  async approveSkripsiVerification(id) {
+    const response = await api.post(
+      `/admin/skripsi-verification/${id}/approve`,
+    );
+    return response.data;
+  },
+
+  async rejectSkripsiVerification(id) {
+    const response = await api.post(`/admin/skripsi-verification/${id}/reject`);
     return response.data;
   },
 
@@ -77,6 +111,22 @@ export const adminService = {
     return response.data;
   },
 
+  async downloadMahasiswaTemplate() {
+    const response = await api.get("/admin/mahasiswa-template", {
+      responseType: "blob",
+    });
+    return response;
+  },
+
+  async importMahasiswa(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post("/admin/mahasiswa-import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
   // Master Dosen
   async getDosen(params = {}) {
     const response = await api.get("/admin/dosen", { params });
@@ -100,6 +150,22 @@ export const adminService = {
 
   async deleteDosen(id) {
     const response = await api.delete(`/admin/dosen/${id}`);
+    return response.data;
+  },
+
+  async downloadDosenTemplate() {
+    const response = await api.get("/admin/dosen-template", {
+      responseType: "blob",
+    });
+    return response;
+  },
+
+  async importDosen(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post("/admin/dosen-import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   },
 
@@ -129,6 +195,32 @@ export const adminService = {
     return response.data;
   },
 
+  // Seminar Hasil
+  async getSeminarHasil(params = {}) {
+    const response = await api.get("/admin/seminar-hasil", { params });
+    return response.data;
+  },
+
+  async getSeminarHasilDetail(id) {
+    const response = await api.get(`/admin/seminar-hasil/${id}`);
+    return response.data;
+  },
+
+  async createSeminarHasil(data) {
+    const response = await api.post("/admin/seminar-hasil", data);
+    return response.data;
+  },
+
+  async updateSeminarHasil(id, data) {
+    const response = await api.put(`/admin/seminar-hasil/${id}`, data);
+    return response.data;
+  },
+
+  async deleteSeminarHasil(id) {
+    const response = await api.delete(`/admin/seminar-hasil/${id}`);
+    return response.data;
+  },
+
   // Dokumen
   async getDokumen(params = {}) {
     const response = await api.get("/admin/dokumen", { params });
@@ -150,7 +242,17 @@ export const adminService = {
   },
 
   // PDF Generation
-  async getSkTugasPdf(skripsiId) {
+  async getSkTugasPdf(skripsiId, data = null) {
+    if (data) {
+      const response = await api.post(
+        `/admin/pdf/sk-tugas/${skripsiId}`,
+        data,
+        {
+          responseType: "blob",
+        },
+      );
+      return response;
+    }
     const response = await api.get(`/admin/pdf/sk-tugas/${skripsiId}`, {
       responseType: "blob",
     });
@@ -212,16 +314,85 @@ export const adminService = {
     return response.data;
   },
 
+  async getAvailablePenguji(ujianId, params = {}) {
+    const response = await api.get(
+      `/admin/ujian/${ujianId}/available-penguji`,
+      { params },
+    );
+    return response.data;
+  },
+
+  async getSkPengujiPdf(seminarId, data = null) {
+    if (data) {
+      const response = await api.post(
+        `/admin/pdf/sk-penguji/${seminarId}`,
+        data,
+        {
+          responseType: "blob",
+        },
+      );
+      return response;
+    }
+    const response = await api.get(`/admin/pdf/sk-penguji/${seminarId}`, {
+      responseType: "blob",
+    });
+    return response;
+  },
+
+  async getProdi() {
+    const response = await api.get("/admin/prodi");
+    return response.data;
+  },
+
+  async getJadwalUjianPdf(params = {}) {
+    const response = await api.post("/admin/pdf/jadwal-ujian", params, {
+      responseType: "blob",
+    });
+    return response;
+  },
+
   // Berita Acara
   async getBeritaAcara(params = {}) {
     const response = await api.get("/admin/berita-acara", { params });
     return response.data;
   },
 
+  async generateBeritaAcara(seminarId) {
+    const response = await api.post(
+      `/admin/berita-acara/${seminarId}/generate`,
+      {},
+      { responseType: "blob" },
+    );
+    return response;
+  },
+
+  async getBeritaAcaraPdf(seminarId) {
+    const response = await api.get(`/admin/berita-acara/${seminarId}/pdf`, {
+      responseType: "blob",
+    });
+    return response;
+  },
+
+  async exportBeritaAcaraExcel(params = {}) {
+    const response = await api.get("/admin/berita-acara/export-excel", {
+      params,
+      responseType: "blob",
+    });
+    return response;
+  },
+
   // Nota Bimbingan
   async getNotaBimbingan(params = {}) {
     const response = await api.get("/admin/nota-bimbingan", { params });
     return response.data;
+  },
+
+  async exportNotaBimbingan(params = {}) {
+    const response = await api.get("/admin/nota-bimbingan/export", {
+      params,
+      responseType: "blob",
+    });
+    return response;
   },
 
   // SK Tugas
@@ -246,6 +417,28 @@ export const adminService = {
     return response.data;
   },
 
+  async exportSKYudisium(params = {}) {
+    const response = await api.get("/admin/sk-yudisium/export-excel", {
+      params,
+      responseType: "blob",
+    });
+    return response;
+  },
+
+  async exportRekapYudisiumPdf() {
+    const response = await api.get("/admin/pdf/rekap-yudisium", {
+      responseType: "blob",
+    });
+    return response;
+  },
+
+  async generateSKYudisiumPdf(skripsiId) {
+    const response = await api.get(`/admin/pdf/sk-yudisium/${skripsiId}`, {
+      responseType: "blob",
+    });
+    return response;
+  },
+
   // Pengguna (Users)
   async getPengguna(params = {}) {
     const response = await api.get("/admin/users", { params });
@@ -267,13 +460,157 @@ export const adminService = {
     return response.data;
   },
 
-  async deletePengguna(id) {
-    const response = await api.delete(`/admin/users/${id}`);
+  async toggleUserStatus(id) {
+    const response = await api.post(`/admin/users/${id}/toggle-status`);
     return response.data;
   },
 
   async resetPasswordPengguna(id) {
     const response = await api.post(`/admin/users/${id}/reset-password`);
+    return response.data;
+  },
+
+  // Configuration
+  async getSkTugasSignerConfig() {
+    const response = await api.get("/admin/configuration/sk-tugas-signer");
+    return response.data;
+  },
+
+  async saveSkTugasSignerConfig(data) {
+    const response = await api.post(
+      "/admin/configuration/sk-tugas-signer",
+      data,
+    );
+    return response.data;
+  },
+
+  // Notifications
+  async getNotifications() {
+    const response = await api.get("/admin/notifications");
+    return response.data;
+  },
+
+  async getUnreadNotificationCount() {
+    const response = await api.get("/admin/notifications/unread-count");
+    return response.data;
+  },
+
+  async markNotificationRead(id) {
+    const response = await api.put(`/admin/notifications/${id}/read`);
+    return response.data;
+  },
+
+  async markAllNotificationsRead() {
+    const response = await api.put("/admin/notifications/read-all");
+    return response.data;
+  },
+
+  // Master Data
+  // Prodi
+  async getProdi(params = {}) {
+    const response = await api.get("/admin/prodi", { params });
+    return response.data;
+  },
+
+  async createProdi(data) {
+    const response = await api.post("/admin/prodi", data);
+    return response.data;
+  },
+
+  async updateProdi(id, data) {
+    const response = await api.put(`/admin/prodi/${id}`, data);
+    return response.data;
+  },
+
+  async deleteProdi(id) {
+    const response = await api.delete(`/admin/prodi/${id}`);
+    return response.data;
+  },
+
+  // Tahun
+  async getTahun(params = {}) {
+    const response = await api.get("/admin/tahun", { params });
+    return response.data;
+  },
+
+  async createTahun(data) {
+    const response = await api.post("/admin/tahun", data);
+    return response.data;
+  },
+
+  async updateTahun(id, data) {
+    const response = await api.put(`/admin/tahun/${id}`, data);
+    return response.data;
+  },
+
+  async deleteTahun(id) {
+    const response = await api.delete(`/admin/tahun/${id}`);
+    return response.data;
+  },
+
+  // Jabatan
+  async getJabatan(params = {}) {
+    const response = await api.get("/admin/jabatan", { params });
+    return response.data;
+  },
+
+  async createJabatan(data) {
+    const response = await api.post("/admin/jabatan", data);
+    return response.data;
+  },
+
+  async updateJabatan(id, data) {
+    const response = await api.put(`/admin/jabatan/${id}`, data);
+    return response.data;
+  },
+
+  async deleteJabatan(id) {
+    const response = await api.delete(`/admin/jabatan/${id}`);
+    return response.data;
+  },
+
+  // =====================
+  // Super Admin
+  // =====================
+  async getActivityLogs(params = {}) {
+    const response = await api.get("/super-admin/activity-logs", { params });
+    return response.data;
+  },
+
+  async getSuperAdminUsers(params = {}) {
+    const response = await api.get("/super-admin/users", { params });
+    return response.data;
+  },
+
+  async impersonateUser(userId) {
+    const response = await api.post(`/super-admin/impersonate/${userId}`);
+    return response.data;
+  },
+
+  async stopImpersonate() {
+    const response = await api.post("/super-admin/stop-impersonate");
+    return response.data;
+  },
+
+  async forceLogoutAll() {
+    const response = await api.post("/super-admin/force-logout-all");
+    return response.data;
+  },
+
+  async toggleSystemLock(message = null) {
+    const response = await api.post("/super-admin/toggle-system-lock", {
+      message,
+    });
+    return response.data;
+  },
+
+  async getSystemStatus() {
+    const response = await api.get("/super-admin/system-status");
+    return response.data;
+  },
+
+  async getTrashedRecords(params = {}) {
+    const response = await api.get("/super-admin/trashed", { params });
     return response.data;
   },
 };

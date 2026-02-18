@@ -15,13 +15,29 @@ class PembimbingController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Skripsi::with(['mahasiswa.prodi'])
+        $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen'])
             ->where('is_active', true)
-            ->whereIn('status', ['pengajuan', 'disetujui']);
+            ->where('status', 'bimbingan');
 
-        // Filter by those without pembimbing
-        if ($request->get('pending_only', true)) {
-            $query->whereDoesntHave('pembimbing');
+        // Filter by pembimbing status: sudah / belum
+        if ($request->filled('pembimbing_status')) {
+            if ($request->pembimbing_status === 'sudah') {
+                $query->whereHas('pembimbing');
+            } elseif ($request->pembimbing_status === 'belum') {
+                $query->whereDoesntHave('pembimbing');
+            }
+        }
+
+        // Search by nama, nim, or judul
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhereHas('mahasiswa', function ($q2) use ($search) {
+                      $q2->where('nama', 'like', "%{$search}%")
+                         ->orWhere('nim', 'like', "%{$search}%");
+                  });
+            });
         }
 
         if ($request->filled('prodi_id')) {
@@ -58,13 +74,31 @@ class PembimbingController extends Controller
             $query->where('bidang_keahlian', 'like', "%{$request->bidang_keahlian}%");
         }
 
-        $dosen = $query->get()->filter(function ($d) {
-            return $d->current_bimbingan < $d->kuota_bimbingan;
+        $dosen = $query->orderBy('nama', 'asc')->get()->map(function ($d) {
+            return [
+                'id' => $d->id,
+                'nama' => $d->nama,
+                'nama_lengkap' => $d->full_name,
+                'bidang_keahlian' => $d->bidang_keahlian,
+                'kuota_bimbingan' => $d->kuota_bimbingan,
+                'current_bimbingan' => $d->current_bimbingan,
+                'is_available' => $d->current_bimbingan < $d->kuota_bimbingan,
+            ];
         });
+
+        // Extract unique bidang keahlian for filter
+        $bidangList = $dosen->pluck('bidang_keahlian')
+            ->filter()
+            ->flatMap(fn($b) => explode(',', $b))
+            ->map(fn($b) => trim($b))
+            ->unique()
+            ->sort()
+            ->values();
 
         return response()->json([
             'success' => true,
-            'data' => $dosen
+            'data' => $dosen,
+            'bidang_list' => $bidangList,
         ]);
     }
 
@@ -141,8 +175,7 @@ class PembimbingController extends Controller
      */
     public function destroy(Pembimbing $pembimbing)
     {
-        $pembimbing->is_active = false;
-        $pembimbing->save();
+        $pembimbing->delete();
 
         return response()->json([
             'success' => true,

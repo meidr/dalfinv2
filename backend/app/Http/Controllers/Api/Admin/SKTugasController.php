@@ -13,7 +13,8 @@ class SKTugasController extends Controller
     {
         $query = Skripsi::with([
             'mahasiswa',
-            'pembimbing.dosen'
+            'pembimbing.dosen',
+            'dokumen'
         ])->has('pembimbing'); // Only skripsi that have pembimbing assigned
 
         if ($request->filled('search')) {
@@ -28,17 +29,17 @@ class SKTugasController extends Controller
 
         // Filter by status (based on SK Tugas document)
         if ($request->filled('status')) {
-            if ($request->status === 'sudah_isi') {
-                $query->whereDoesntHave('dokumen', function ($q) {
+            if ($request->status === 'semua_sk') {
+                $query->whereHas('dokumen', function ($q) {
                     $q->where('jenis', 'sk_tugas');
                 });
-            } elseif ($request->status === 'menunggu_ttd') {
+            } elseif ($request->status === 'belum_ttd') {
                 $query->whereHas('dokumen', function ($q) {
-                    $q->where('jenis', 'sk_tugas')->where('status', 'menunggu_ttd');
+                    $q->where('jenis', 'sk_tugas')->where('status', 'pending');
                 });
-            } elseif ($request->status === 'selesai') {
+            } elseif ($request->status === 'sudah_ttd') {
                 $query->whereHas('dokumen', function ($q) {
-                    $q->where('jenis', 'sk_tugas')->where('status', 'selesai');
+                    $q->where('jenis', 'sk_tugas')->where('status', 'approved');
                 });
             }
         }
@@ -46,9 +47,11 @@ class SKTugasController extends Controller
         $skripsi = $query->orderBy('created_at', 'desc')->paginate(10);
 
         // Transform data
+        // Transform data
         $skripsi->getCollection()->transform(function ($item) {
-            $skDoc = $item->dokumen?->where('jenis', 'sk_tugas')->first();
+            $skDoc = $item->dokumen?->where('jenis', 'sk_tugas')->sortByDesc('versi')->first();
             $item->sk_status = $skDoc ? $skDoc->status : 'belum_ada';
+            $item->sk_dokumen = $skDoc; // Attach document for file access
             return $item;
         });
 

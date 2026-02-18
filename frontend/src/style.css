@@ -65,3 +65,18 @@ body {
   font-family: var(--font-display);
   @apply bg-background-light text-text-main;
 }
+
+button {
+  cursor: pointer;
+}
+
+/* Modal Transitions */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}

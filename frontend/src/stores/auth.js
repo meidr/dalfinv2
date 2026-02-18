@@ -4,18 +4,20 @@ import authService from "../services/authService";
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: authService.getStoredUser(),
-    token: localStorage.getItem("auth_token"),
     loading: false,
     error: null,
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token,
+    isAuthenticated: (state) => !!state.user,
     currentUser: (state) => state.user,
     userRole: (state) => state.user?.role,
-    isAdmin: (state) => state.user?.role === "admin",
+    isAdmin: (state) =>
+      state.user?.role === "admin" || state.user?.role === "super_admin",
+    isSuperAdmin: (state) => state.user?.role === "super_admin",
     isDosen: (state) => state.user?.role === "dosen",
     isMahasiswa: (state) => state.user?.role === "mahasiswa",
+    isStaff: (state) => state.user?.role === "staff",
 
     // Get profile based on role
     profile: (state) => {
@@ -34,7 +36,6 @@ export const useAuthStore = defineStore("auth", {
         const result = await authService.login(email, password);
         if (result.success) {
           this.user = result.data.user;
-          this.token = result.data.token;
         }
         return result;
       } catch (error) {
@@ -51,7 +52,6 @@ export const useAuthStore = defineStore("auth", {
         await authService.logout();
       } finally {
         this.user = null;
-        this.token = null;
         this.loading = false;
       }
     },
@@ -66,6 +66,11 @@ export const useAuthStore = defineStore("auth", {
         }
         return result;
       } catch (error) {
+        // If 401, clear user
+        if (error.response?.status === 401) {
+          this.user = null;
+          localStorage.removeItem("user");
+        }
         this.error =
           error.response?.data?.message || "Gagal mengambil data user";
         throw error;
@@ -76,8 +81,6 @@ export const useAuthStore = defineStore("auth", {
 
     clearAuth() {
       this.user = null;
-      this.token = null;
-      localStorage.removeItem("auth_token");
       localStorage.removeItem("user");
     },
   },

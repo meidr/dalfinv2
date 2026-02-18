@@ -1,70 +1,114 @@
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+  <div class="animate-fade-in">
+    <!-- Empty State -->
     <div
-      class="bg-surface-light rounded-xl p-6 shadow-sm border border-border-light flex items-start gap-4"
+      v-if="!pembimbingList.length"
+      class="bg-surface-light rounded-xl shadow-sm border border-border-light p-12 flex flex-col items-center justify-center gap-3 text-center"
     >
-      <div
-        class="size-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary font-bold text-xl"
+      <span
+        class="material-symbols-outlined text-5xl text-text-secondary opacity-40"
+        >group</span
       >
-        Dr
-      </div>
-      <div>
-        <h4 class="font-bold text-lg">Dr. Rina Kurniawati, M.Kom</h4>
-        <p class="text-sm text-text-secondary mb-2">Pembimbing Utama</p>
-        <div class="flex gap-2">
-          <span
-            class="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs rounded font-medium"
-            >Disetujui</span
-          >
-        </div>
-        <div class="mt-4 flex gap-2">
-          <button
-            class="px-3 py-1.5 text-xs font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
-          >
-            Chat Dosen
-          </button>
-          <button
-            class="px-3 py-1.5 text-xs font-bold text-text-secondary border border-border-light rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Lihat Jadwal
-          </button>
-        </div>
-      </div>
+      <h3 class="text-lg font-bold text-text-main">Belum Ada Pembimbing</h3>
+      <p class="text-text-secondary text-sm">
+        Pembimbing skripsi belum ditentukan.
+      </p>
     </div>
 
-    <div
-      class="bg-surface-light rounded-xl p-6 shadow-sm border border-border-light flex items-start gap-4"
-    >
+    <!-- Pembimbing Cards -->
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div
-        class="size-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 font-bold text-xl"
+        v-for="(item, idx) in pembimbingList"
+        :key="item.id || idx"
+        class="bg-surface-light rounded-xl p-6 shadow-sm border border-border-light flex items-start gap-4"
       >
-        SA
-      </div>
-      <div>
-        <h4 class="font-bold text-lg">Siti Aminah, M.T.</h4>
-        <p class="text-sm text-text-secondary mb-2">Pembimbing Pendamping</p>
-        <div class="flex gap-2">
-          <span
-            class="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs rounded font-medium"
-            >Disetujui</span
-          >
+        <div
+          class="size-12 rounded-full flex items-center justify-center font-bold text-xl"
+          :class="
+            idx === 0
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-primary'
+              : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600'
+          "
+        >
+          {{ getInitials(item.dosen?.nama) }}
         </div>
-        <div class="mt-4 flex gap-2">
-          <button
-            class="px-3 py-1.5 text-xs font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
-          >
-            Chat Dosen
-          </button>
-          <button
-            class="px-3 py-1.5 text-xs font-bold text-text-secondary border border-border-light rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Lihat Jadwal
-          </button>
+        <div class="flex-1">
+          <h4 class="font-bold text-lg text-text-main">
+            {{ item.dosen?.nama || "Unknown" }}
+          </h4>
+          <p class="text-sm text-text-secondary mb-2">
+            {{ getPeranLabel(item.peran) }}
+          </p>
+          <div class="flex gap-2">
+            <span
+              :class="getStatusClass(item.status)"
+              class="px-2 py-0.5 text-xs rounded font-medium"
+            >
+              {{ getStatusLabel(item.status) }}
+            </span>
+          </div>
+          <div class="mt-3 text-xs text-text-secondary" v-if="item.dosen?.nip">
+            NIP: {{ item.dosen.nip }}
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { inject, computed } from "vue";
+
+const skripsi = inject("skripsi");
+
+const pembimbingList = computed(() => skripsi.value?.pembimbing || []);
+
+const getInitials = (nama) => {
+  if (!nama) return "??";
+  return nama
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const getPeranLabel = (peran) => {
+  const map = {
+    pembimbing_1: "Pembimbing Utama",
+    pembimbing_2: "Pembimbing Pendamping",
+    utama: "Pembimbing Utama",
+    pendamping: "Pembimbing Pendamping",
+  };
+  return map[peran] || peran || "Pembimbing";
+};
+
+const getStatusLabel = (status) => {
+  const map = {
+    disetujui: "Disetujui",
+    pending: "Menunggu",
+    ditolak: "Ditolak",
+    aktif: "Aktif",
+  };
+  return map[status] || status || "Aktif";
+};
+
+const getStatusClass = (status) => {
+  const map = {
+    disetujui:
+      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    pending:
+      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+    ditolak: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    aktif:
+      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  };
+  return (
+    map[status] ||
+    "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+  );
+};
+</script>
 
 <style scoped>
 .animate-fade-in {

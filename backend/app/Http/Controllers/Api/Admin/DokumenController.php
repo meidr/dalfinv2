@@ -52,25 +52,34 @@ class DokumenController extends Controller
         $skripsi = Skripsi::findOrFail($request->skripsi_id);
         $file = $request->file('file');
 
+        // Check for existing document
+        $existingDoc = Dokumen::where('skripsi_id', $skripsi->id)
+            ->where('jenis', $request->jenis)
+            ->first();
+
+        // Delete old file if exists
+        if ($existingDoc && Storage::disk('public')->exists($existingDoc->path)) {
+            Storage::disk('public')->delete($existingDoc->path);
+        }
+
         // Generate filename
         $filename = $skripsi->mahasiswa->nim . '_' . $request->jenis . '_v' . time() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('dokumen/' . $skripsi->id, $filename, 'public');
 
-        // Get version number
-        $lastVersion = Dokumen::where('skripsi_id', $skripsi->id)
-            ->where('jenis', $request->jenis)
-            ->max('versi') ?? 0;
-
-        $dokumen = Dokumen::create([
-            'skripsi_id' => $skripsi->id,
-            'jenis' => $request->jenis,
-            'nama_file' => $file->getClientOriginalName(),
-            'path' => $path,
-            'ukuran' => $file->getSize(),
-            'versi' => $lastVersion + 1,
-            'status' => 'pending',
-            'uploaded_by' => $request->user()->id,
-        ]);
+        $dokumen = Dokumen::updateOrCreate(
+            [
+                'skripsi_id' => $skripsi->id,
+                'jenis' => $request->jenis,
+            ],
+            [
+                'nama_file' => $file->getClientOriginalName(),
+                'path' => $path,
+                'ukuran' => $file->getSize(),
+                'versi' => 1,
+                'status' => $request->status ?? 'pending',
+                'uploaded_by' => $request->user()->id,
+            ]
+        );
 
         return response()->json([
             'success' => true,

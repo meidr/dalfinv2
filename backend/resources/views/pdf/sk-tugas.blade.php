@@ -1,206 +1,270 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>SK Tugas Pembimbing</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Surat Tugas Pembimbing</title>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: "Times New Roman", Times, serif;
             font-size: 12pt;
             line-height: 1.5;
             color: #000;
-            padding: 20px 40px;
+            padding: 10px 55px 25px 55px;
         }
-        .header {
+
+        /* kop */
+        .kop {
             text-align: center;
-            border-bottom: 3px double #000;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 6px;
         }
-        .header h1 {
-            font-size: 14pt;
-            font-weight: bold;
-            margin-bottom: 5px;
+
+        .kop img {
+            width: 100%;
         }
-        .header h2 {
+
+        /* judul */
+        .judul {
+            text-align: center;
+            margin: 6px 0 12px 0;
+        }
+
+        .judul h3 {
             font-size: 16pt;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .header p {
-            font-size: 10pt;
-        }
-        .title {
-            text-align: center;
-            margin: 30px 0;
-        }
-        .title h3 {
-            font-size: 14pt;
-            font-weight: bold;
+            letter-spacing: 4px;
             text-decoration: underline;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
-        .title p {
-            font-size: 11pt;
-        }
-        .content {
-            margin: 20px 0;
-            text-align: justify;
-        }
-        .content p {
-            margin-bottom: 10px;
-            text-indent: 40px;
-        }
-        table.data {
+
+        /* tabel surat */
+        .surat {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
         }
-        table.data td {
-            padding: 5px;
+
+        .surat td {
             vertical-align: top;
+            padding: 2px 0;
         }
-        table.data td:first-child {
-            width: 150px;
+
+        /* kolom tetap */
+        .c1 {
+            width: 35px;
         }
-        table.data td:nth-child(2) {
-            width: 20px;
-            text-align: center;
-        }
-        table.pembimbing {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-        table.pembimbing th,
-        table.pembimbing td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: left;
-        }
-        table.pembimbing th {
-            background-color: #f0f0f0;
-            font-weight: bold;
-        }
-        .signature {
-            margin-top: 40px;
-            float: right;
+
+        /* nomor */
+        .c2 {
             width: 250px;
+        }
+
+        /* label */
+        .c3 {
+            width: 15px;
             text-align: center;
         }
-        .signature .date {
-            margin-bottom: 60px;
+
+        /* : */
+        .c4 {
+            width: auto;
         }
-        .signature .name {
+
+        /* isi */
+
+        /* sub poin */
+        .sub {
+            padding-left: 25px;
+        }
+
+        /* a,b,c */
+        .sub2 {
+            padding-left: 50px;
+        }
+
+        /* isi dalam a */
+
+        /* tanda tangan */
+        /* tanda tangan */
+        .ttd {
+            width: 300px;
+            margin-left: auto;
+            text-align: center;
+            margin-top: 35px;
+            position: relative;
+        }
+
+        /* nama jadi dasar layer */
+        .nama {
             font-weight: bold;
             text-decoration: underline;
+            position: relative;
+            z-index: 1;
         }
-        .signature .title-pos {
+
+        .niy {
             font-size: 11pt;
+            position: relative;
+            z-index: 1;
         }
-        .footer {
-            clear: both;
-            margin-top: 100px;
-            font-size: 9pt;
-            color: #666;
-            text-align: center;
+
+        /* area ttd */
+        .ttd-space {
+            height: 90px;
+            position: relative;
+            margin-top: 5px;
+        }
+
+        /* CAP di atas nama */
+        .ttd-space img.cap {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-left: -80px;
+            top: -25px;
+            /* turun menimpa nama */
+            width: 150px;
+            opacity: .8;
+            z-index: 2;
+        }
+
+        /* TTD paling atas */
+        .ttd-space img.ttd-img {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: -5px;
+            width: 85px;
+            z-index: 3;
         }
     </style>
 </head>
+
 <body>
-    <div class="header">
-        <h1>KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI</h1>
-        <h2>UNIVERSITAS NEGERI</h2>
-        <h1>FAKULTAS TEKNIK</h1>
-        <p>Jl. Pendidikan No. 1, Kota Pendidikan 12345</p>
-        <p>Telp: (021) 1234567, Email: ft@univ.ac.id</p>
+
+    <div class="kop">
+        <img src="{{ public_path('images/kop surat.jpg') }}">
     </div>
 
-    <div class="title">
-        <h3>SURAT KEPUTUSAN</h3>
-        <p>Nomor: {{ $skTugas->nomor }}</p>
-        <p style="margin-top: 10px;">Tentang</p>
-        <p><strong>PENUNJUKAN DOSEN PEMBIMBING SKRIPSI</strong></p>
+    <div class="judul">
+        <h3 style="text-align: center;margin-top: 7px;">SURAT &nbsp; TUGAS</h3>
+        Nomor : {{ $skTugas->nomor_sk ?? ($skTugas->nomor ?? '-') }}
     </div>
 
-    <div class="content">
-        <p>Dekan Fakultas Teknik Universitas Negeri, berdasarkan:</p>
 
-        <ol style="margin-left: 60px; margin-top: 10px; margin-bottom: 15px;">
-            <li>Undang-Undang Nomor 20 Tahun 2003 tentang Sistem Pendidikan Nasional;</li>
-            <li>Peraturan Pemerintah Nomor 4 Tahun 2014 tentang Penyelenggaraan Pendidikan Tinggi;</li>
-            <li>Peraturan Akademik Universitas tentang Penulisan Skripsi;</li>
-        </ol>
+    <table class="surat">
 
-        <p style="text-align: center; font-weight: bold; margin: 20px 0;">MEMUTUSKAN</p>
+        <tr class="mt-2">
+            <td class="c1">1.</td>
+            <td class="c2">Lembaga yang memberi tugas</td>
+            <td class="c3">:</td>
+            <td class="c4">
+                {{ $signer['position'] ?? 'Kepala Prodi' }} {{ $prodi_lengkap ?? '' }}
+                {{ $signer['institution'] ?? "Universitas Islam Internasional Darullughah Wadda'wah" }},
+                {{ $signer['city'] ?? 'Bangil' }}.
+            </td>
+        </tr>
 
-        <p>Menunjuk Dosen Pembimbing Skripsi untuk mahasiswa:</p>
+        <tr class="mt-2">
+            <td class="c1">2.</td>
+            <td class="c2">Dosen yang diberi tugas</td>
+            <td class="c3">:</td>
+            <td class="c4"></td>
+        </tr>
 
-        <table class="data">
+        @foreach ($skripsi->pembimbing as $index => $p)
             <tr>
-                <td>Nama</td>
-                <td>:</td>
-                <td><strong>{{ $skripsi->mahasiswa->nama }}</strong></td>
+                <td class="c1 sub"></td>
+                <td class="c2">{{ chr(97 + $index) }}. Nama</td>
+                <td class="c3">:</td>
+                <td class="c4">{{ $p->dosen->full_name ?? ($p->dosen->nama ?? '-') }}</td>
             </tr>
-            <tr>
-                <td>NIM</td>
-                <td>:</td>
-                <td>{{ $skripsi->mahasiswa->nim }}</td>
-            </tr>
-            <tr>
-                <td>Program Studi</td>
-                <td>:</td>
-                <td>{{ $skripsi->mahasiswa->prodi->nama ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td>Judul Skripsi</td>
-                <td>:</td>
-                <td>{{ $skripsi->judul }}</td>
-            </tr>
-        </table>
 
-        <p>Dengan susunan Dosen Pembimbing sebagai berikut:</p>
+            <tr>
+                <td class="c1"></td>
+                <td class="c2 sub2">&nbsp;&nbsp;&nbsp;&nbsp;NIP/NIY</td>
+                <td class="c3">:</td>
+                <td class="c4">{{ $p->dosen->nip ?? '-' }}</td>
+            </tr>
 
-        <table class="pembimbing">
-            <thead>
-                <tr>
-                    <th style="width: 40px;">No</th>
-                    <th>Nama Dosen</th>
-                    <th style="width: 150px;">Jabatan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($skripsi->pembimbing as $index => $p)
-                <tr>
-                    <td style="text-align: center;">{{ $index + 1 }}</td>
-                    <td>{{ $p->dosen->nama_lengkap }}</td>
-                    <td>{{ $p->jenis === 'pembimbing_1' ? 'Pembimbing I' : 'Pembimbing II' }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+            <tr>
+                <td class="c1"></td>
+                <td class="c2 sub2">&nbsp;&nbsp;&nbsp;&nbsp;Tugas</td>
+                <td class="c3">:</td>
+                <td class="c4">{{ $p->jenis == 'pembimbing_1' ? 'Pembimbing I (Utama)' : 'Pembimbing II' }}</td>
+            </tr>
+        @endforeach
 
-        <p>Surat Keputusan ini berlaku sejak tanggal ditetapkan, dengan ketentuan apabila di kemudian hari terdapat kekeliruan akan diadakan perbaikan sebagaimana mestinya.</p>
+        <tr class="mt-2">
+            <td class="c1">3.</td>
+            <td class="c2">Diberi tugas untuk</td>
+            <td class="c3">:</td>
+            <td class="c4">Membimbing Skripsi</td>
+        </tr>
+
+        <tr class="mt-2">
+            <td class="c1 sub"></td>
+            <td class="c2">a. Nama</td>
+            <td class="c3">:</td>
+            <td class="c4">{{ $skripsi->mahasiswa->nama ?? '-' }}</td>
+        </tr>
+
+        <tr>
+            <td class="c1 sub"></td>
+            <td class="c2">b. NIM / NIK</td>
+            <td class="c3">:</td>
+            <td class="c4">{{ $skripsi->mahasiswa->nim ?? '-' }}</td>
+        </tr>
+
+        <tr>
+            <td class="c1 sub"></td>
+            <td class="c2">c. Fakultas / Prodi</td>
+            <td class="c3">:</td>
+            <td class="c4">{{ $skripsi->mahasiswa->prodi->fakultas ?? '-' }} /
+                {{ $skripsi->mahasiswa->prodi->nama ?? '-' }}</td>
+        </tr>
+
+        <tr>
+            <td class="c1 sub"></td>
+            <td class="c2">d. Judul Skripsi</td>
+            <td class="c3">:</td>
+            <td class="c4">"{{ $skripsi->judul ?? '-' }}"</td>
+        </tr>
+
+        <tr class="mt-2">
+            <td class="c1">4.</td>
+            <td class="c2">Masa penugasan</td>
+            <td class="c3">:</td>
+            <td class="c4">{{ $tanggal }} s/d selesai</td>
+        </tr>
+
+        <tr class="mt-2">
+            <td class="c1">5.</td>
+            <td class="c2">Catatan penting</td>
+            <td class="c3">:</td>
+            <td class="c4">
+                Harap dilaksanakan dengan penuh tanggung jawab dan terstandar (Sesuai buku pedoman penulisan skripsi).
+            </td>
+        </tr>
+
+    </table>
+
+
+    <div class="ttd">
+        <div>{{ $signer['city'] ?? 'Bangil' }}, {{ $tanggal }}</div>
+        <div>{{ $signer['position'] ?? 'Kepala Prodi' }}</div>
+
+        <div class="ttd-space">
+            @if (!empty($signer['signature']))
+                <img class="ttd-img" src="{{ $signer['signature'] }}">
+            @endif
+            <img class="cap" src="{{ public_path('images/cap.jpg') }}">
+        </div>
+
+        <div class="nama">{{ $signer['name'] ?? '-' }}</div>
+        <div class="niy">NIY: {{ $signer['nip'] ?? '-' }}</div>
     </div>
 
-    <div class="signature">
-        <p class="date">Ditetapkan di: Kota Pendidikan</p>
-        <p>Pada tanggal: {{ $tanggal }}</p>
-        <br><br>
-        <p>Dekan,</p>
-        <br><br><br>
-        <p class="name">Prof. Dr. Nama Dekan, M.T.</p>
-        <p class="title-pos">NIP. 196001011990011001</p>
-    </div>
-
-    <div class="footer">
-        <p>Dokumen ini dicetak secara otomatis oleh Sistem Informasi Skripsi</p>
-    </div>
 </body>
+
 </html>

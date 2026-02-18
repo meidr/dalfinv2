@@ -18,26 +18,22 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $totalSkripsi = Skripsi::where('is_active', true)->count();
-        $proposalAktif = Skripsi::where('is_active', true)
-            ->whereIn('status', ['draft', 'pengajuan', 'proposal'])
+        $totalSkripsi = Skripsi::count();
+        $proposalAktif = Skripsi::whereIn('status', ['draft', 'pengajuan', 'proposal'])
             ->count();
-        $menungguSK = Skripsi::where('is_active', true)
-            ->where('status', 'disetujui')
+        $menungguSK = Skripsi::where('status', 'disetujui')
             ->doesntHave('skTugas')
             ->count();
         $selesai = Skripsi::where('status', 'lulus')->count();
 
         // Status distribution
-        $statusDistribution = Skripsi::where('is_active', true)
-            ->selectRaw('status, count(*) as total')
+        $statusDistribution = Skripsi::selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->get()
             ->pluck('total', 'status');
 
         // Perlu diproses - recent submissions
         $perluDiproses = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen'])
-            ->where('is_active', true)
             ->whereIn('status', ['pengajuan', 'disetujui', 'sempro', 'semhas'])
             ->orderBy('updated_at', 'desc')
             ->limit(10)
@@ -70,14 +66,14 @@ class DashboardController extends Controller
                 'skripsi_proposal' => $proposalAktif,
                 'skripsi_sempro' => Skripsi::where('status', 'sempro')->count(),
                 'skripsi_semhas' => Skripsi::where('status', 'semhas')->count(),
-                'skripsi_ujian' => Skripsi::where('status', 'ujian')->count(),
+                'skripsi_sidang' => Skripsi::where('status', 'sidang')->count(),
                 'total_mahasiswa' => Mahasiswa::count(),
                 'total_dosen' => Dosen::count(),
                 'status_distribution' => $statusDistribution,
                 'perlu_diproses' => $perluDiproses,
                 'seminar_terbaru' => $seminarTerbaru,
                 'ujian_terbaru' => $ujianTerbaru,
-                'recent_activities' => $perluDiproses->take(5)->map(function($item) {
+                'recent_activities' => $perluDiproses->take(5)->map(function ($item) {
                     return [
                         'id' => $item->id,
                         'mahasiswa' => [

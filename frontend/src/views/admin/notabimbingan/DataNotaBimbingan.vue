@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="max-w-7xl mx-auto flex flex-col gap-8 animate-fade-in-up">
     <div class="flex flex-col gap-1">
       <h1 class="text-text-main text-3xl font-bold leading-tight">
         Penerbitan Nota Bimbingan
@@ -33,7 +33,7 @@
             <span class="material-symbols-outlined text-primary text-[18px]"
               >check_circle</span
             >
-            <p class="text-primary text-xs font-semibold">Ready for issuance</p>
+            <p class="text-primary text-xs font-semibold">Siap diterbitkan</p>
           </div>
         </div>
       </div>
@@ -59,7 +59,7 @@
               >pending</span
             >
             <p class="text-orange-600 text-xs font-semibold">
-              Waiting for student action
+              Bimbingan belum cukup
             </p>
           </div>
         </div>
@@ -85,7 +85,7 @@
             <span class="material-symbols-outlined text-green-600 text-[18px]"
               >calendar_month</span
             >
-            <p class="text-green-600 text-xs font-semibold">This semester</p>
+            <p class="text-green-600 text-xs font-semibold">Nota terbit</p>
           </div>
         </div>
       </div>
@@ -102,76 +102,66 @@
     <!-- Table Container -->
     <div
       v-else
-      class="flex flex-col rounded-xl border border-border-light bg-surface-light overflow-hidden shadow-sm"
+      class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
     >
       <div
-        class="p-6 border-b border-border-light flex flex-wrap gap-4 justify-between items-center bg-gray-50/50"
+        class="p-5 border-b border-border-light flex flex-col md:flex-row gap-4 items-center justify-between"
       >
         <div>
           <h3 class="text-text-main text-lg font-bold">
             Mahasiswa Selesai Bimbingan
           </h3>
-          <p class="text-text-secondary text-xs">
+          <p class="text-text-secondary text-sm">
             Daftar mahasiswa yang telah mendapat persetujuan pembimbing untuk
             maju ujian.
           </p>
         </div>
-        <div class="flex gap-2">
-          <div class="relative">
+        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+          <div class="relative w-full md:w-64">
             <input
               v-model="searchQuery"
               @input="debouncedSearch"
-              class="pl-9 pr-4 py-2 rounded-lg border border-border-light bg-white text-sm w-64 focus:ring-1 focus:ring-primary"
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-background-light text-text-main placeholder-text-secondary dark:bg-background"
               placeholder="Cari mahasiswa..."
             />
             <span
-              class="material-symbols-outlined absolute left-2 top-2 text-[18px] text-text-secondary"
+              class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-secondary"
               >search</span
             >
           </div>
           <button
             @click="exportData"
-            class="flex items-center gap-2 text-white text-sm font-bold bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg transition-colors shadow-sm shadow-primary/20"
+            :disabled="exporting"
+            class="flex items-center justify-center gap-2 text-white text-sm font-bold bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg transition-colors shadow-sm shadow-primary/20 w-full md:w-auto disabled:opacity-50"
           >
-            <span class="material-symbols-outlined text-[18px]">download</span>
-            Export Data
+            <span
+              v-if="exporting"
+              class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+            ></span>
+            <span v-else class="material-symbols-outlined text-[18px]"
+              >download</span
+            >
+            {{ exporting ? "Mengunduh..." : "Export Data" }}
           </button>
         </div>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-sidebar-light/50 border-b border-border-light">
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase w-1/4"
-              >
-                Mahasiswa
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase w-1/4"
-              >
-                Pembimbing
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase"
-              >
-                Status Bimbingan
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase"
-              >
-                Selesai Pada
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase text-right"
-              >
-                Aksi
-              </th>
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead
+            class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
+          >
+            <tr>
+              <th class="px-6 py-4">Mahasiswa</th>
+              <th class="px-6 py-4">Pembimbing</th>
+              <th class="px-6 py-4 text-center">Bimbingan</th>
+              <th class="px-6 py-4">Status Nota</th>
+              <th class="px-6 py-4">Terakhir Bimbingan</th>
+              <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
             <tr v-if="notaBimbinganList.length === 0">
-              <td colspan="5" class="p-12 text-center text-text-secondary">
+              <td colspan="6" class="p-12 text-center text-text-secondary">
                 Tidak ada data
               </td>
             </tr>
@@ -180,61 +170,93 @@
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
-              <td class="p-4">
+              <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold"
-                    :class="getAvatarColor(item.skripsi?.mahasiswa?.nama)"
+                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                    :class="getAvatarColor(item.mahasiswa?.nama)"
                   >
-                    {{ getInitials(item.skripsi?.mahasiswa?.nama) }}
+                    {{ getInitials(item.mahasiswa?.nama) }}
                   </div>
                   <div>
                     <p class="font-bold text-text-main text-sm">
-                      {{ item.skripsi?.mahasiswa?.nama || "-" }}
-                    </p>
-                    <p class="text-xs text-text-secondary font-medium">
-                      {{ item.skripsi?.mahasiswa?.nim || "-" }}
+                      {{ item.mahasiswa?.nama || "-" }}
                     </p>
                     <p
-                      class="text-[10px] text-text-secondary truncate max-w-[150px] mt-0.5"
+                      class="text-xs text-text-secondary font-medium font-mono"
                     >
-                      {{ item.skripsi?.judul || "-" }}
+                      {{ item.mahasiswa?.nim || "-" }}
+                    </p>
+                    <p
+                      class="text-xs text-text-secondary mt-0.5 truncate max-w-[200px]"
+                      :title="item.judul"
+                    >
+                      {{ item.judul || "-" }}
                     </p>
                   </div>
                 </div>
               </td>
-              <td class="p-4">
-                <div class="flex flex-col">
-                  <span class="text-sm font-medium text-text-main">{{
-                    item.dosen?.nama_lengkap || "-"
+              <td class="px-6 py-4">
+                <div class="flex flex-col gap-1.5">
+                  <div
+                    v-for="p in item.pembimbing"
+                    :key="p.id"
+                    class="flex items-center gap-2"
+                  >
+                    <div
+                      class="bg-blue-100 flex items-center justify-center size-7 rounded-full text-primary border border-blue-200 shrink-0"
+                    >
+                      <span class="material-symbols-outlined text-[14px]"
+                        >person</span
+                      >
+                    </div>
+                    <div>
+                      <p class="font-semibold text-text-main text-xs">
+                        {{ p.dosen?.full_name || "-" }}
+                      </p>
+                      <span class="text-[10px] text-text-secondary"
+                        >NIP. {{ p.dosen?.nip || "-" }}</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <div class="inline-flex flex-col items-center">
+                  <span class="text-lg font-bold text-text-main">{{
+                    item.approved_bimbingan || 0
                   }}</span>
-                  <span class="text-[10px] text-text-secondary"
-                    >NIP. {{ item.dosen?.nip || "-" }}</span
+                  <span class="text-[10px] text-text-secondary font-medium"
+                    >/ {{ item.total_bimbingan || 0 }} sesi</span
                   >
                 </div>
               </td>
-              <td class="p-4">
+              <td class="px-6 py-4">
                 <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold"
-                  :class="getStatusClass(item.status)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                  :class="getStatusClass(item.nota_status)"
                 >
-                  <span class="material-symbols-outlined text-[14px]"
-                    >check_circle</span
-                  >
-                  {{ getStatusLabel(item.status) }}
+                  <span class="material-symbols-outlined text-[14px]">{{
+                    getStatusIcon(item.nota_status)
+                  }}</span>
+                  {{ getStatusLabel(item.nota_status) }}
                 </span>
               </td>
-              <td class="p-4 text-xs font-medium text-text-secondary">
+              <td class="px-6 py-4 text-xs font-medium text-text-secondary">
                 {{ formatDate(item.tanggal_selesai) }}
               </td>
-              <td class="p-4 text-right">
+              <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button
                     @click="cetakNota(item)"
                     :disabled="generating === item.id"
                     class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm shadow-primary/20 disabled:opacity-50"
                   >
-                    <span class="material-symbols-outlined text-[16px]"
+                    <span
+                      v-if="generating === item.id"
+                      class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white"
+                    ></span>
+                    <span v-else class="material-symbols-outlined text-[16px]"
                       >print</span
                     >
                     {{ generating === item.id ? "Loading..." : "Cetak Nota" }}
@@ -256,31 +278,40 @@
       </div>
       <!-- Pagination -->
       <div
-        class="p-4 border-t border-border-light flex items-center justify-between bg-gray-50/50"
+        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
       >
-        <span class="text-xs text-text-secondary">
-          Menampilkan {{ pagination.from || 0 }}-{{ pagination.to || 0 }} dari
-          {{ pagination.total }} data
-        </span>
+        <p class="text-sm text-text-secondary">
+          Menampilkan
+          <span class="font-medium text-text-main">{{
+            pagination.from || 0
+          }}</span>
+          sampai
+          <span class="font-medium text-text-main">{{
+            pagination.to || 0
+          }}</span>
+          dari
+          <span class="font-medium text-text-main">{{ pagination.total }}</span>
+          data
+        </p>
         <div class="flex gap-1">
           <button
             @click="goToPage(pagination.current_page - 1)"
             :disabled="pagination.current_page <= 1"
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light transition-colors disabled:opacity-50"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[18px]"
               >chevron_left</span
             >
           </button>
           <button
-            class="size-8 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-xs"
+            class="px-3 py-1.5 rounded-md bg-primary text-white text-sm font-medium"
           >
             {{ pagination.current_page }}
           </button>
           <button
             @click="goToPage(pagination.current_page + 1)"
             :disabled="pagination.current_page >= pagination.last_page"
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light transition-colors"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[18px]"
               >chevron_right</span
@@ -300,6 +331,7 @@ import adminService from "../../../services/adminService";
 const router = useRouter();
 const loading = ref(true);
 const generating = ref(null);
+const exporting = ref(false);
 const notaBimbinganList = ref([]);
 const searchQuery = ref("");
 
@@ -367,7 +399,7 @@ const goToPage = (page) => {
 const cetakNota = async (item) => {
   try {
     generating.value = item.id;
-    const response = await adminService.getNotaBimbinganPdf(item.skripsi_id);
+    const response = await adminService.getNotaBimbinganPdf(item.id);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     window.open(url, "_blank");
@@ -380,11 +412,34 @@ const cetakNota = async (item) => {
 };
 
 const viewDetail = (item) => {
-  router.push(`/admin/skripsi/${item.skripsi_id}`);
+  router.push(`/admin/bimbingan/${item.id}`);
 };
 
-const exportData = () => {
-  alert("Fitur export akan segera tersedia");
+const exportData = async () => {
+  try {
+    exporting.value = true;
+    const params = { search: searchQuery.value };
+    const response = await adminService.exportNotaBimbingan(params);
+    const blob = new Blob([response.data], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `nota_bimbingan_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to export data:", error);
+    alert("Gagal export data");
+  } finally {
+    exporting.value = false;
+  }
 };
 
 const getInitials = (name) => {
@@ -419,14 +474,30 @@ const formatDate = (date) => {
 };
 
 const getStatusClass = (status) => {
-  if (status === "selesai")
-    return "bg-green-50 text-green-600 border border-green-100";
-  return "bg-gray-50 text-gray-600 border border-gray-100";
+  const classes = {
+    diterbitkan: "bg-green-50 text-green-600 border border-green-100",
+    siap_cetak: "bg-blue-50 text-blue-600 border border-blue-100",
+    proses: "bg-orange-50 text-orange-600 border border-orange-100",
+  };
+  return classes[status] || "bg-gray-50 text-gray-600 border border-gray-100";
+};
+
+const getStatusIcon = (status) => {
+  const icons = {
+    diterbitkan: "verified",
+    siap_cetak: "print",
+    proses: "pending",
+  };
+  return icons[status] || "help";
 };
 
 const getStatusLabel = (status) => {
-  const labels = { selesai: "Selesai", proses: "Proses" };
-  return labels[status] || status;
+  const labels = {
+    diterbitkan: "Diterbitkan",
+    siap_cetak: "Siap Cetak",
+    proses: "Proses",
+  };
+  return labels[status] || status || "-";
 };
 
 onMounted(() => {

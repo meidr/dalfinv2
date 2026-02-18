@@ -76,13 +76,36 @@
             </span>
           </button>
 
-          <router-link
-            to="/"
-            class="hidden sm:flex items-center justify-center gap-2 h-9 px-4 rounded-full border border-border-light bg-transparent hover:bg-sidebar-light text-sm font-medium transition-colors text-text-secondary hover:text-primary"
-          >
-            <span class="material-symbols-outlined text-[18px]">logout</span>
-            <span>Logout</span>
-          </router-link>
+          <div class="hidden sm:flex items-center gap-3">
+            <!-- Dosen Avatar + Name -->
+            <router-link
+              to="/dosen/profil"
+              class="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full py-1 pl-1 pr-3 transition-colors group"
+            >
+              <div
+                class="size-8 rounded-full flex items-center justify-center text-xs font-bold bg-primary/10 text-primary border border-primary/20"
+              >
+                {{ dosenInitials }}
+              </div>
+              <span
+                class="text-sm font-medium text-text-main group-hover:text-primary transition-colors max-w-[140px] truncate"
+              >
+                {{ dosenName }}
+              </span>
+            </router-link>
+
+            <!-- Divider -->
+            <div class="h-5 w-px bg-border-light"></div>
+
+            <!-- Logout Button -->
+            <button
+              @click="logout"
+              class="flex items-center justify-center gap-2 h-9 px-4 rounded-full border border-border-light bg-transparent hover:bg-sidebar-light text-sm font-medium transition-colors text-text-secondary hover:text-primary"
+            >
+              <span class="material-symbols-outlined text-[18px]">logout</span>
+              <span>Logout</span>
+            </button>
+          </div>
 
           <!-- Mobile Menu Icon -->
           <button
@@ -100,13 +123,33 @@
     >
       <router-view></router-view>
     </main>
+    <ChatWidget />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import ChatWidget from "../components/ChatWidget.vue";
 
+const router = useRouter();
+const authStore = useAuthStore();
 const isDark = ref(false);
+
+const dosenName = computed(() => {
+  return authStore.profile?.nama || authStore.user?.name || "Dosen";
+});
+
+const dosenInitials = computed(() => {
+  const name = dosenName.value;
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+});
 
 const toggleTheme = () => {
   if (isDark.value) {
@@ -117,6 +160,16 @@ const toggleTheme = () => {
     document.documentElement.classList.add("dark");
     localStorage.setItem("theme", "dark");
     isDark.value = true;
+  }
+};
+
+const logout = async () => {
+  try {
+    await authStore.logout();
+    router.replace("/login");
+  } catch (error) {
+    console.error("Logout failed:", error);
+    router.replace("/login");
   }
 };
 

@@ -105,6 +105,25 @@
               </p>
             </router-link>
             <router-link
+              to="/admin/seminar"
+              active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
+              :class="[
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
+                isCollapsed ? 'justify-center' : '',
+              ]"
+            >
+              <span
+                class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform"
+                >present_to_all</span
+              >
+              <p
+                v-show="!isCollapsed"
+                class="text-sm font-medium whitespace-nowrap"
+              >
+                Seminar Proposal
+              </p>
+            </router-link>
+            <router-link
               to="/admin/pembimbing"
               active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
               :class="[
@@ -142,25 +161,7 @@
                 SK Tugas
               </p>
             </router-link>
-            <router-link
-              to="/admin/seminar"
-              active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
-              :class="[
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
-                isCollapsed ? 'justify-center' : '',
-              ]"
-            >
-              <span
-                class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform"
-                >present_to_all</span
-              >
-              <p
-                v-show="!isCollapsed"
-                class="text-sm font-medium whitespace-nowrap"
-              >
-                Seminar Proposal
-              </p>
-            </router-link>
+
             <router-link
               to="/admin/bimbingan"
               active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
@@ -200,6 +201,25 @@
               </p>
             </router-link>
             <router-link
+              to="/admin/seminarhasil"
+              active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
+              :class="[
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
+                isCollapsed ? 'justify-center' : '',
+              ]"
+            >
+              <span
+                class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform"
+                >co_present</span
+              >
+              <p
+                v-show="!isCollapsed"
+                class="text-sm font-medium whitespace-nowrap"
+              >
+                Seminar Hasil
+              </p>
+            </router-link>
+            <router-link
               to="/admin/ujian"
               active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
               :class="[
@@ -215,7 +235,7 @@
                 v-show="!isCollapsed"
                 class="text-sm font-medium whitespace-nowrap"
               >
-                Ujian Skripsi
+                Sidang Skripsi
               </p>
             </router-link>
             <router-link
@@ -273,8 +293,29 @@
             ></div>
           </div>
 
+          <router-link
+            v-if="!isStaff"
+            to="/admin/skripsi/verifikasi"
+            active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform"
+              >fact_check</span
+            >
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Verifikasi Skripsi
+            </p>
+          </router-link>
+
           <!-- Master Data Dropdown -->
-          <div class="flex flex-col gap-1">
+          <div v-if="!isStaff" class="flex flex-col gap-1">
             <button
               @click="toggleMasterData"
               :class="[
@@ -320,10 +361,35 @@
                 <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
                 Dosen
               </router-link>
+              <router-link
+                to="/admin/master/prodi"
+                active-class="text-primary bg-blue-50 dark:bg-blue-900/20"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all text-sm"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                Program Studi
+              </router-link>
+              <router-link
+                to="/admin/master/tahun"
+                active-class="text-primary bg-blue-50 dark:bg-blue-900/20"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all text-sm"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                Tahun Akademik
+              </router-link>
+              <router-link
+                to="/admin/master/jabatan"
+                active-class="text-primary bg-blue-50 dark:bg-blue-900/20"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all text-sm"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                Jabatan
+              </router-link>
             </div>
           </div>
 
           <router-link
+            v-if="!isStaff"
             to="/admin/pengguna"
             active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
             :class="[
@@ -357,11 +423,61 @@
             </p>
           </router-link>
         </div>
+
+        <!-- Super Admin Section -->
+        <div v-if="authStore.isSuperAdmin" class="mt-4 flex flex-col gap-1">
+          <div class="px-4 mt-2 mb-2">
+            <p
+              v-show="!isCollapsed"
+              class="text-[10px] font-bold text-red-500 uppercase tracking-wider transition-opacity duration-300"
+            >
+              Super Admin
+            </p>
+            <div v-show="isCollapsed" class="h-px w-full bg-red-200 my-2"></div>
+          </div>
+          <router-link
+            to="/admin/super-admin"
+            active-class="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-red-600 hover:bg-red-50 transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >admin_panel_settings</span
+            >
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Kontrol Sistem
+            </p>
+          </router-link>
+          <router-link
+            to="/admin/chat-monitor"
+            active-class="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-red-600 hover:bg-red-50 transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >chat_paste_go</span
+            >
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Monitoring Chat
+            </p>
+          </router-link>
+        </div>
       </nav>
       <div
         class="mt-auto flex flex-col gap-1 pt-4 border-t border-border-light"
       >
         <button
+          @click="logout"
           :class="[
             'flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors w-full text-left group',
             isCollapsed ? 'justify-center' : '',
@@ -384,7 +500,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../../stores/auth";
 
 const props = defineProps({
   isSidebarOpen: {
@@ -393,8 +511,11 @@ const props = defineProps({
   },
 });
 
+const router = useRouter();
+const authStore = useAuthStore();
 const isCollapsed = ref(false);
 const isMasterDataOpen = ref(false);
+const isStaff = computed(() => authStore.userRole === "staff");
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
@@ -411,6 +532,16 @@ const toggleMasterData = () => {
     }, 150);
   } else {
     isMasterDataOpen.value = !isMasterDataOpen.value;
+  }
+};
+
+const logout = async () => {
+  try {
+    await authStore.logout();
+    router.replace("/login");
+  } catch (error) {
+    console.error("Logout failed:", error);
+    router.replace("/login");
   }
 };
 </script>

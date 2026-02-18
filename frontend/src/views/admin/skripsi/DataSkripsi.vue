@@ -134,10 +134,10 @@
           >
             <option value="">Semua Status</option>
             <option value="proposal">Proposal</option>
-            <option value="bimbingan">Bimbingan</option>
             <option value="sempro">Seminar Proposal</option>
+            <option value="bimbingan">Bimbingan</option>
             <option value="semhas">Seminar Hasil</option>
-            <option value="ujian">Ujian</option>
+            <option value="sidang">Sidang</option>
             <option value="revisi">Revisi</option>
             <option value="lulus">Lulus</option>
           </select>
@@ -172,10 +172,59 @@
                   class="rounded border-border-light text-primary focus:ring-primary h-4 w-4"
                 />
               </th>
-              <th class="px-6 py-4">Mahasiswa</th>
-              <th class="px-6 py-4">Judul Skripsi</th>
+              <th
+                class="px-6 py-4 cursor-pointer hover:text-primary transition-colors select-none group"
+                @click="handleSort('mahasiswa_nama')"
+              >
+                <div class="flex items-center gap-1">
+                  Mahasiswa
+                  <span
+                    class="material-symbols-outlined text-[16px] text-text-secondary/50 group-hover:text-primary transition-colors"
+                  >
+                    {{ getSortIcon("mahasiswa_nama") }}
+                  </span>
+                </div>
+              </th>
+              <th
+                class="px-6 py-4 cursor-pointer hover:text-primary transition-colors select-none group"
+                @click="handleSort('judul')"
+              >
+                <div class="flex items-center gap-1">
+                  Judul Skripsi
+                  <span
+                    class="material-symbols-outlined text-[16px] text-text-secondary/50 group-hover:text-primary transition-colors"
+                  >
+                    {{ getSortIcon("judul") }}
+                  </span>
+                </div>
+              </th>
               <th class="px-6 py-4">Pembimbing</th>
-              <th class="px-6 py-4">Status</th>
+              <th
+                class="px-6 py-4 cursor-pointer hover:text-primary transition-colors select-none group"
+                @click="handleSort('status')"
+              >
+                <div class="flex items-center gap-1">
+                  Status
+                  <span
+                    class="material-symbols-outlined text-[16px] text-text-secondary/50 group-hover:text-primary transition-colors"
+                  >
+                    {{ getSortIcon("status") }}
+                  </span>
+                </div>
+              </th>
+              <th
+                class="px-6 py-4 cursor-pointer hover:text-primary transition-colors select-none group text-right"
+                @click="handleSort('created_at')"
+              >
+                <div class="flex items-center justify-end gap-1">
+                  Tanggal
+                  <span
+                    class="material-symbols-outlined text-[16px] text-text-secondary/50 group-hover:text-primary transition-colors"
+                  >
+                    {{ getSortIcon("created_at") }}
+                  </span>
+                </div>
+              </th>
               <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
@@ -191,7 +240,7 @@
             <tr
               v-for="item in skripsiList"
               :key="item.id"
-              class="group hover:bg-background-light/50 transition-colors"
+              class="group hover:bg-sidebar-light/30 transition-colors"
             >
               <td class="px-6 py-4">
                 <input
@@ -237,6 +286,9 @@
                   ></span>
                   {{ getStatusLabel(item.status) }}
                 </span>
+              </td>
+              <td class="px-6 py-4 text-right text-text-secondary text-xs">
+                {{ formatDate(item.created_at) }}
               </td>
               <td class="px-6 py-4 text-right">
                 <div
@@ -313,109 +365,257 @@
     </div>
 
     <!-- Add/Edit Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
+    <Transition name="modal-fade">
       <div
-        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        v-if="showModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
-        <div class="p-6 border-b border-border-light">
-          <h2 class="text-xl font-bold text-text-main">
-            {{ isEditing ? "Edit Skripsi" : "Tambah Skripsi" }}
-          </h2>
-        </div>
-        <form @submit.prevent="saveSkripsi" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Judul Skripsi</label
-            >
-            <textarea
-              v-model="form.judul"
-              rows="3"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            ></textarea>
+        <div
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        >
+          <div class="p-6 border-b border-border-light">
+            <h2 class="text-xl font-bold text-text-main">
+              {{ isEditing ? "Edit Skripsi" : "Tambah Skripsi" }}
+            </h2>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Status</label
-            >
-            <select
-              v-model="form.status"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            >
-              <option value="proposal">Proposal</option>
-              <option value="bimbingan">Bimbingan</option>
-              <option value="sempro">Seminar Proposal</option>
-              <option value="semhas">Seminar Hasil</option>
-              <option value="ujian">Ujian</option>
-              <option value="revisi">Revisi</option>
-              <option value="lulus">Lulus</option>
-            </select>
-          </div>
-          <div class="flex gap-3 pt-4">
-            <button
-              type="button"
-              @click="closeModal"
-              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              :disabled="saving"
-              class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-            >
-              {{ saving ? "Menyimpan..." : "Simpan" }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
-      <div
-        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
-      >
-        <div class="p-6">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="p-3 bg-red-100 text-red-600 rounded-full">
-              <span class="material-symbols-outlined">warning</span>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold text-text-main">Hapus Skripsi?</h3>
-              <p class="text-sm text-text-secondary">
-                Tindakan ini tidak dapat dibatalkan.
+          <form @submit.prevent="saveSkripsi" class="p-6 space-y-4">
+            <!-- Mahasiswa Selector (only for add) -->
+            <div v-if="!isEditing">
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Mahasiswa <span class="text-red-500">*</span></label
+              >
+              <div class="relative">
+                <input
+                  v-model="mahasiswaSearch"
+                  @input="filterMahasiswa"
+                  @focus="showMahasiswaDropdown = true"
+                  type="text"
+                  class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  placeholder="Cari nama atau NIM mahasiswa..."
+                  :class="{ 'border-primary bg-primary/5': form.mahasiswa_id }"
+                />
+                <div
+                  v-if="form.mahasiswa_id"
+                  class="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  <span
+                    class="material-symbols-outlined text-primary text-[20px]"
+                    >check_circle</span
+                  >
+                </div>
+              </div>
+              <!-- Selected Mahasiswa Display -->
+              <div
+                v-if="selectedMahasiswa"
+                class="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="size-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold"
+                    >
+                      {{ getInitials(selectedMahasiswa.nama) }}
+                    </div>
+                    <div>
+                      <p class="font-bold text-text-main text-sm">
+                        {{ selectedMahasiswa.nama }}
+                      </p>
+                      <p class="text-xs text-text-secondary">
+                        {{ selectedMahasiswa.nim }}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    @click="clearMahasiswa"
+                    class="text-text-secondary hover:text-red-500"
+                  >
+                    <span class="material-symbols-outlined text-[18px]"
+                      >close</span
+                    >
+                  </button>
+                </div>
+              </div>
+              <!-- Dropdown -->
+              <div
+                v-if="
+                  showMahasiswaDropdown &&
+                  filteredMahasiswa.length > 0 &&
+                  !form.mahasiswa_id
+                "
+                class="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto bg-white dark:bg-surface-light border border-border-light rounded-lg shadow-lg"
+              >
+                <button
+                  v-for="mhs in filteredMahasiswa"
+                  :key="mhs.id"
+                  type="button"
+                  @click="selectMahasiswa(mhs)"
+                  class="w-full px-4 py-3 text-left hover:bg-primary/5 flex items-center gap-3 border-b border-border-light last:border-0"
+                >
+                  <div
+                    class="size-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-text-secondary"
+                  >
+                    {{ getInitials(mhs.nama) }}
+                  </div>
+                  <div class="truncate max-w-[280px]">
+                    <p class="font-medium text-text-main text-sm truncate">
+                      {{ mhs.nama }}
+                    </p>
+                    <p class="text-xs text-text-secondary">
+                      {{ mhs.nim }} • {{ mhs.prodi?.nama || "-" }}
+                    </p>
+                  </div>
+                </button>
+              </div>
+              <p
+                v-if="
+                  showMahasiswaDropdown &&
+                  filteredMahasiswa.length === 0 &&
+                  mahasiswaSearch
+                "
+                class="mt-2 text-sm text-text-secondary italic"
+              >
+                Tidak ditemukan mahasiswa dengan kata kunci tersebut
               </p>
             </div>
-          </div>
-          <p class="text-text-main mb-6">
-            Apakah Anda yakin ingin menghapus skripsi
-            <strong>"{{ deleteItem?.judul }}"</strong>?
-          </p>
-          <div class="flex gap-3">
-            <button
-              @click="showDeleteModal = false"
-              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Judul Skripsi <span class="text-red-500">*</span></label
+              >
+              <textarea
+                v-model="form.judul"
+                rows="3"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Masukkan judul skripsi..."
+                required
+              ></textarea>
+            </div>
+            <div v-if="isEditing">
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Alasan Perubahan <span class="text-red-500">*</span></label
+              >
+              <textarea
+                v-model="form.alasan"
+                rows="2"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Jelaskan alasan perubahan..."
+                required
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Status</label
+              >
+              <select
+                v-model="form.status"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              >
+                <option value="pengajuan">Pengajuan</option>
+                <option value="proposal">Proposal</option>
+                <option value="sempro">Seminar Proposal</option>
+                <option value="bimbingan">Bimbingan</option>
+                <option value="semhas">Seminar Hasil</option>
+                <option value="sidang">Sidang</option>
+                <option value="revisi">Revisi</option>
+                <option value="lulus">Lulus</option>
+              </select>
+            </div>
+
+            <div
+              v-if="
+                ['proposal', 'sempro', 'semhas', 'revisi'].includes(form.status)
+              "
             >
-              Batal
-            </button>
-            <button
-              @click="deleteSkripsi"
-              :disabled="deleting"
-              class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {{ deleting ? "Menghapus..." : "Hapus" }}
-            </button>
+              <label class="block text-sm font-medium text-text-main mb-1">
+                File Skripsi (PDF/Word) <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="file"
+                ref="fileInput"
+                @change="handleFileChange"
+                accept=".pdf,.doc,.docx"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+              />
+              <p
+                v-if="isEditing && form.file_skripsi"
+                class="mt-1 text-xs text-text-secondary"
+              >
+                File saat ini:
+                <a
+                  :href="form.file_url"
+                  target="_blank"
+                  class="text-primary hover:underline"
+                  >Lihat File</a
+                >
+              </p>
+            </div>
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                @click="closeModal"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                :disabled="saving"
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {{ saving ? "Menyimpan..." : "Simpan" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Delete Confirmation Modal -->
+    <Transition name="modal-fade">
+      <div
+        v-if="showDeleteModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      >
+        <div
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+        >
+          <div class="p-6">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="p-3 bg-red-100 text-red-600 rounded-full">
+                <span class="material-symbols-outlined">warning</span>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-text-main">Hapus Skripsi?</h3>
+                <p class="text-sm text-text-secondary">
+                  Tindakan ini tidak dapat dibatalkan.
+                </p>
+              </div>
+            </div>
+            <p class="text-text-main mb-6">
+              Apakah Anda yakin ingin menghapus skripsi
+              <strong>"{{ deleteItem?.judul }}"</strong>?
+            </p>
+            <div class="flex gap-3">
+              <button
+                @click="showDeleteModal = false"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                @click="deleteSkripsi"
+                :disabled="deleting"
+                class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {{ deleting ? "Menghapus..." : "Hapus" }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -437,6 +637,11 @@ const showDeleteModal = ref(false);
 const isEditing = ref(false);
 const deleteItem = ref(null);
 
+const sorting = reactive({
+  by: "created_at",
+  order: "desc",
+});
+
 const pagination = reactive({
   current_page: 1,
   last_page: 1,
@@ -451,11 +656,12 @@ const statsCount = reactive({
   lulus: 0,
 });
 
-const form = reactive({
-  id: null,
-  judul: "",
-  status: "proposal",
-});
+// Mahasiswa search
+const mahasiswaList = ref([]);
+const mahasiswaSearch = ref("");
+const showMahasiswaDropdown = ref(false);
+const filteredMahasiswa = ref([]);
+const selectedMahasiswa = ref(null);
 
 let searchTimeout = null;
 
@@ -467,6 +673,8 @@ const fetchSkripsi = async () => {
       per_page: pagination.per_page,
       search: searchQuery.value,
       status: filterStatus.value,
+      sort_by: sorting.by,
+      sort_order: sorting.order,
     };
     const response = await adminService.getSkripsi(params);
     if (response.success) {
@@ -515,11 +723,99 @@ const goToPage = (page) => {
   }
 };
 
+const handleSort = (column) => {
+  if (sorting.by === column) {
+    sorting.order = sorting.order === "asc" ? "desc" : "asc";
+  } else {
+    sorting.by = column;
+    sorting.order = "asc";
+  }
+  fetchSkripsi();
+};
+
+const getSortIcon = (column) => {
+  if (sorting.by !== column) return "unfold_more";
+  return sorting.order === "asc" ? "expand_less" : "expand_more";
+};
+
+const form = reactive({
+  id: null,
+  mahasiswa_id: null,
+  judul: "",
+  status: "pengajuan",
+  alasan: "",
+  file_skripsi: null,
+  file_url: null,
+});
+
+const fetchMahasiswa = async () => {
+  try {
+    const response = await adminService.getMahasiswa({
+      per_page: 100,
+      status: "aktif",
+    });
+    if (response.success) {
+      mahasiswaList.value = response.data.data || response.data;
+      // filteredMahasiswa.value = mahasiswaList.value.slice(0, 10); // Don't show initially
+      filteredMahasiswa.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch mahasiswa:", error);
+  }
+};
+
+const filterMahasiswa = () => {
+  const search = mahasiswaSearch.value.toLowerCase();
+  if (!search) {
+    filteredMahasiswa.value = []; // Hide list if search is empty
+    return;
+  }
+  filteredMahasiswa.value = mahasiswaList.value
+    .filter(
+      (m) => m.nama.toLowerCase().includes(search) || m.nim.includes(search),
+    )
+    .slice(0, 10);
+};
+
+const selectMahasiswa = (mhs) => {
+  form.mahasiswa_id = mhs.id;
+  selectedMahasiswa.value = mhs;
+  mahasiswaSearch.value = mhs.nama;
+  showMahasiswaDropdown.value = false;
+};
+
+const clearMahasiswa = () => {
+  form.mahasiswa_id = null;
+  selectedMahasiswa.value = null;
+  mahasiswaSearch.value = "";
+};
+
+const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ukuran file maksimal 10MB");
+      e.target.value = "";
+      form.file_skripsi = null;
+      return;
+    }
+    form.file_skripsi = file;
+  }
+};
+
 const openAddModal = () => {
   isEditing.value = false;
   form.id = null;
+  form.mahasiswa_id = null;
   form.judul = "";
-  form.status = "proposal";
+  form.status = "pengajuan";
+  form.alasan = "";
+  form.file_skripsi = null;
+  form.file_url = null;
+  selectedMahasiswa.value = null;
+  mahasiswaSearch.value = "";
+  showMahasiswaDropdown.value = false;
+  fetchMahasiswa();
   showModal.value = true;
 };
 
@@ -528,28 +824,73 @@ const openEditModal = (item) => {
   form.id = item.id;
   form.judul = item.judul;
   form.status = item.status;
+  form.alasan = "";
+  form.file_skripsi = item.file_skripsi; // Store boolean/string presence
+  form.file_url = item.file_url; // Virtual attribute from backend
   showModal.value = true;
 };
 
 const closeModal = () => {
   showModal.value = false;
+  form.file_skripsi = null;
 };
 
 const saveSkripsi = async () => {
   try {
     saving.value = true;
-    if (isEditing.value) {
-      await adminService.updateSkripsi(form.id, {
-        judul: form.judul,
-        status: form.status,
-      });
-    } else {
-      await adminService.createSkripsi({
-        judul: form.judul,
-        status: form.status,
-      });
+
+    // Validation for required file
+    const requiredFileStatuses = ["proposal", "sempro", "semhas", "revisi"];
+    if (requiredFileStatuses.includes(form.status)) {
+      // If adding new, file is mandatory
+      if (!isEditing.value && !form.file_skripsi) {
+        alert("File Skripsi wajib diupload untuk status " + form.status);
+        saving.value = false;
+        return;
+      }
+      // If editing, file is mandatory only if not already present
+      if (isEditing.value && !form.file_skripsi && !form.file_url) {
+        alert("File Skripsi wajib diupload untuk status " + form.status);
+        saving.value = false;
+        return;
+      }
     }
+
+    const formData = new FormData();
+    if (form.mahasiswa_id) formData.append("mahasiswa_id", form.mahasiswa_id);
+    formData.append("judul", form.judul);
+    formData.append("status", form.status);
+    if (form.file_skripsi instanceof File) {
+      formData.append("file_skripsi", form.file_skripsi);
+    }
+
+    if (isEditing.value) {
+      if (!form.alasan) {
+        alert("Mohon isi alasan perubahan.");
+        saving.value = false;
+        return;
+      }
+      formData.append("alasan", form.alasan);
+    }
+
+    // For update PUT via FormData in Laravel, we need _method: PUT
+    let response;
+    if (isEditing.value) {
+      formData.append("_method", "PUT");
+      response = await adminService.updateSkripsi(form.id, formData);
+    } else {
+      if (!form.mahasiswa_id) {
+        alert("Pilih mahasiswa terlebih dahulu");
+        saving.value = false;
+        return;
+      }
+      response = await adminService.createSkripsi(formData);
+    }
+
     closeModal();
+    if (response && response.message) {
+      alert(response.message);
+    }
     fetchSkripsi();
     fetchStats();
   } catch (error) {
@@ -622,33 +963,28 @@ const getPembimbing = (pembimbingList) => {
 
 const getStatusClass = (status) => {
   const classes = {
-    proposal:
-      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    bimbingan:
-      "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-    sempro: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    semhas: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
-    ujian:
-      "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-    revisi:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    lulus:
-      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    proposal: "bg-yellow-50 text-yellow-600 border border-yellow-100",
+    bimbingan: "bg-purple-50 text-purple-600 border border-purple-100",
+    sempro: "bg-blue-50 text-blue-600 border border-blue-100",
+    semhas: "bg-cyan-50 text-cyan-600 border border-cyan-100",
+    sidang: "bg-orange-50 text-orange-600 border border-orange-100",
+    revisi: "bg-amber-50 text-amber-600 border border-amber-100",
+    lulus: "bg-green-50 text-green-600 border border-green-100",
   };
-  return classes[status] || "bg-gray-100 text-gray-700";
+  return classes[status] || "bg-gray-50 text-gray-600 border border-gray-100";
 };
 
 const getStatusDot = (status) => {
   const dots = {
-    proposal: "bg-yellow-500",
-    bimbingan: "bg-purple-500",
-    sempro: "bg-blue-500",
-    semhas: "bg-cyan-500",
-    ujian: "bg-orange-500",
-    revisi: "bg-amber-500",
-    lulus: "bg-green-500",
+    proposal: "bg-yellow-600",
+    bimbingan: "bg-purple-600",
+    sempro: "bg-blue-600",
+    semhas: "bg-cyan-600",
+    sidang: "bg-orange-600",
+    revisi: "bg-amber-600",
+    lulus: "bg-green-600",
   };
-  return dots[status] || "bg-gray-500";
+  return dots[status] || "bg-gray-600";
 };
 
 const getStatusLabel = (status) => {
@@ -657,11 +993,20 @@ const getStatusLabel = (status) => {
     bimbingan: "Bimbingan",
     sempro: "Sem. Proposal",
     semhas: "Sem. Hasil",
-    ujian: "Ujian",
+    sidang: "Sidang",
     revisi: "Revisi",
     lulus: "Lulus",
   };
   return labels[status] || status;
+};
+
+const formatDate = (date) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 onMounted(() => {

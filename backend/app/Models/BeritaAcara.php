@@ -27,7 +27,7 @@ class BeritaAcara extends Model
     ];
 
     const JENIS_SEMINAR = 'seminar';
-    const JENIS_UJIAN = 'ujian';
+    const JENIS_SIDANG = 'sidang';
 
     const HASIL_LULUS = 'lulus';
     const HASIL_LULUS_BERSYARAT = 'lulus_bersyarat';

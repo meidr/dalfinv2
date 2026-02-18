@@ -22,7 +22,20 @@
       </p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <!-- Loading State -->
+    <div
+      v-if="loadingProfile"
+      class="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse"
+    >
+      <div
+        class="lg:col-span-4 h-96 bg-gray-200 dark:bg-gray-700 rounded-xl"
+      ></div>
+      <div
+        class="lg:col-span-8 h-80 bg-gray-200 dark:bg-gray-700 rounded-xl"
+      ></div>
+    </div>
+
+    <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       <!-- Left: Profile Card -->
       <section class="lg:col-span-4 w-full">
         <div
@@ -37,27 +50,22 @@
             <!-- Avatar -->
             <div class="relative">
               <div
-                class="size-32 rounded-full border-4 border-surface-light shadow-md bg-cover bg-center"
-                style="
-                  background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuA8y9CNh5MhBGZObdkg3traTlC22PfVNf0UpUeKu8xQNOufwkWI1Y63GZh3m7OzpWXCiQEbNNkUjiKpw4iWuqQP-w0uPD9_Kng2qJZZPWnFLsDss1NWHDsdMIaW-ajIFcnrfXgDl9FKxxykFN03ELfe0NKGmH1EbjbTBKLX1MBIZHqFrOSBObEaGjeV8d_dVn-vNWwWc4tRPKdpUZ09Nzg2PhBJpAhw0Mu8Mixs6KprZrAL5CzKeNhCKeRezkDR7SoQbdqBSVMepy0r&quot;);
-                "
-              ></div>
-              <button
-                class="absolute bottom-2 right-0 p-2 bg-surface-light rounded-full shadow border border-gray-200 dark:border-gray-600 hover:text-primary transition-colors"
+                class="size-32 rounded-full border-4 border-surface-light shadow-md bg-primary/10 flex items-center justify-center text-primary text-4xl font-bold"
               >
-                <span class="material-symbols-outlined text-sm"
-                  >photo_camera</span
-                >
-              </button>
+                {{ initials }}
+              </div>
             </div>
 
             <div class="text-center w-full mb-6 mt-4">
-              <h3 class="text-xl font-bold text-text-main">Budi Santoso</h3>
+              <h3 class="text-xl font-bold text-text-main">
+                {{ mahasiswa?.nama || "-" }}
+              </h3>
               <p class="text-sm font-medium text-text-secondary">
-                Teknik Informatika
+                {{ mahasiswa?.prodi?.nama || "-" }}
               </p>
               <div class="mt-3">
                 <span
+                  v-if="mahasiswa?.is_active"
                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold border border-green-100 dark:border-green-800"
                 >
                   <span
@@ -65,26 +73,66 @@
                   ></span>
                   Mahasiswa Aktif
                 </span>
+                <span
+                  v-else
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 text-xs font-bold border border-gray-100 dark:border-gray-800"
+                >
+                  Tidak Aktif
+                </span>
               </div>
             </div>
 
             <div class="w-full flex flex-col gap-3">
               <div class="flex justify-between p-3 bg-sidebar-light rounded-lg">
                 <span class="text-sm text-text-secondary">NIM</span>
-                <span class="text-sm font-bold text-text-main">12345678</span>
+                <span class="text-sm font-bold text-text-main">{{
+                  mahasiswa?.nim || "-"
+                }}</span>
               </div>
               <div class="flex justify-between p-3 bg-sidebar-light rounded-lg">
                 <span class="text-sm text-text-secondary">Angkatan</span>
-                <span class="text-sm font-bold text-text-main">2020</span>
+                <span class="text-sm font-bold text-text-main">{{
+                  mahasiswa?.angkatan || "-"
+                }}</span>
+              </div>
+              <div
+                v-if="mahasiswa?.semester"
+                class="flex justify-between p-3 bg-sidebar-light rounded-lg"
+              >
+                <span class="text-sm text-text-secondary">Semester</span>
+                <span class="text-sm font-bold text-text-main">{{
+                  mahasiswa.semester
+                }}</span>
+              </div>
+              <div
+                v-if="mahasiswa?.jenis_kelamin"
+                class="flex justify-between p-3 bg-sidebar-light rounded-lg"
+              >
+                <span class="text-sm text-text-secondary">Jenis Kelamin</span>
+                <span class="text-sm font-bold text-text-main">{{
+                  mahasiswa.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan"
+                }}</span>
+              </div>
+              <div
+                v-if="mahasiswa?.no_hp"
+                class="flex flex-col gap-1 p-3 bg-sidebar-light rounded-lg"
+              >
+                <span
+                  class="text-xs font-bold text-text-secondary uppercase tracking-wider"
+                  >No. HP</span
+                >
+                <span class="text-sm font-medium text-text-main">{{
+                  mahasiswa.no_hp
+                }}</span>
               </div>
               <div class="flex flex-col gap-1 p-3 bg-sidebar-light rounded-lg">
                 <span
                   class="text-xs font-bold text-text-secondary uppercase tracking-wider"
                   >Email Institusi</span
                 >
-                <span class="text-sm font-medium text-text-main truncate"
-                  >budi.s@university.ac.id</span
-                >
+                <span class="text-sm font-medium text-text-main truncate">{{
+                  user?.email || mahasiswa?.email || "-"
+                }}</span>
               </div>
             </div>
           </div>
@@ -110,7 +158,34 @@
             </div>
           </div>
 
-          <form class="flex flex-col gap-6 max-w-2xl">
+          <!-- Success Message -->
+          <div
+            v-if="successMsg"
+            class="flex gap-3 bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-100 dark:border-green-800 text-sm text-green-800 dark:text-green-300 mb-6"
+          >
+            <span
+              class="material-symbols-outlined text-green-600 dark:text-green-400"
+              >check_circle</span
+            >
+            <p>{{ successMsg }}</p>
+          </div>
+
+          <!-- Error Message -->
+          <div
+            v-if="errorMsg"
+            class="flex gap-3 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-100 dark:border-red-800 text-sm text-red-800 dark:text-red-300 mb-6"
+          >
+            <span
+              class="material-symbols-outlined text-red-600 dark:text-red-400"
+              >error</span
+            >
+            <p>{{ errorMsg }}</p>
+          </div>
+
+          <form
+            @submit.prevent="handleChangePassword"
+            class="flex flex-col gap-6 max-w-2xl"
+          >
             <div
               class="flex gap-3 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 text-sm text-blue-800 dark:text-blue-300"
             >
@@ -126,9 +201,11 @@
                 >Password Lama</label
               >
               <input
+                v-model="form.currentPassword"
                 type="password"
                 placeholder="Masukkan password saat ini"
                 class="px-4 py-2.5 rounded-lg border border-border-light bg-background-light focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm"
+                required
               />
             </div>
 
@@ -140,9 +217,12 @@
                   >Password Baru</label
                 >
                 <input
+                  v-model="form.newPassword"
                   type="password"
                   placeholder="Buat password baru"
                   class="px-4 py-2.5 rounded-lg border border-border-light bg-background-light focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm"
+                  required
+                  minlength="8"
                 />
               </div>
               <div class="flex flex-col gap-2">
@@ -150,9 +230,12 @@
                   >Konfirmasi Password</label
                 >
                 <input
+                  v-model="form.confirmPassword"
                   type="password"
                   placeholder="Ulangi password baru"
                   class="px-4 py-2.5 rounded-lg border border-border-light bg-background-light focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm"
+                  required
+                  minlength="8"
                 />
               </div>
             </div>
@@ -160,16 +243,25 @@
             <div class="flex justify-end gap-3 mt-4">
               <button
                 type="button"
+                @click="resetForm"
                 class="px-6 py-2.5 rounded-lg text-text-secondary font-bold hover:bg-sidebar-light transition-colors text-sm"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                class="px-6 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-blue-600 transition-colors shadow-sm text-sm flex items-center gap-2"
+                :disabled="saving"
+                class="px-6 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-blue-600 transition-colors shadow-sm text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span class="material-symbols-outlined text-[18px]">save</span>
-                Update Password
+                <span
+                  v-if="saving"
+                  class="material-symbols-outlined text-[18px] animate-spin"
+                  >progress_activity</span
+                >
+                <span v-else class="material-symbols-outlined text-[18px]"
+                  >save</span
+                >
+                {{ saving ? "Menyimpan..." : "Update Password" }}
               </button>
             </div>
           </form>
@@ -178,3 +270,90 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { useAuthStore } from "../../stores/auth";
+import authService from "../../services/authService";
+
+const authStore = useAuthStore();
+const loadingProfile = ref(true);
+const saving = ref(false);
+const successMsg = ref("");
+const errorMsg = ref("");
+
+const user = computed(() => authStore.currentUser);
+const mahasiswa = computed(() => authStore.profile);
+
+const initials = computed(() => {
+  const nama = mahasiswa.value?.nama || "";
+  return nama
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+});
+
+const form = ref({
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+});
+
+const resetForm = () => {
+  form.value = { currentPassword: "", newPassword: "", confirmPassword: "" };
+  errorMsg.value = "";
+  successMsg.value = "";
+};
+
+const handleChangePassword = async () => {
+  errorMsg.value = "";
+  successMsg.value = "";
+
+  if (form.value.newPassword !== form.value.confirmPassword) {
+    errorMsg.value = "Password baru dan konfirmasi password tidak cocok.";
+    return;
+  }
+
+  if (form.value.newPassword.length < 8) {
+    errorMsg.value = "Password baru harus terdiri dari minimal 8 karakter.";
+    return;
+  }
+
+  saving.value = true;
+  try {
+    const res = await authService.changePassword(
+      form.value.currentPassword,
+      form.value.newPassword,
+      form.value.confirmPassword,
+    );
+    successMsg.value = res.message || "Password berhasil diperbarui!";
+    resetForm();
+    // Keep success message visible
+    successMsg.value = res.message || "Password berhasil diperbarui!";
+  } catch (err) {
+    const data = err.response?.data;
+    if (data?.errors) {
+      const firstErr = Object.values(data.errors)[0];
+      errorMsg.value = Array.isArray(firstErr) ? firstErr[0] : firstErr;
+    } else {
+      errorMsg.value =
+        data?.message || "Gagal mengubah password. Periksa password lama Anda.";
+    }
+  } finally {
+    saving.value = false;
+  }
+};
+
+onMounted(async () => {
+  try {
+    // Refresh user data from server
+    await authStore.fetchUser();
+  } catch (err) {
+    console.error("Failed to fetch user profile:", err);
+  } finally {
+    loadingProfile.value = false;
+  }
+});
+</script>

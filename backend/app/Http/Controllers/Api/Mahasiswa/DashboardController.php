@@ -38,8 +38,8 @@ class DashboardController extends Controller
 
         // Get upcoming schedule
         $seminar = Seminar::whereHas('skripsi', function ($q) use ($skripsi) {
-                $q->where('id', $skripsi->id);
-            })
+            $q->where('id', $skripsi->id);
+        })
             ->where('status', 'terjadwal')
             ->orderBy('tanggal', 'asc')
             ->first();
@@ -51,6 +51,31 @@ class DashboardController extends Controller
         // Bimbingan stats
         $totalBimbingan = $skripsi->bimbingan()->count();
         $approvedBimbingan = $skripsi->bimbingan()->where('status', 'approved')->count();
+        $totalDokumen = $skripsi->dokumen()->count();
+
+        // Get completed sempro seminar with penguji and berita_acara
+        $semproSeminar = Seminar::where('skripsi_id', $skripsi->id)
+            ->where('jenis', 'sempro')
+            ->with(['penguji.dosen', 'beritaAcara'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Get semhas seminar
+        $semhasSeminar = Seminar::where('skripsi_id', $skripsi->id)
+            ->where('jenis', 'semhas')
+            ->with(['penguji.dosen', 'beritaAcara'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Get sidang from seminar table (jenis='sidang')
+        $sidangSeminar = Seminar::where('skripsi_id', $skripsi->id)
+            ->where('jenis', 'sidang')
+            ->with(['penguji.dosen', 'beritaAcara'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Get SK Yudisium
+        $skYudisium = $skripsi->skYudisium;
 
         return response()->json([
             'success' => true,
@@ -61,9 +86,14 @@ class DashboardController extends Controller
                     'progress' => $skripsi->progress_percentage,
                     'total_bimbingan' => $totalBimbingan,
                     'approved_bimbingan' => $approvedBimbingan,
+                    'total_dokumen' => $totalDokumen,
                 ],
                 'upcoming_seminar' => $seminar,
                 'upcoming_ujian' => $ujian,
+                'sempro_seminar' => $semproSeminar,
+                'semhas_seminar' => $semhasSeminar,
+                'sidang_seminar' => $sidangSeminar,
+                'sk_yudisium' => $skYudisium,
             ]
         ]);
     }

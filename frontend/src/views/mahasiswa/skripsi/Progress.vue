@@ -7,393 +7,221 @@
       <h3 class="text-lg font-bold text-text-main mb-6">Workflow Progress</h3>
       <div class="min-w-[800px]">
         <ol class="flex items-center w-full relative justify-between">
-          <!-- Step 1: Completed -->
-          <li class="relative flex flex-col items-center group w-full">
+          <li
+            v-for="(step, i) in steps"
+            :key="step.key"
+            class="relative flex flex-col items-center group w-full"
+          >
             <div class="flex items-center w-full">
+              <!-- Icon -->
               <div
-                class="flex items-center justify-center size-10 bg-green-100 rounded-full shrink-0 z-10 border-2 border-green-500"
+                class="flex items-center justify-center size-10 rounded-full shrink-0 z-10 border-2"
+                :class="getStepIconClass(step.state)"
               >
                 <span
+                  v-if="step.state === 'done'"
                   class="material-symbols-outlined text-green-600 text-xl font-bold"
                   >check</span
                 >
-              </div>
-              <div class="flex-auto border-t-4 border-green-500"></div>
-            </div>
-            <div class="mt-3 text-center pr-6">
-              <h4 class="text-sm font-bold text-green-700">Judul</h4>
-              <p class="text-xs text-text-secondary">Selesai</p>
-            </div>
-          </li>
-          <!-- Step 2: Completed -->
-          <li class="relative flex flex-col items-center group w-full">
-            <div class="flex items-center w-full">
-              <div
-                class="flex items-center justify-center size-10 bg-green-100 rounded-full shrink-0 z-10 border-2 border-green-500"
-              >
                 <span
-                  class="material-symbols-outlined text-green-600 text-xl font-bold"
-                  >check</span
+                  v-else-if="step.state === 'active'"
+                  class="material-symbols-outlined text-primary text-xl font-bold animate-pulse"
+                  >radio_button_checked</span
+                >
+                <span
+                  v-else
+                  class="material-symbols-outlined text-gray-400 text-xl"
+                  >circle</span
                 >
               </div>
-              <div class="flex-auto border-t-4 border-green-500"></div>
+              <!-- Connector line (not on last item) -->
+              <div
+                v-if="i < steps.length - 1"
+                class="flex-auto border-t-4"
+                :class="
+                  step.state === 'done'
+                    ? 'border-green-500'
+                    : step.state === 'active'
+                      ? 'border-primary/40'
+                      : 'border-gray-200 dark:border-gray-700'
+                "
+              ></div>
             </div>
             <div class="mt-3 text-center pr-6">
-              <h4 class="text-sm font-bold text-green-700">Dospem</h4>
-              <p class="text-xs text-text-secondary">Selesai</p>
-            </div>
-          </li>
-          <!-- Step 3: Completed -->
-          <li class="relative flex flex-col items-center group w-full">
-            <div class="flex items-center w-full">
-              <div
-                class="flex items-center justify-center size-10 bg-green-100 rounded-full shrink-0 z-10 border-2 border-green-500"
+              <h4
+                class="text-sm font-bold"
+                :class="
+                  step.state === 'done'
+                    ? 'text-green-700 dark:text-green-400'
+                    : step.state === 'active'
+                      ? 'text-primary'
+                      : 'text-gray-400'
+                "
               >
-                <span
-                  class="material-symbols-outlined text-green-600 text-xl font-bold"
-                  >check</span
-                >
-              </div>
-              <div class="flex-auto border-t-4 border-green-500"></div>
-            </div>
-            <div class="mt-3 text-center pr-6">
-              <h4 class="text-sm font-bold text-green-700">SK Tugas</h4>
-              <p class="text-xs text-text-secondary">Terbit</p>
-            </div>
-          </li>
-          <!-- Step 4: Current (Sempro) -->
-          <li class="relative flex flex-col items-center group w-full">
-            <div class="flex items-center w-full">
-              <div
-                class="flex items-center justify-center size-10 bg-primary/10 rounded-full shrink-0 z-10 border-2 border-primary animate-pulse"
-              >
-                <span
-                  class="material-symbols-outlined text-primary text-xl font-bold"
-                  >pending</span
-                >
-              </div>
-              <div class="flex-auto border-t-4 border-border-light"></div>
-            </div>
-            <div class="mt-3 text-center pr-6">
-              <h4 class="text-sm font-bold text-primary">Sempro</h4>
-              <p class="text-xs text-primary font-medium">In Progress</p>
-            </div>
-          </li>
-          <!-- Step 5: Pending -->
-          <li class="relative flex flex-col items-center group w-full">
-            <div class="flex items-center w-full">
-              <div
-                class="flex items-center justify-center size-10 bg-sidebar-light rounded-full shrink-0 z-10 border-2 border-border-light"
-              >
-                <span class="text-text-secondary font-bold text-sm">5</span>
-              </div>
-              <div class="flex-auto border-t-4 border-border-light"></div>
-            </div>
-            <div class="mt-3 text-center pr-6">
-              <h4 class="text-sm font-medium text-text-secondary">Bimbingan</h4>
-            </div>
-          </li>
-          <!-- Step 6: Pending -->
-          <li class="relative flex flex-col items-center group w-full">
-            <div class="flex items-center w-full">
-              <div
-                class="flex items-center justify-center size-10 bg-sidebar-light rounded-full shrink-0 z-10 border-2 border-border-light"
-              >
-                <span class="text-text-secondary font-bold text-sm">6</span>
-              </div>
-              <div class="flex-auto border-t-4 border-border-light"></div>
-            </div>
-            <div class="mt-3 text-center pr-6">
-              <h4 class="text-sm font-medium text-text-secondary">Ujian</h4>
-            </div>
-          </li>
-          <!-- Step 7: Pending -->
-          <li class="relative flex flex-col items-center group w-full">
-            <div class="flex items-center w-full">
-              <div
-                class="flex items-center justify-center size-10 bg-sidebar-light rounded-full shrink-0 z-10 border-2 border-border-light"
-              >
-                <span class="text-text-secondary font-bold text-sm">7</span>
-              </div>
-              <div class="flex-auto border-t-4 border-border-light"></div>
-            </div>
-            <div class="mt-3 text-center pr-6">
-              <h4 class="text-sm font-medium text-text-secondary">Revisi</h4>
-            </div>
-          </li>
-          <!-- Step 8: Pending (Last) -->
-          <li class="relative flex flex-col items-center group">
-            <div class="flex items-center w-full">
-              <div
-                class="flex items-center justify-center size-10 bg-sidebar-light rounded-full shrink-0 z-10 border-2 border-border-light"
-              >
-                <span
-                  class="material-symbols-outlined text-text-secondary text-xl"
-                  >school</span
-                >
-              </div>
-            </div>
-            <div class="mt-3 text-center">
-              <h4 class="text-sm font-medium text-text-secondary">Yudisium</h4>
+                {{ step.label }}
+              </h4>
+              <p class="text-xs text-text-secondary">
+                {{
+                  step.state === "done"
+                    ? "Selesai"
+                    : step.state === "active"
+                      ? "Saat Ini"
+                      : "Belum"
+                }}
+              </p>
             </div>
           </li>
         </ol>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Left Column: Informasi Umum -->
-      <div class="lg:col-span-2 space-y-6">
-        <div
-          class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden"
-        >
-          <div
-            class="px-6 py-4 border-b border-border-light flex justify-between items-center bg-sidebar-light"
+    <!-- Current Status Details -->
+    <div
+      class="bg-surface-light rounded-xl shadow-sm border border-border-light p-6"
+    >
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2 bg-primary/10 rounded-lg text-primary">
+          <span class="material-symbols-outlined">info</span>
+        </div>
+        <h3 class="text-lg font-bold text-text-main">Status Saat Ini</h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1 p-3 bg-sidebar-light rounded-lg">
+          <span class="text-xs text-text-secondary font-semibold uppercase"
+            >Status</span
           >
-            <h3 class="font-bold text-text-main flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">info</span>
-              Informasi Umum
-            </h3>
-            <router-link
-              to="profil"
-              class="text-sm text-primary font-medium hover:underline"
-            >
-              Detail Lengkap
-            </router-link>
-          </div>
-          <div class="p-6">
-            <div class="grid gap-6">
-              <div>
-                <label
-                  class="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1"
-                  >Judul Skripsi</label
-                >
-                <p class="text-lg font-medium text-text-main leading-snug">
-                  Implementasi Deep Learning Menggunakan Metode CNN untuk
-                  Deteksi Penyakit Daun Tanaman Padi Berbasis Android
-                </p>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div
-                  class="p-4 bg-background-light rounded-lg border border-border-light"
-                >
-                  <label
-                    class="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2"
-                    >Dosen Pembimbing 1</label
-                  >
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="size-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold"
-                    >
-                      AW
-                    </div>
-                    <div>
-                      <p class="text-sm font-bold text-text-main">
-                        Dr. Andi Wijaya, M.Kom
-                      </p>
-                      <p class="text-xs text-text-secondary">
-                        NIP. 198501012010011001
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="p-4 bg-background-light rounded-lg border border-border-light"
-                >
-                  <label
-                    class="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2"
-                    >Dosen Pembimbing 2</label
-                  >
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="size-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold"
-                    >
-                      SR
-                    </div>
-                    <div>
-                      <p class="text-sm font-bold text-text-main">
-                        Siti Rahmawati, S.T., M.T.
-                      </p>
-                      <p class="text-xs text-text-secondary">
-                        NIP. 199002022015022002
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                <div>
-                  <label class="block text-xs text-text-secondary mb-1"
-                    >Tanggal Daftar</label
-                  >
-                  <p class="text-sm font-medium text-text-main">12 Jan 2023</p>
-                </div>
-                <div>
-                  <label class="block text-xs text-text-secondary mb-1"
-                    >Target Lulus</label
-                  >
-                  <p class="text-sm font-medium text-text-main">Des 2023</p>
-                </div>
-                <div>
-                  <label class="block text-xs text-text-secondary mb-1"
-                    >SKS Lulus</label
-                  >
-                  <p class="text-sm font-medium text-text-main">138 SKS</p>
-                </div>
-                <div>
-                  <label class="block text-xs text-text-secondary mb-1"
-                    >IPK Saat Ini</label
-                  >
-                  <p class="text-sm font-medium text-text-main">3.75</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <span class="font-bold text-text-main">{{ currentStatusLabel }}</span>
+        </div>
+        <div class="flex flex-col gap-1 p-3 bg-sidebar-light rounded-lg">
+          <span class="text-xs text-text-secondary font-semibold uppercase"
+            >Progress</span
+          >
+          <span class="font-bold text-text-main"
+            >{{ skripsi?.progress_percentage ?? 0 }}%</span
+          >
+        </div>
+        <div
+          v-if="skripsi?.tanggal_daftar"
+          class="flex flex-col gap-1 p-3 bg-sidebar-light rounded-lg"
+        >
+          <span class="text-xs text-text-secondary font-semibold uppercase"
+            >Tanggal Daftar</span
+          >
+          <span class="font-bold text-text-main">{{
+            formatDate(skripsi.tanggal_daftar)
+          }}</span>
+        </div>
+        <div class="flex flex-col gap-1 p-3 bg-sidebar-light rounded-lg">
+          <span class="text-xs text-text-secondary font-semibold uppercase"
+            >Terakhir Update</span
+          >
+          <span class="font-bold text-text-main">{{
+            formatDate(skripsi?.updated_at)
+          }}</span>
         </div>
       </div>
+    </div>
 
-      <!-- Right Column: Documents & Actions -->
-      <div class="space-y-6">
-        <!-- Quick Actions -->
-        <div
-          class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden"
+    <!-- Progress Bar -->
+    <div
+      class="bg-surface-light rounded-xl shadow-sm border border-border-light p-6"
+    >
+      <div class="flex justify-between items-end mb-3">
+        <span class="text-sm font-medium text-text-main"
+          >Progres Keseluruhan</span
         >
-          <div class="px-6 py-4 border-b border-border-light bg-sidebar-light">
-            <h3 class="font-bold text-text-main flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">bolt</span>
-              Quick Actions
-            </h3>
-          </div>
-          <div class="p-6 flex flex-col gap-3">
-            <button
-              class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2"
-            >
-              <span class="material-symbols-outlined text-[20px]"
-                >edit_note</span
-              >
-              Input Nilai Sempro
-            </button>
-            <button
-              class="w-full bg-surface-light border border-border-light hover:bg-sidebar-light text-text-main font-medium py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
-            >
-              <span class="material-symbols-outlined text-[20px]">edit</span>
-              Edit Data Mahasiswa
-            </button>
-            <button
-              class="w-full bg-surface-light border border-border-light hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-text-main font-medium py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 mt-2"
-            >
-              <span class="material-symbols-outlined text-[20px]">warning</span>
-              Laporkan Masalah
-            </button>
-          </div>
-        </div>
-
-        <!-- Dokumen Terbit -->
-        <div
-          class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden"
+        <span class="text-sm font-bold text-primary"
+          >{{ skripsi?.progress_percentage ?? 0 }}%</span
         >
-          <div
-            class="px-6 py-4 border-b border-border-light bg-sidebar-light flex justify-between items-center"
-          >
-            <h3 class="font-bold text-text-main flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary"
-                >description</span
-              >
-              Dokumen Terbit
-            </h3>
-          </div>
-          <div class="p-2">
-            <ul class="flex flex-col">
-              <li
-                class="group flex items-center justify-between p-3 rounded-lg hover:bg-sidebar-light transition-colors cursor-pointer"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="bg-red-50 text-red-500 p-2 rounded-lg">
-                    <span class="material-symbols-outlined"
-                      >picture_as_pdf</span
-                    >
-                  </div>
-                  <div class="flex flex-col">
-                    <span
-                      class="text-sm font-medium text-text-main group-hover:text-primary transition-colors"
-                      >SK Pembimbing.pdf</span
-                    >
-                    <span class="text-xs text-text-secondary"
-                      >14 Jan 2023 • 245 KB</span
-                    >
-                  </div>
-                </div>
-                <button
-                  class="text-text-secondary hover:text-primary transition-colors p-2"
-                >
-                  <span class="material-symbols-outlined">download</span>
-                </button>
-              </li>
-              <li
-                class="group flex items-center justify-between p-3 rounded-lg hover:bg-sidebar-light transition-colors cursor-pointer"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="bg-red-50 text-red-500 p-2 rounded-lg">
-                    <span class="material-symbols-outlined"
-                      >picture_as_pdf</span
-                    >
-                  </div>
-                  <div class="flex flex-col">
-                    <span
-                      class="text-sm font-medium text-text-main group-hover:text-primary transition-colors"
-                      >Nota Dinas.pdf</span
-                    >
-                    <span class="text-xs text-text-secondary"
-                      >20 Jan 2023 • 1.2 MB</span
-                    >
-                  </div>
-                </div>
-                <button
-                  class="text-text-secondary hover:text-primary transition-colors p-2"
-                >
-                  <span class="material-symbols-outlined">download</span>
-                </button>
-              </li>
-              <li
-                class="group flex items-center justify-between p-3 rounded-lg hover:bg-sidebar-light transition-colors cursor-pointer"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="bg-blue-50 text-blue-500 p-2 rounded-lg">
-                    <span class="material-symbols-outlined">article</span>
-                  </div>
-                  <div class="flex flex-col">
-                    <span
-                      class="text-sm font-medium text-text-main group-hover:text-primary transition-colors"
-                      >Kartu Bimbingan.docx</span
-                    >
-                    <span class="text-xs text-text-secondary"
-                      >22 Jan 2023 • 800 KB</span
-                    >
-                  </div>
-                </div>
-                <button
-                  class="text-text-secondary hover:text-primary transition-colors p-2"
-                >
-                  <span class="material-symbols-outlined">download</span>
-                </button>
-              </li>
-            </ul>
-          </div>
-          <div
-            class="px-6 py-3 border-t border-border-light bg-sidebar-light text-center"
-          >
-            <router-link
-              to="dokumen"
-              class="text-xs font-semibold text-primary uppercase tracking-wide hover:underline"
-            >
-              Lihat Semua Dokumen
-            </router-link>
-          </div>
-        </div>
+      </div>
+      <div class="w-full bg-sidebar-light rounded-full h-3 overflow-hidden">
+        <div
+          class="bg-gradient-to-r from-blue-500 to-primary h-3 rounded-full transition-all duration-700"
+          :style="{ width: (skripsi?.progress_percentage ?? 0) + '%' }"
+        ></div>
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { inject, computed } from "vue";
+
+const skripsi = inject("skripsi");
+
+const statusMap = {
+  draft: "Draft",
+  pengajuan: "Pengajuan Judul",
+  disetujui: "Judul Disetujui",
+  ditolak: "Ditolak",
+  proposal: "Tahap Proposal",
+  sempro: "Sudah Sempro",
+  bimbingan: "Proses Bimbingan",
+  semhas: "Seminar Hasil",
+  sidang: "Sidang Skripsi",
+  revisi: "Revisi",
+  lulus: "Lulus",
+};
+
+const currentStatusLabel = computed(
+  () => statusMap[skripsi.value?.status] || skripsi.value?.status || "-",
+);
+
+// Define workflow steps and derive their state from skripsi status
+const statusOrder = [
+  "pengajuan",
+  "disetujui",
+  "proposal",
+  "sempro",
+  "bimbingan",
+  "semhas",
+  "sidang",
+  "revisi",
+  "lulus",
+];
+
+const stepDefs = [
+  { key: "judul", label: "Judul", after: ["pengajuan", "disetujui"] },
+  { key: "dospem", label: "Dospem", after: ["disetujui"] },
+  { key: "proposal", label: "Proposal", after: ["proposal"] },
+  { key: "sempro", label: "Sempro", after: ["sempro"] },
+  { key: "bimbingan", label: "Bimbingan", after: ["bimbingan"] },
+  { key: "semhas", label: "Semhas", after: ["semhas"] },
+  { key: "sidang", label: "Sidang", after: ["sidang"] },
+  { key: "revisi", label: "Revisi", after: ["revisi"] },
+  { key: "lulus", label: "Lulus", after: ["lulus"] },
+];
+
+const steps = computed(() => {
+  const status = skripsi.value?.status || "draft";
+  const currentIdx = statusOrder.indexOf(status);
+
+  return stepDefs.map((step) => {
+    const stepIdx = statusOrder.indexOf(step.after[step.after.length - 1]);
+    let state = "pending";
+    if (stepIdx < currentIdx) state = "done";
+    else if (stepIdx === currentIdx) state = "active";
+    return { ...step, state };
+  });
+});
+
+const getStepIconClass = (state) => {
+  if (state === "done")
+    return "bg-green-100 border-green-500 dark:bg-green-900/30";
+  if (state === "active")
+    return "bg-blue-100 border-primary dark:bg-blue-900/30";
+  return "bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600";
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  return new Date(dateStr).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+</script>
 
 <style scoped>
 .animate-fade-in {

@@ -47,6 +47,31 @@ export const mahasiswaService = {
     });
     return response.data;
   },
+
+  // Dokumen
+  async uploadDokumen(data) {
+    const formData = new FormData();
+    formData.append("jenis", data.jenis);
+    formData.append("file", data.file);
+    if (data.catatan) formData.append("catatan", data.catatan);
+
+    const response = await api.post("/mahasiswa/skripsi/dokumen", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  async deleteDokumen(id) {
+    const response = await api.delete(`/mahasiswa/skripsi/dokumen/${id}`);
+    return response.data;
+  },
+
+  async downloadOfficialPdf(type) {
+    const response = await api.get(`/mahasiswa/skripsi/pdf/${type}`, {
+      responseType: "blob",
+    });
+    return response;
+  },
 };
 
 export default mahasiswaService;

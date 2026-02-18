@@ -1,47 +1,151 @@
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="max-w-7xl mx-auto flex flex-col gap-8 animate-fade-in-up">
+    <!-- Header -->
     <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-2 text-sm text-text-secondary">
+        <router-link
+          to="/admin/dashboard"
+          class="hover:text-primary transition-colors"
+          >Dashboard</router-link
+        >
+        <span>/</span>
+        <span class="text-text-main font-medium">Seminar Proposal</span>
+      </div>
       <h1 class="text-text-main text-3xl font-bold leading-tight">
         Seminar Proposal
       </h1>
       <p class="text-text-secondary text-sm font-normal">
-        Daftar mahasiswa yang memenuhi syarat untuk melaksanakan seminar
-        proposal.
+        Kelola penjadwalan seminar proposal mahasiswa.
       </p>
     </div>
 
-    <!-- Table Container -->
-    <div
-      class="flex flex-col rounded-xl border border-border-light bg-surface-light dark:bg-surface-light overflow-hidden shadow-sm"
-    >
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div
-        class="p-6 border-b border-border-light flex flex-wrap gap-4 justify-between items-center bg-gray-50/50 dark:bg-sidebar-light/50"
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
       >
-        <div>
-          <h3 class="text-text-main text-lg font-bold">Antrian Seminar</h3>
-          <p class="text-text-secondary text-xs">
-            Kelola jadwal dan input nilai.
-          </p>
-        </div>
-        <div class="flex items-center gap-3">
-          <select
-            v-model="filterJenis"
-            @change="fetchSeminar"
-            class="px-3 py-1.5 bg-white border border-border-light rounded-lg text-xs font-medium focus:ring-1 focus:ring-primary"
+        <div class="flex items-center justify-between">
+          <p
+            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
           >
-            <option value="">Semua Jenis</option>
-            <option value="sempro">Seminar Proposal</option>
-            <option value="semhas">Seminar Hasil</option>
-          </select>
+            Total Mahasiswa
+          </p>
+          <div class="bg-primary/10 p-2 rounded-lg text-primary">
+            <span class="material-symbols-outlined">school</span>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ pagination.total }}
+          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="material-symbols-outlined text-primary text-[18px]"
+              >people</span
+            >
+            <p class="text-primary text-xs font-semibold">Eligible sempro</p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+      >
+        <div class="flex items-center justify-between">
+          <p
+            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
+          >
+            Sudah Dijadwalkan
+          </p>
+          <div class="bg-green-100 p-2 rounded-lg text-green-600">
+            <span class="material-symbols-outlined">event_available</span>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ statsCount.terjadwal }}
+          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="material-symbols-outlined text-green-600 text-[18px]"
+              >check_circle</span
+            >
+            <p class="text-green-600 text-xs font-semibold">Terjadwal sempro</p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+      >
+        <div class="flex items-center justify-between">
+          <p
+            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
+          >
+            Belum Dijadwalkan
+          </p>
+          <div class="bg-orange-100 p-2 rounded-lg text-orange-600">
+            <span class="material-symbols-outlined">event_busy</span>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ statsCount.belum }}
+          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="material-symbols-outlined text-orange-600 text-[18px]"
+              >pending</span
+            >
+            <p class="text-orange-600 text-xs font-semibold">Menunggu jadwal</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar & Table -->
+    <div
+      class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
+    >
+      <!-- Toolbar -->
+      <div
+        class="p-5 border-b border-border-light flex flex-col md:flex-row gap-4 items-center justify-between"
+      >
+        <!-- Search -->
+        <div class="relative w-full md:max-w-md">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
+            <span class="material-symbols-outlined text-text-secondary"
+              >search</span
+            >
+          </div>
+          <input
+            v-model="searchQuery"
+            @input="debouncedSearch"
+            class="block w-full pl-10 pr-3 py-2.5 border border-border-light rounded-lg leading-5 bg-background-light text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-shadow dark:bg-background"
+            placeholder="Cari Mahasiswa, NIM, atau Judul..."
+            type="text"
+          />
+        </div>
+        <!-- Filters -->
+        <div class="flex gap-3 w-full md:w-auto">
           <select
             v-model="filterStatus"
             @change="fetchSeminar"
-            class="px-3 py-1.5 bg-white border border-border-light rounded-lg text-xs font-medium focus:ring-1 focus:ring-primary"
+            class="px-4 py-2.5 bg-surface-light border border-border-light rounded-lg text-text-secondary text-sm focus:ring-1 focus:ring-primary"
           >
             <option value="">Semua Status</option>
-            <option value="pending">Pending</option>
-            <option value="terjadwal">Terjadwal</option>
-            <option value="selesai">Selesai</option>
+            <option value="pengajuan">Pengajuan</option>
+            <option value="proposal">Proposal</option>
+            <option value="sempro">Seminar Proposal</option>
+            <option value="bimbingan">Bimbingan</option>
+          </select>
+          <select
+            v-model="filterJadwal"
+            @change="fetchSeminar"
+            class="px-4 py-2.5 bg-surface-light border border-border-light rounded-lg text-text-secondary text-sm focus:ring-1 focus:ring-primary"
+          >
+            <option value="">Semua Jadwal</option>
+            <option value="terjadwal">Sudah Dijadwalkan</option>
+            <option value="belum">Belum Dijadwalkan</option>
           </select>
         </div>
       </div>
@@ -54,33 +158,28 @@
         <p class="text-text-secondary text-sm mt-3">Memuat data...</p>
       </div>
 
+      <!-- Table -->
       <div v-else class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr
-              class="bg-sidebar-light/50 border-b border-border-light dark:bg-sidebar-light/50"
-            >
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase w-1/2"
-              >
-                Mahasiswa
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase w-1/3"
-              >
-                Jadwal
-              </th>
-              <th
-                class="p-4 text-[10px] font-bold tracking-widest text-text-secondary uppercase text-right"
-              >
-                Action
-              </th>
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead
+            class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
+          >
+            <tr>
+              <th class="px-6 py-4">Mahasiswa</th>
+              <th class="px-6 py-4">Judul Skripsi</th>
+              <th class="px-6 py-4">Pembimbing</th>
+              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4">Jadwal Sempro</th>
+              <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
             <tr v-if="seminarList.length === 0">
-              <td colspan="3" class="p-12 text-center text-text-secondary">
-                Tidak ada data seminar
+              <td
+                colspan="6"
+                class="px-6 py-12 text-center text-text-secondary"
+              >
+                Tidak ada data mahasiswa
               </td>
             </tr>
             <tr
@@ -88,190 +187,215 @@
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
-              <td class="p-4 align-top">
-                <div class="flex items-start gap-4">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
                   <div
-                    class="size-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                    :class="getAvatarColor(item.skripsi?.mahasiswa?.nama)"
+                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                    :class="getAvatarColor(item.mahasiswa?.nama)"
                   >
-                    {{ getInitials(item.skripsi?.mahasiswa?.nama) }}
+                    {{ getInitials(item.mahasiswa?.nama) }}
                   </div>
-                  <div class="flex flex-col gap-1">
-                    <div>
-                      <p class="font-bold text-text-main text-base">
-                        {{ item.skripsi?.mahasiswa?.nama || "-" }}
-                      </p>
-                      <p class="text-xs text-text-secondary font-medium">
-                        NIM: {{ item.skripsi?.mahasiswa?.nim || "-" }}
-                      </p>
-                    </div>
-                    <p
-                      class="text-sm text-text-main line-clamp-2 leading-relaxed"
-                    >
-                      {{ item.skripsi?.judul || "-" }}
+                  <div>
+                    <p class="font-bold text-text-main text-sm">
+                      {{ item.mahasiswa?.nama || "-" }}
                     </p>
-                    <div class="mt-1">
-                      <span
-                        class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
-                        :class="getStatusClass(item.status)"
-                      >
-                        <span
-                          class="size-1.5 rounded-full"
-                          :class="getStatusDot(item.status)"
-                        ></span>
-                        {{ getStatusLabel(item.status) }}
-                      </span>
-                    </div>
+                    <p class="text-xs text-text-secondary font-medium">
+                      {{ item.mahasiswa?.nim || "-" }}
+                    </p>
                   </div>
                 </div>
               </td>
-              <td class="p-4 align-top">
-                <div class="flex flex-col justify-center h-full pt-1">
-                  <template v-if="item.tanggal">
-                    <div class="flex items-center gap-2 text-sm text-text-main">
-                      <span
-                        class="material-symbols-outlined text-[18px] text-primary"
-                        >calendar_today</span
-                      >
-                      {{ formatDate(item.tanggal) }}
-                    </div>
-                    <p class="text-xs text-text-secondary mt-1">
-                      {{ item.waktu || "" }} - {{ item.ruangan || "" }}
-                    </p>
-                  </template>
+              <td
+                class="px-6 py-4 text-text-main max-w-xs truncate"
+                :title="item.judul"
+              >
+                {{ item.judul || "-" }}
+              </td>
+              <td class="px-6 py-4 text-text-secondary">
+                {{ getPembimbing(item.pembimbing) }}
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                  :class="getStatusClass(item.status)"
+                >
                   <span
-                    v-else
-                    class="inline-flex items-center gap-2 text-text-secondary italic text-sm p-2 bg-gray-50 rounded-lg border border-gray-100 border-dashed w-fit"
-                  >
-                    <span class="material-symbols-outlined text-[18px]"
-                      >calendar_today</span
-                    >
-                    Belum Dijadwalkan
-                  </span>
-                </div>
+                    class="w-1.5 h-1.5 rounded-full"
+                    :class="getStatusDot(item.status)"
+                  ></span>
+                  {{ getStatusLabel(item.status) }}
+                </span>
               </td>
-              <td class="p-4 align-middle text-right">
-                <button
-                  v-if="!item.tanggal"
-                  @click="openScheduleModal(item)"
-                  class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm"
-                >
-                  Input Jadwal
-                </button>
-                <button
+              <td class="px-6 py-4">
+                <template v-if="item.is_scheduled && item.sempro_seminar">
+                  <div class="flex items-center gap-2 text-sm text-text-main">
+                    <span
+                      class="material-symbols-outlined text-[18px] text-green-600"
+                      >event_available</span
+                    >
+                    {{ formatDate(item.sempro_seminar.tanggal) }}
+                  </div>
+                  <p class="text-xs text-text-secondary mt-0.5">
+                    {{ item.sempro_seminar.waktu || "" }}
+                    {{
+                      item.sempro_seminar.ruangan
+                        ? "• " + item.sempro_seminar.ruangan
+                        : ""
+                    }}
+                  </p>
+                </template>
+                <span
                   v-else
-                  @click="viewDetail(item)"
-                  class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-all"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-600 border border-orange-100"
                 >
-                  Lihat Detail
-                </button>
+                  <span class="material-symbols-outlined text-[14px]"
+                    >event_busy</span
+                  >
+                  Belum Dijadwalkan
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div
+                  class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <button
+                    v-if="!item.is_scheduled"
+                    @click="openScheduleModal(item)"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >calendar_month</span
+                    >
+                    Jadwalkan
+                  </button>
+                  <button
+                    v-if="item.is_scheduled"
+                    @click="viewDetail(item.sempro_seminar)"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-all"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >visibility</span
+                    >
+                    Detail
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Footer -->
+      <!-- Pagination -->
       <div
-        class="p-4 border-t border-border-light flex items-center justify-between bg-gray-50/50 dark:bg-sidebar-light/50"
+        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
       >
-        <span class="text-xs text-text-secondary">
-          Menampilkan {{ pagination.from || 0 }}-{{ pagination.to || 0 }} dari
-          {{ pagination.total }} mahasiswa
-        </span>
-        <div class="flex gap-1">
+        <p class="text-sm text-text-secondary">
+          Menampilkan
+          <span class="font-medium text-text-main">{{
+            pagination.from || 0
+          }}</span>
+          sampai
+          <span class="font-medium text-text-main">{{
+            pagination.to || 0
+          }}</span>
+          dari
+          <span class="font-medium text-text-main">{{ pagination.total }}</span>
+          data
+        </p>
+        <div class="flex gap-2">
           <button
             @click="goToPage(pagination.current_page - 1)"
             :disabled="pagination.current_page <= 1"
-            class="size-8 flex items-center justify-center rounded border border-border-light bg-white text-text-secondary hover:bg-gray-100 disabled:opacity-50"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
-            <span class="material-symbols-outlined text-sm">chevron_left</span>
-          </button>
-          <button
-            class="size-8 flex items-center justify-center rounded border border-primary bg-primary text-white text-xs font-bold"
-          >
-            {{ pagination.current_page }}
+            Sebelumnya
           </button>
           <button
             @click="goToPage(pagination.current_page + 1)"
             :disabled="pagination.current_page >= pagination.last_page"
-            class="size-8 flex items-center justify-center rounded border border-border-light bg-white text-text-secondary hover:bg-gray-100 disabled:opacity-50"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
-            <span class="material-symbols-outlined text-sm">chevron_right</span>
+            Selanjutnya
           </button>
         </div>
       </div>
     </div>
 
     <!-- Schedule Modal -->
-    <div
-      v-if="showScheduleModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
+    <Transition name="modal-fade">
       <div
-        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg"
+        v-if="showScheduleModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
-        <div class="p-6 border-b border-border-light">
-          <h2 class="text-xl font-bold text-text-main">Atur Jadwal Seminar</h2>
-          <p class="text-sm text-text-secondary mt-1">
-            {{ selectedSeminar?.skripsi?.mahasiswa?.nama }}
-          </p>
-        </div>
-        <form @submit.prevent="saveSeminarSchedule" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Tanggal</label
-            >
-            <input
-              v-model="scheduleForm.tanggal"
-              type="date"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
+        <div
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg"
+        >
+          <div class="p-6 border-b border-border-light">
+            <h2 class="text-xl font-bold text-text-main">
+              Jadwalkan Seminar Proposal
+            </h2>
+            <p class="text-sm text-text-secondary mt-1">
+              {{ selectedSkripsi?.mahasiswa?.nama }} -
+              {{ selectedSkripsi?.judul }}
+            </p>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <form @submit.prevent="saveSeminarSchedule" class="p-6 space-y-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
-                >Jam Mulai</label
+                >Tanggal <span class="text-red-500">*</span></label
               >
               <input
-                v-model="scheduleForm.waktu"
-                type="time"
+                v-model="scheduleForm.tanggal"
+                type="date"
                 class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               />
             </div>
-            <div>
-              <label class="block text-sm font-medium text-text-main mb-1"
-                >Ruangan</label
-              >
-              <input
-                v-model="scheduleForm.ruangan"
-                type="text"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="Ruang A101"
-              />
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-1"
+                  >Jam Mulai <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="scheduleForm.waktu"
+                  type="time"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  required
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-1"
+                  >Ruangan <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="scheduleForm.ruangan"
+                  type="text"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  placeholder="Ruang A101"
+                  required
+                />
+              </div>
             </div>
-          </div>
-          <div class="flex gap-3 pt-4">
-            <button
-              type="button"
-              @click="showScheduleModal = false"
-              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              :disabled="saving"
-              class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-            >
-              {{ saving ? "Menyimpan..." : "Simpan Jadwal" }}
-            </button>
-          </div>
-        </form>
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                @click="showScheduleModal = false"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                :disabled="saving"
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {{ saving ? "Menyimpan..." : "Simpan Jadwal" }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -285,10 +409,11 @@ const router = useRouter();
 const loading = ref(true);
 const saving = ref(false);
 const seminarList = ref([]);
-const filterJenis = ref("");
+const searchQuery = ref("");
 const filterStatus = ref("");
+const filterJadwal = ref("");
 const showScheduleModal = ref(false);
-const selectedSeminar = ref(null);
+const selectedSkripsi = ref(null);
 
 const pagination = reactive({
   current_page: 1,
@@ -298,19 +423,27 @@ const pagination = reactive({
   to: 0,
 });
 
+const statsCount = reactive({
+  terjadwal: 0,
+  belum: 0,
+});
+
 const scheduleForm = reactive({
   tanggal: "",
   waktu: "",
   ruangan: "",
 });
 
+let searchTimeout = null;
+
 const fetchSeminar = async () => {
   try {
     loading.value = true;
     const params = {
       page: pagination.current_page,
-      jenis: filterJenis.value,
+      search: searchQuery.value,
       status: filterStatus.value,
+      jadwal: filterJadwal.value,
     };
     const response = await adminService.getSeminar(params);
     if (response.success) {
@@ -326,10 +459,36 @@ const fetchSeminar = async () => {
       }
     }
   } catch (error) {
-    console.error("Failed to fetch seminar:", error);
+    console.error("Failed to fetch seminar data:", error);
   } finally {
     loading.value = false;
   }
+};
+
+const fetchStats = async () => {
+  try {
+    // Fetch counts for terjadwal and belum
+    const [terjadwalRes, belumRes] = await Promise.all([
+      adminService.getSeminar({ jadwal: "terjadwal", per_page: 1 }),
+      adminService.getSeminar({ jadwal: "belum", per_page: 1 }),
+    ]);
+    if (terjadwalRes.success) {
+      statsCount.terjadwal = terjadwalRes.data.total || 0;
+    }
+    if (belumRes.success) {
+      statsCount.belum = belumRes.data.total || 0;
+    }
+  } catch (error) {
+    console.error("Failed to fetch stats:", error);
+  }
+};
+
+const debouncedSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    pagination.current_page = 1;
+    fetchSeminar();
+  }, 300);
 };
 
 const goToPage = (page) => {
@@ -340,7 +499,7 @@ const goToPage = (page) => {
 };
 
 const openScheduleModal = (item) => {
-  selectedSeminar.value = item;
+  selectedSkripsi.value = item;
   scheduleForm.tanggal = "";
   scheduleForm.waktu = "";
   scheduleForm.ruangan = "";
@@ -350,14 +509,16 @@ const openScheduleModal = (item) => {
 const saveSeminarSchedule = async () => {
   try {
     saving.value = true;
-    await adminService.updateSeminar(selectedSeminar.value.id, {
+    await adminService.createSeminar({
+      skripsi_id: selectedSkripsi.value.id,
+      jenis: "sempro",
       tanggal: scheduleForm.tanggal,
       waktu: scheduleForm.waktu,
       ruangan: scheduleForm.ruangan,
-      status: "terjadwal",
     });
     showScheduleModal.value = false;
     fetchSeminar();
+    fetchStats();
   } catch (error) {
     console.error("Failed to save schedule:", error);
     alert(
@@ -369,8 +530,10 @@ const saveSeminarSchedule = async () => {
   }
 };
 
-const viewDetail = (item) => {
-  router.push(`/admin/seminar/${item.id}`);
+const viewDetail = (seminar) => {
+  if (seminar && seminar.id) {
+    router.push(`/admin/seminar/${seminar.id}`);
+  }
 };
 
 const getInitials = (name) => {
@@ -395,44 +558,53 @@ const getAvatarColor = (name) => {
   return colors[index];
 };
 
+const getPembimbing = (pembimbingList) => {
+  if (!pembimbingList || pembimbingList.length === 0) return "-";
+  const p1 = pembimbingList.find((p) => p.jenis === "pembimbing_1");
+  return (
+    p1?.dosen?.nama_lengkap || pembimbingList[0]?.dosen?.nama_lengkap || "-"
+  );
+};
+
 const formatDate = (date) => {
   if (!date) return "-";
   return new Date(date).toLocaleDateString("id-ID", {
-    weekday: "long",
+    weekday: "short",
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
 };
 
 const getStatusClass = (status) => {
   const classes = {
-    pending: "bg-yellow-50 text-yellow-600 border border-yellow-100",
-    terjadwal: "bg-blue-50 text-blue-600 border border-blue-100",
-    selesai: "bg-green-50 text-green-600 border border-green-100",
+    pengajuan: "bg-gray-50 text-gray-600 border border-gray-100",
+    proposal: "bg-yellow-50 text-yellow-600 border border-yellow-100",
+    sempro: "bg-blue-50 text-blue-600 border border-blue-100",
   };
   return classes[status] || "bg-gray-50 text-gray-600 border border-gray-100";
 };
 
 const getStatusDot = (status) => {
   const dots = {
-    pending: "bg-yellow-600",
-    terjadwal: "bg-blue-600",
-    selesai: "bg-green-600",
+    pengajuan: "bg-gray-600",
+    proposal: "bg-yellow-600",
+    sempro: "bg-blue-600",
   };
   return dots[status] || "bg-gray-600";
 };
 
 const getStatusLabel = (status) => {
   const labels = {
-    pending: "Siap Sempro",
-    terjadwal: "Terjadwal",
-    selesai: "Selesai",
+    pengajuan: "Pengajuan",
+    proposal: "Proposal",
+    sempro: "Sem. Proposal",
   };
   return labels[status] || status;
 };
 
 onMounted(() => {
   fetchSeminar();
+  fetchStats();
 });
 </script>

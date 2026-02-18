@@ -16,6 +16,7 @@ class Mahasiswa extends Model
         'nim',
         'nama',
         'prodi_id',
+        'tahun_id',
         'semester',
         'angkatan',
         'jenis_kelamin',
@@ -25,6 +26,7 @@ class Mahasiswa extends Model
         'alamat',
         'email',
         'is_active',
+        'status',
     ];
 
     protected $casts = [
@@ -47,6 +49,14 @@ class Mahasiswa extends Model
     public function prodi()
     {
         return $this->belongsTo(Prodi::class);
+    }
+
+    /**
+     * Get the tahun (angkatan)
+     */
+    public function tahun()
+    {
+        return $this->belongsTo(Tahun::class);
     }
 
     /**

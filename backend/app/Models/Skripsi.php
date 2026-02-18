@@ -22,6 +22,7 @@ class Skripsi extends Model
         'progress_percentage',
         'catatan_admin',
         'is_active',
+        'file_skripsi',
     ];
 
     protected $casts = [
@@ -29,6 +30,19 @@ class Skripsi extends Model
         'progress_percentage' => 'integer',
         'tanggal_daftar' => 'date',
     ];
+
+    protected $appends = ['file_skripsi_url'];
+
+    /**
+     * Get the full URL for the uploaded file_skripsi
+     */
+    public function getFileSkripsiUrlAttribute()
+    {
+        if (!$this->file_skripsi) {
+            return null;
+        }
+        return asset('storage/' . $this->file_skripsi);
+    }
 
     /**
      * Status constants

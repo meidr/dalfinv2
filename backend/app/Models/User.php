@@ -25,6 +25,7 @@ class User extends Authenticatable
         'phone',
         'address',
         'is_active',
+        'last_login_at',
     ];
 
     /**
@@ -48,6 +49,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -57,6 +59,14 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is super admin
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
     }
 
     /**
@@ -73,6 +83,14 @@ class User extends Authenticatable
     public function isMahasiswa(): bool
     {
         return $this->role === 'mahasiswa';
+    }
+
+    /**
+     * Check if user is staff
+     */
+    public function isStaff(): bool
+    {
+        return $this->role === 'staff';
     }
 
     /**

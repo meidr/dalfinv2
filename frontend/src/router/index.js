@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { startProgress, stopProgress } from "../services/api";
 import Login from "../views/Login.vue";
 import AdminLayout from "../layouts/AdminLayout.vue";
 import Dashboard from "../views/admin/Dashboard.vue";
@@ -17,6 +18,7 @@ const routes = [
   {
     path: "/admin",
     component: AdminLayout,
+    redirect: "/admin/dashboard",
     children: [
       {
         path: "dashboard",
@@ -24,9 +26,25 @@ const routes = [
         component: Dashboard,
       },
       {
+        path: "profil",
+        name: "AdminProfil",
+        component: () => import("../views/admin/ProfilAdmin.vue"),
+      },
+      {
         path: "skripsi",
         name: "DataSkripsi",
         component: DataSkripsi,
+      },
+      {
+        path: "skripsi/verifikasi",
+        name: "VerificationSkripsi",
+        component: () =>
+          import("../views/admin/skripsi/VerificationSkripsi.vue"),
+      },
+      {
+        path: "skripsi/:id",
+        name: "AdminDetailSkripsi",
+        component: () => import("../views/admin/skripsi/DetailSkripsi.vue"),
       },
       {
         path: "pembimbing",
@@ -44,6 +62,11 @@ const routes = [
         component: () => import("../views/admin/seminar/DataSeminar.vue"),
       },
       {
+        path: "seminar/:id",
+        name: "DetailSeminar",
+        component: () => import("../views/admin/seminar/DetailSeminar.vue"),
+      },
+      {
         path: "sktugas",
         name: "DataSKTugas",
         component: () => import("../views/admin/sktugas/DataSKTugas.vue"),
@@ -54,10 +77,27 @@ const routes = [
         component: () => import("../views/admin/bimbingan/DataBimbingan.vue"),
       },
       {
+        path: "bimbingan/:id",
+        name: "AdminDetailBimbingan",
+        component: () => import("../views/admin/bimbingan/DetailBimbingan.vue"),
+      },
+      {
         path: "notabimbingan",
         name: "DataNotaBimbingan",
         component: () =>
           import("../views/admin/notabimbingan/DataNotaBimbingan.vue"),
+      },
+      {
+        path: "seminarhasil",
+        name: "DataSeminarHasil",
+        component: () =>
+          import("../views/admin/seminarhasil/DataSeminarHasil.vue"),
+      },
+      {
+        path: "seminarhasil/:id",
+        name: "DetailSeminarHasil",
+        component: () =>
+          import("../views/admin/seminarhasil/DetailSeminarHasil.vue"),
       },
       {
         path: "beritaacara",
@@ -81,6 +121,21 @@ const routes = [
         component: () => import("../views/admin/master/MasterDosen.vue"),
       },
       {
+        path: "master/prodi",
+        name: "MasterProdi",
+        component: () => import("../views/admin/master/MasterProdi.vue"),
+      },
+      {
+        path: "master/tahun",
+        name: "MasterTahun",
+        component: () => import("../views/admin/master/MasterTahun.vue"),
+      },
+      {
+        path: "master/jabatan",
+        name: "MasterJabatan",
+        component: () => import("../views/admin/master/MasterJabatan.vue"),
+      },
+      {
         path: "pengguna",
         name: "DataPengguna",
         component: () => import("../views/admin/pengguna/DataPengguna.vue"),
@@ -89,6 +144,16 @@ const routes = [
         path: "profil",
         name: "Profile",
         component: () => import("../views/admin/profil/Profile.vue"),
+      },
+      {
+        path: "super-admin",
+        name: "SuperAdmin",
+        component: () => import("../views/admin/superadmin/SuperAdmin.vue"),
+      },
+      {
+        path: "chat-monitor",
+        name: "AdminChatMonitor",
+        component: () => import("../views/admin/AdminChatMonitor.vue"),
       },
     ],
   },
@@ -251,6 +316,15 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  startProgress();
+  next();
+});
+
+router.afterEach(() => {
+  stopProgress();
 });
 
 export default router;

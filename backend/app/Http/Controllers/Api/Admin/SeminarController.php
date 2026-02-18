@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Skripsi;
 use App\Models\Seminar;
 use App\Models\Penguji;
 use App\Models\BeritaAcara;
@@ -11,34 +12,60 @@ use Illuminate\Http\Request;
 class SeminarController extends Controller
 {
     /**
-     * List all seminars
+     * List skripsi eligible for seminar proposal
+     * Shows skripsi with status: pengajuan, proposal, sempro
      */
     public function index(Request $request)
     {
-        $query = Seminar::with(['skripsi.mahasiswa', 'penguji.dosen']);
+        $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen', 'seminar' => function ($q) {
+            $q->where('jenis', 'sempro')->latest('tanggal');
+        }])
+            ->whereIn('status', ['pengajuan', 'proposal', 'sempro', 'bimbingan']);
 
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                    ->orWhereHas('mahasiswa', function ($mq) use ($search) {
+                        $mq->where('nama', 'like', "%{$search}%")
+                            ->orWhere('nim', 'like', "%{$search}%");
+                    });
+            });
         }
 
+        // Status filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('from_date')) {
-            $query->where('tanggal', '>=', $request->from_date);
-        }
-
-        if ($request->filled('to_date')) {
-            $query->where('tanggal', '<=', $request->to_date);
+        // Jadwal filter: terjadwal or belum
+        if ($request->filled('jadwal')) {
+            if ($request->jadwal === 'terjadwal') {
+                $query->whereHas('seminar', function ($q) {
+                    $q->where('jenis', 'sempro');
+                });
+            } elseif ($request->jadwal === 'belum') {
+                $query->whereDoesntHave('seminar', function ($q) {
+                    $q->where('jenis', 'sempro');
+                });
+            }
         }
 
         $perPage = $request->get('per_page', 15);
-        $seminars = $query->orderBy('tanggal', 'desc')->paginate($perPage);
+        $skripsiList = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        // Add computed fields
+        $skripsiList->getCollection()->transform(function ($skripsi) {
+            $seminarSempro = $skripsi->seminar->where('jenis', 'sempro')->first();
+            $skripsi->sempro_seminar = $seminarSempro;
+            $skripsi->is_scheduled = !is_null($seminarSempro);
+            return $skripsi;
+        });
 
         return response()->json([
             'success' => true,
-            'data' => $seminars
+            'data' => $skripsiList
         ]);
     }
 
@@ -55,7 +82,7 @@ class SeminarController extends Controller
             'ruangan' => 'required|string|max:100',
             'penguji' => 'array|min:2|max:5',
             'penguji.*.dosen_id' => 'required|exists:dosen,id',
-            'penguji.*.peran' => 'required|in:ketua,sekretaris,anggota',
+            'penguji.*.peran' => 'required|in:ketua,penguji_1,penguji_2',
         ]);
 
         $seminar = Seminar::create([
@@ -118,7 +145,12 @@ class SeminarController extends Controller
         ]);
 
         $seminar->fill($request->only([
-            'tanggal', 'waktu', 'ruangan', 'status', 'nilai', 'catatan'
+            'tanggal',
+            'waktu',
+            'ruangan',
+            'status',
+            'nilai',
+            'catatan'
         ]));
         $seminar->save();
 
@@ -134,12 +166,14 @@ class SeminarController extends Controller
      */
     public function destroy(Seminar $seminar)
     {
-        $seminar->status = 'batal';
-        $seminar->save();
+        // Delete related records first
+        $seminar->penguji()->delete();
+        $seminar->beritaAcara()->delete();
+        $seminar->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Seminar berhasil dibatalkan'
+            'message' => 'Seminar berhasil dihapus'
         ]);
     }
 
@@ -172,5 +206,74 @@ class SeminarController extends Controller
             'message' => 'Berita acara berhasil dibuat',
             'data' => $beritaAcara
         ], 201);
+    }
+
+    /**
+     * Add a penguji to a seminar
+     */
+    public function addPenguji(Request $request, Seminar $seminar)
+    {
+        $request->validate([
+            'dosen_id' => 'required|exists:dosen,id',
+            'peran' => 'required|in:ketua,penguji_1,penguji_2',
+        ]);
+
+        // Check if dosen already assigned
+        $exists = Penguji::where('seminar_id', $seminar->id)
+            ->where('dosen_id', $request->dosen_id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dosen sudah ditugaskan sebagai penguji'
+            ], 422);
+        }
+
+        $penguji = Penguji::create([
+            'seminar_id' => $seminar->id,
+            'dosen_id' => $request->dosen_id,
+            'peran' => $request->peran,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Penguji berhasil ditambahkan',
+            'data' => $penguji->load('dosen')
+        ], 201);
+    }
+
+    /**
+     * Update a penguji (nilai, catatan, peran)
+     */
+    public function updatePenguji(Request $request, Seminar $seminar, Penguji $penguji)
+    {
+        $request->validate([
+            'peran' => 'sometimes|in:ketua,penguji_1,penguji_2',
+            'nilai' => 'nullable|numeric|min:0|max:100',
+            'catatan' => 'nullable|string',
+        ]);
+
+        $penguji->fill($request->only(['peran', 'nilai', 'catatan']));
+        $penguji->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Penguji berhasil diperbarui',
+            'data' => $penguji->load('dosen')
+        ]);
+    }
+
+    /**
+     * Remove a penguji from a seminar
+     */
+    public function removePenguji(Seminar $seminar, Penguji $penguji)
+    {
+        $penguji->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Penguji berhasil dihapus'
+        ]);
     }
 }

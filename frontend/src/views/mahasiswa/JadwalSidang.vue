@@ -10,14 +10,14 @@
       <span class="material-symbols-outlined text-text-secondary text-sm"
         >chevron_right</span
       >
-      <span class="text-text-main font-bold">Jadwal Ujian Skripsi</span>
+      <span class="text-text-main font-bold">Jadwal Sidang Skripsi</span>
     </div>
 
     <!-- Page Heading -->
     <div class="flex flex-wrap justify-between items-end gap-4">
       <div class="flex flex-col gap-1">
         <h1 class="text-3xl font-bold tracking-tight text-text-main">
-          Jadwal Ujian Skripsi
+          Jadwal Sidang Skripsi
         </h1>
         <p class="text-text-secondary text-base">
           Pastikan Anda hadir 30 menit sebelum jadwal dimulai.
@@ -252,7 +252,7 @@
         </h4>
         <p class="text-sm text-text-secondary">
           Pastikan Anda telah mengunggah revisi proposal dan kelengkapan
-          administrasi sebelum hari pelaksanaan ujian.
+          administrasi sebelum hari pelaksanaan sidang.
         </p>
       </div>
       <button

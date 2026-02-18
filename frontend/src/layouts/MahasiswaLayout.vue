@@ -17,7 +17,7 @@
             <span class="material-symbols-outlined text-2xl">school</span>
           </div>
           <h1 class="text-xl font-bold tracking-tight text-text-main">
-            SISKRIPSI
+            {{ authStore.profile?.nama || "SISKRIPSI" }}
           </h1>
         </div>
 
@@ -64,13 +64,13 @@
             </span>
           </button>
 
-          <router-link
-            to="/"
+          <button
+            @click="logout"
             class="hidden sm:flex items-center justify-center gap-2 h-9 px-4 rounded-full border border-border-light bg-transparent hover:bg-sidebar-light text-sm font-medium transition-colors text-text-secondary hover:text-primary"
           >
             <span class="material-symbols-outlined text-[18px]">logout</span>
             <span>Logout</span>
-          </router-link>
+          </button>
 
           <!-- Mobile Menu Icon -->
           <button
@@ -88,12 +88,18 @@
     >
       <router-view></router-view>
     </main>
+    <ChatWidget />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import ChatWidget from "../components/ChatWidget.vue";
 
+const router = useRouter();
+const authStore = useAuthStore();
 const isDark = ref(false);
 
 const toggleTheme = () => {
@@ -105,6 +111,16 @@ const toggleTheme = () => {
     document.documentElement.classList.add("dark");
     localStorage.setItem("theme", "dark");
     isDark.value = true;
+  }
+};
+
+const logout = async () => {
+  try {
+    await authStore.logout();
+    router.replace("/login");
+  } catch (error) {
+    console.error("Logout failed:", error);
+    router.replace("/login");
   }
 };
 

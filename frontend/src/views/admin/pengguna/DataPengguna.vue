@@ -1,56 +1,25 @@
 <template>
-  <div class="flex flex-col gap-6">
-    <div class="flex flex-col gap-1">
-      <h1 class="text-3xl font-bold tracking-tight text-text-main">
-        Manajemen User
-      </h1>
-      <p class="text-text-secondary text-sm font-normal">
-        Kelola akun pengguna, hak akses, dan keamanan sistem skripsi.
-      </p>
-    </div>
-
-    <!-- Toolbar: Search & Add Button -->
+  <div class="max-w-7xl mx-auto flex flex-col gap-8 animate-fade-in-up">
     <div
-      class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-light dark:bg-surface-light p-4 rounded-xl border border-border-light shadow-sm"
+      class="flex flex-col md:flex-row md:items-center justify-between gap-3"
     >
-      <!-- Search Bar -->
-      <div class="w-full sm:max-w-md relative group">
-        <div
-          class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-        >
-          <span
-            class="material-symbols-outlined text-text-secondary group-focus-within:text-primary transition-colors"
-            >search</span
-          >
-        </div>
-        <input
-          v-model="searchQuery"
-          @input="debouncedSearch"
-          class="block w-full pl-10 pr-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-sidebar-light dark:border-gray-600 text-text-main placeholder-text-secondary focus:ring-2 focus:ring-primary/50 text-sm transition-all outline-none"
-          placeholder="Cari username, nama, atau email..."
-          type="text"
-        />
+      <div class="flex flex-col gap-1">
+        <h1 class="text-3xl font-bold tracking-tight text-text-main">
+          Manajemen User
+        </h1>
+        <p class="text-text-secondary text-sm font-normal">
+          Kelola akun pengguna, hak akses, dan keamanan sistem skripsi.
+        </p>
       </div>
-      <!-- Filter & Add Button -->
-      <div class="flex gap-3">
-        <select
-          v-model="filterRole"
-          @change="fetchPengguna"
-          class="px-4 py-2.5 border border-border-light rounded-lg bg-white text-sm focus:ring-1 focus:ring-primary"
-        >
-          <option value="">Semua Role</option>
-          <option value="admin">Admin</option>
-          <option value="dosen">Dosen</option>
-          <option value="mahasiswa">Mahasiswa</option>
-        </select>
-        <button
-          @click="openAddModal"
-          class="flex shrink-0 items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md shadow-primary/20 hover:shadow-lg active:scale-95 transition-all"
-        >
-          <span class="material-symbols-outlined text-[20px]">add</span>
-          <span>Tambah User</span>
-        </button>
-      </div>
+      <!-- Add User Button (super_admin only) -->
+      <button
+        v-if="isSuperAdmin"
+        @click="openAddModal"
+        class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors shadow-sm shadow-primary/20"
+      >
+        <span class="material-symbols-outlined text-[18px]">person_add</span>
+        Tambah User
+      </button>
     </div>
 
     <!-- Loading -->
@@ -64,19 +33,64 @@
     <!-- Data Table Card -->
     <div
       v-else
-      class="bg-surface-light dark:bg-surface-light rounded-xl border border-border-light shadow-sm flex flex-col overflow-hidden"
+      class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
     >
+      <!-- Toolbar: Search & Filters -->
+      <div
+        class="p-5 border-b border-border-light flex flex-col md:flex-row gap-4 items-center justify-between"
+      >
+        <!-- Search Bar -->
+        <div class="relative w-full md:max-w-md">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
+            <span class="material-symbols-outlined text-text-secondary"
+              >search</span
+            >
+          </div>
+          <input
+            v-model="searchQuery"
+            @input="debouncedSearch"
+            class="block w-full pl-10 pr-3 py-2.5 border border-border-light rounded-lg leading-5 bg-background-light text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-shadow dark:bg-background"
+            placeholder="Cari username, nama, atau email..."
+            type="text"
+          />
+        </div>
+        <!-- Filters -->
+        <div class="flex gap-3 w-full md:w-auto">
+          <select
+            v-model="filterRole"
+            @change="fetchPengguna"
+            class="px-4 py-2.5 bg-surface-light border border-border-light rounded-lg text-text-secondary text-sm focus:ring-1 focus:ring-primary dark:bg-surface"
+          >
+            <option value="">Semua Role</option>
+            <option v-if="isSuperAdmin" value="super_admin">Super Admin</option>
+            <option value="admin">Admin</option>
+            <option value="dosen">Dosen</option>
+            <option value="mahasiswa">Mahasiswa</option>
+          </select>
+          <select
+            v-model="filterStatus"
+            @change="fetchPengguna"
+            class="px-4 py-2.5 bg-surface-light border border-border-light rounded-lg text-text-secondary text-sm focus:ring-1 focus:ring-primary dark:bg-surface"
+          >
+            <option value="">Semua Status</option>
+            <option value="active">Aktif</option>
+            <option value="blocked">Diblokir</option>
+          </select>
+        </div>
+      </div>
       <!-- Table Wrapper -->
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm whitespace-nowrap">
           <thead
-            class="bg-sidebar-light/50 text-text-secondary font-bold tracking-widest uppercase text-[10px] border-b border-border-light"
+            class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
           >
             <tr>
-              <th class="px-6 py-4">Username</th>
-              <th class="px-6 py-4">Nama Lengkap</th>
+              <th class="px-6 py-4">User</th>
               <th class="px-6 py-4">Email</th>
               <th class="px-6 py-4">Role</th>
+              <th class="px-6 py-4">Status</th>
               <th class="px-6 py-4">Last Login</th>
               <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
@@ -100,13 +114,8 @@
                   >
                     {{ getInitials(user.name) }}
                   </div>
-                  <span class="font-bold text-text-main">{{
-                    user.username || user.email?.split("@")[0]
-                  }}</span>
+                  <span class="font-bold text-text-main">{{ user.name }}</span>
                 </div>
-              </td>
-              <td class="px-6 py-4 text-text-main text-sm font-medium">
-                {{ user.name }}
               </td>
               <td class="px-6 py-4 text-text-secondary">{{ user.email }}</td>
               <td class="px-6 py-4">
@@ -120,22 +129,45 @@
                   {{ getRoleLabel(user.role) }}
                 </span>
               </td>
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                  :class="
+                    user.is_active
+                      ? 'bg-green-50 text-green-700 border border-green-200'
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  "
+                >
+                  <span
+                    class="w-1.5 h-1.5 rounded-full"
+                    :class="user.is_active ? 'bg-green-600' : 'bg-red-500'"
+                  ></span>
+                  {{ user.is_active ? "Aktif" : "Diblokir" }}
+                </span>
+              </td>
               <td class="px-6 py-4 text-text-secondary text-xs">
                 {{ formatLastLogin(user.last_login_at) }}
               </td>
               <td class="px-6 py-4 text-right">
                 <div
-                  class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
+                  <!-- Toggle Active/Block -->
                   <button
-                    @click="openEditModal(user)"
-                    class="p-1.5 text-text-secondary hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
-                    title="Edit User"
+                    @click="toggleUserStatus(user)"
+                    class="p-1.5 rounded-md transition-colors"
+                    :class="
+                      user.is_active
+                        ? 'text-text-secondary hover:text-red-600 hover:bg-red-50'
+                        : 'text-text-secondary hover:text-green-600 hover:bg-green-50'
+                    "
+                    :title="user.is_active ? 'Blokir User' : 'Aktifkan User'"
                   >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >edit</span
-                    >
+                    <span class="material-symbols-outlined text-[20px]">{{
+                      user.is_active ? "block" : "check_circle"
+                    }}</span>
                   </button>
+                  <!-- Reset Password -->
                   <button
                     @click="resetPassword(user)"
                     class="p-1.5 text-text-secondary hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
@@ -145,13 +177,15 @@
                       >lock_reset</span
                     >
                   </button>
+                  <!-- Edit Role -->
                   <button
-                    @click="confirmDelete(user)"
-                    class="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Hapus User"
+                    v-if="canEditRole(user)"
+                    @click="openEditModal(user)"
+                    class="p-1.5 text-text-secondary hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
+                    title="Edit User"
                   >
                     <span class="material-symbols-outlined text-[20px]"
-                      >delete</span
+                      >edit</span
                     >
                   </button>
                 </div>
@@ -162,17 +196,26 @@
       </div>
       <!-- Pagination -->
       <div
-        class="p-4 border-t border-border-light flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-50/50"
+        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
       >
-        <p class="text-xs text-text-secondary font-medium">
-          Menampilkan {{ pagination.from || 0 }}-{{ pagination.to || 0 }} dari
-          {{ pagination.total }} User
+        <p class="text-sm text-text-secondary">
+          Menampilkan
+          <span class="font-medium text-text-main">{{
+            pagination.from || 0
+          }}</span>
+          sampai
+          <span class="font-medium text-text-main">{{
+            pagination.to || 0
+          }}</span>
+          dari
+          <span class="font-medium text-text-main">{{ pagination.total }}</span>
+          User
         </p>
         <div class="flex gap-2">
           <button
             @click="goToPage(pagination.current_page - 1)"
             :disabled="pagination.current_page <= 1"
-            class="p-1.5 rounded-lg border border-border-light bg-white hover:bg-gray-50 disabled:opacity-50 text-text-secondary transition-all"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[18px]"
               >chevron_left</span
@@ -186,7 +229,7 @@
           <button
             @click="goToPage(pagination.current_page + 1)"
             :disabled="pagination.current_page >= pagination.last_page"
-            class="p-1.5 rounded-lg border border-border-light bg-white hover:bg-gray-50 text-text-secondary transition-all"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[18px]"
               >chevron_right</span
@@ -196,144 +239,228 @@
       </div>
     </div>
 
-    <!-- Add/Edit Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
+    <!-- Add/Edit User Modal -->
+    <Transition name="modal-fade">
       <div
-        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+        v-if="showUserModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
-        <div class="p-6 border-b border-border-light">
-          <h2 class="text-xl font-bold text-text-main">
-            {{ isEditing ? "Edit User" : "Tambah User Baru" }}
-          </h2>
+        <div
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+        >
+          <div class="p-6 border-b border-border-light">
+            <h2 class="text-lg font-bold text-text-main">
+              {{ isEditing ? "Edit User" : "Tambah User Baru" }}
+            </h2>
+            <p class="text-sm text-text-secondary mt-1">
+              {{
+                isEditing
+                  ? `Edit akun ${selectedUser?.name}`
+                  : "Buat akun admin atau super admin baru"
+              }}
+            </p>
+          </div>
+          <div class="p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1.5"
+                >Nama</label
+              >
+              <input
+                v-model="userForm.name"
+                type="text"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light text-sm"
+                placeholder="Nama lengkap"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1.5"
+                >Email</label
+              >
+              <input
+                v-model="userForm.email"
+                type="email"
+                :disabled="isEditing"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light text-sm disabled:opacity-50 disabled:bg-gray-50"
+                placeholder="email@example.com"
+                autocomplete="off"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1.5"
+                >Password</label
+              >
+              <div class="relative">
+                <input
+                  v-model="userForm.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  class="w-full px-3 py-2.5 pr-10 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light text-sm"
+                  :placeholder="
+                    isEditing
+                      ? 'Kosongkan jika tidak ingin diubah'
+                      : 'Minimal 6 karakter'
+                  "
+                />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="absolute inset-y-0 right-0 flex items-center pr-3 text-text-secondary hover:text-text-main"
+                >
+                  <span class="material-symbols-outlined text-[18px]">{{
+                    showPassword ? "visibility_off" : "visibility"
+                  }}</span>
+                </button>
+              </div>
+              <p v-if="isEditing" class="text-xs text-text-secondary mt-1">
+                Kosongkan jika tidak ingin mengubah password
+              </p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1.5"
+                >No. Handphone</label
+              >
+              <input
+                v-model="userForm.phone"
+                type="text"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light text-sm"
+                placeholder="08xxxxxxxxxx"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1.5"
+                >Role</label
+              >
+              <select
+                v-model="userForm.role"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light text-sm"
+              >
+                <option value="admin">Admin</option>
+                <option v-if="isSuperAdmin" value="super_admin">
+                  Super Admin
+                </option>
+                <option v-if="isEditing" value="staff">Staff</option>
+              </select>
+            </div>
+            <div
+              v-if="formError"
+              class="p-3 bg-red-50 border border-red-200 rounded-lg"
+            >
+              <p class="text-sm text-red-600">{{ formError }}</p>
+            </div>
+            <div class="flex gap-3 pt-2">
+              <button
+                @click="closeUserModal"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                @click="saveUser"
+                :disabled="saving"
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {{ saving ? "Menyimpan..." : "Simpan" }}
+              </button>
+            </div>
+          </div>
         </div>
-        <form @submit.prevent="saveUser" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Nama Lengkap</label
-            >
-            <input
-              v-model="userForm.name"
-              type="text"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Email</label
-            >
-            <input
-              v-model="userForm.email"
-              type="email"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Role</label
-            >
-            <select
-              v-model="userForm.role"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              required
-            >
-              <option value="admin">Admin</option>
-              <option value="dosen">Dosen</option>
-              <option value="mahasiswa">Mahasiswa</option>
-            </select>
-          </div>
-          <div v-if="!isEditing">
-            <label class="block text-sm font-medium text-text-main mb-1"
-              >Password</label
-            >
-            <input
-              v-model="userForm.password"
-              type="password"
-              class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              :required="!isEditing"
-            />
-          </div>
-          <div class="flex gap-3 pt-4">
-            <button
-              type="button"
-              @click="showModal = false"
-              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              :disabled="saving"
-              class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-            >
-              {{ saving ? "Menyimpan..." : "Simpan" }}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Transition>
 
-    <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    >
+    <!-- Confirm Toggle Status Modal -->
+    <Transition name="modal-fade">
       <div
-        class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-sm"
+        v-if="showToggleModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
-        <div class="p-6 text-center">
-          <div
-            class="size-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center"
-          >
-            <span class="material-symbols-outlined text-red-600 text-3xl"
-              >warning</span
+        <div
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-sm"
+        >
+          <div class="p-6 text-center">
+            <div
+              class="size-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+              :class="selectedUser?.is_active ? 'bg-red-100' : 'bg-green-100'"
             >
-          </div>
-          <h3 class="text-lg font-bold text-text-main mb-2">Hapus User?</h3>
-          <p class="text-sm text-text-secondary mb-6">
-            Anda yakin ingin menghapus user
-            <strong>{{ selectedUser?.name }}</strong
-            >? Tindakan ini tidak dapat dibatalkan.
-          </p>
-          <div class="flex gap-3">
-            <button
-              @click="showDeleteModal = false"
-              class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              @click="deleteUser"
-              :disabled="deleting"
-              class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {{ deleting ? "Menghapus..." : "Hapus" }}
-            </button>
+              <span
+                class="material-symbols-outlined text-3xl"
+                :class="
+                  selectedUser?.is_active ? 'text-red-600' : 'text-green-600'
+                "
+                >{{ selectedUser?.is_active ? "block" : "check_circle" }}</span
+              >
+            </div>
+            <h3 class="text-lg font-bold text-text-main mb-2">
+              {{ selectedUser?.is_active ? "Blokir User?" : "Aktifkan User?" }}
+            </h3>
+            <p class="text-sm text-text-secondary mb-6">
+              {{
+                selectedUser?.is_active
+                  ? `User "${selectedUser?.name}" tidak akan bisa login setelah diblokir.`
+                  : `User "${selectedUser?.name}" akan bisa login kembali setelah diaktifkan.`
+              }}
+            </p>
+            <div class="flex gap-3">
+              <button
+                @click="showToggleModal = false"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                @click="confirmToggleStatus"
+                :disabled="toggling"
+                class="flex-1 px-4 py-2.5 text-white rounded-lg transition-colors disabled:opacity-50"
+                :class="
+                  selectedUser?.is_active
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-green-600 hover:bg-green-700'
+                "
+              >
+                {{
+                  toggling
+                    ? "Memproses..."
+                    : selectedUser?.is_active
+                      ? "Blokir"
+                      : "Aktifkan"
+                }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, computed } from "vue";
+import { useAuthStore } from "../../../stores/auth";
 import adminService from "../../../services/adminService";
+
+const authStore = useAuthStore();
+const isSuperAdmin = computed(() => authStore.isSuperAdmin);
 
 const loading = ref(true);
 const saving = ref(false);
-const deleting = ref(false);
-const showModal = ref(false);
-const showDeleteModal = ref(false);
+const toggling = ref(false);
+const showUserModal = ref(false);
+const showToggleModal = ref(false);
 const isEditing = ref(false);
 const selectedUser = ref(null);
+const formError = ref("");
 const penggunaList = ref([]);
 const searchQuery = ref("");
 const filterRole = ref("");
+const filterStatus = ref("");
+
+const showPassword = ref(false);
+const userForm = reactive({
+  name: "",
+  email: "",
+  password: "",
+  phone: "",
+  role: "admin",
+});
 
 const pagination = reactive({
   current_page: 1,
@@ -341,13 +468,6 @@ const pagination = reactive({
   total: 0,
   from: 0,
   to: 0,
-});
-
-const userForm = reactive({
-  name: "",
-  email: "",
-  role: "mahasiswa",
-  password: "",
 });
 
 let searchTimeout = null;
@@ -360,6 +480,11 @@ const fetchPengguna = async () => {
       search: searchQuery.value,
       role: filterRole.value,
     };
+    if (filterStatus.value === "active") {
+      params.is_active = 1;
+    } else if (filterStatus.value === "blocked") {
+      params.is_active = 0;
+    }
     const response = await adminService.getPengguna(params);
     if (response.success) {
       penggunaList.value = response.data.data || response.data;
@@ -395,86 +520,147 @@ const goToPage = (page) => {
   }
 };
 
+// Determine if current user can edit this user's role
+const canEditRole = (user) => {
+  if (isSuperAdmin.value) {
+    // Super admin can edit admin, super_admin, and staff
+    return (
+      user.role === "admin" ||
+      user.role === "super_admin" ||
+      user.role === "staff"
+    );
+  }
+  // Regular admin can edit admin and staff only
+  return user.role === "admin" || user.role === "staff";
+};
+
 const openAddModal = () => {
   isEditing.value = false;
-  userForm.name = "";
-  userForm.email = "";
-  userForm.role = "mahasiswa";
-  userForm.password = "";
-  showModal.value = true;
+  selectedUser.value = null;
+  formError.value = "";
+  showPassword.value = false;
+  Object.assign(userForm, {
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    role: "admin",
+  });
+  showUserModal.value = true;
 };
 
 const openEditModal = (user) => {
   isEditing.value = true;
   selectedUser.value = user;
-  userForm.name = user.name;
-  userForm.email = user.email;
-  userForm.role = user.role;
-  userForm.password = "";
-  showModal.value = true;
+  formError.value = "";
+  showPassword.value = false;
+  Object.assign(userForm, {
+    name: user.name,
+    email: user.email,
+    password: "",
+    phone: user.phone || "",
+    role: user.role,
+  });
+  showUserModal.value = true;
+};
+
+const closeUserModal = () => {
+  showUserModal.value = false;
+  formError.value = "";
 };
 
 const saveUser = async () => {
+  formError.value = "";
+
+  if (!userForm.name || !userForm.email) {
+    formError.value = "Nama dan email wajib diisi";
+    return;
+  }
+
+  if (!isEditing.value && !userForm.password) {
+    formError.value = "Password wajib diisi";
+    return;
+  }
+
+  if (!isEditing.value && userForm.password.length < 6) {
+    formError.value = "Password minimal 6 karakter";
+    return;
+  }
+
   try {
     saving.value = true;
-    const data = {
-      name: userForm.name,
-      email: userForm.email,
-      role: userForm.role,
-    };
-    if (!isEditing.value && userForm.password) {
-      data.password = userForm.password;
-    }
 
     if (isEditing.value) {
+      // Update — only send changed fields
+      const data = {
+        name: userForm.name,
+        role: userForm.role,
+        phone: userForm.phone,
+      };
+      if (userForm.password) {
+        data.password = userForm.password;
+      }
       await adminService.updatePengguna(selectedUser.value.id, data);
     } else {
-      await adminService.createPengguna(data);
+      // Create
+      await adminService.createPengguna({
+        name: userForm.name,
+        email: userForm.email,
+        password: userForm.password,
+        role: userForm.role,
+      });
     }
-    showModal.value = false;
+
+    showUserModal.value = false;
     fetchPengguna();
   } catch (error) {
     console.error("Failed to save user:", error);
-    alert(
-      "Gagal menyimpan user: " +
-        (error.response?.data?.message || error.message),
-    );
+    formError.value =
+      error.response?.data?.message ||
+      "Gagal menyimpan. Periksa kembali data yang diisi.";
   } finally {
     saving.value = false;
   }
 };
 
-const resetPassword = async (user) => {
-  if (confirm(`Reset password untuk ${user.name}?`)) {
-    try {
-      await adminService.resetPasswordPengguna(user.id);
-      alert('Password berhasil direset. Password baru: "password"');
-    } catch (error) {
-      console.error("Failed to reset password:", error);
-      alert("Gagal reset password");
-    }
-  }
-};
-
-const confirmDelete = (user) => {
+const toggleUserStatus = (user) => {
   selectedUser.value = user;
-  showDeleteModal.value = true;
+  showToggleModal.value = true;
 };
 
-const deleteUser = async () => {
+const confirmToggleStatus = async () => {
   try {
-    deleting.value = true;
-    await adminService.deletePengguna(selectedUser.value.id);
-    showDeleteModal.value = false;
+    toggling.value = true;
+    await adminService.toggleUserStatus(selectedUser.value.id);
+    showToggleModal.value = false;
     fetchPengguna();
   } catch (error) {
-    console.error("Failed to delete user:", error);
+    console.error("Failed to toggle status:", error);
     alert(
-      "Gagal menghapus user: " +
+      "Gagal mengubah status: " +
         (error.response?.data?.message || error.message),
     );
   } finally {
-    deleting.value = false;
+    toggling.value = false;
+  }
+};
+
+const resetPassword = async (user) => {
+  if (
+    confirm(
+      `Reset password untuk ${user.name}? Password akan direset ke "password".`,
+    )
+  ) {
+    try {
+      await adminService.resetPasswordPengguna(user.id);
+      alert('Password berhasil direset ke "password"');
+    } catch (error) {
+      console.error("Failed to reset password:", error);
+      alert(
+        "Gagal reset password: " +
+          (error.response?.data?.message || error.message),
+      );
+    }
   }
 };
 
@@ -490,7 +676,9 @@ const getInitials = (name) => {
 
 const getRoleColor = (role) => {
   const colors = {
+    super_admin: "bg-red-100 text-red-600",
     admin: "bg-purple-100 text-purple-600",
+    staff: "bg-blue-100 text-blue-600",
     dosen: "bg-indigo-100 text-indigo-600",
     mahasiswa: "bg-emerald-100 text-emerald-600",
   };
@@ -499,7 +687,9 @@ const getRoleColor = (role) => {
 
 const getRoleBadgeClass = (role) => {
   const classes = {
+    super_admin: "bg-red-50 text-red-700 border border-red-100",
     admin: "bg-purple-50 text-purple-700 border border-purple-100",
+    staff: "bg-blue-50 text-blue-700 border border-blue-100",
     dosen: "bg-indigo-50 text-indigo-700 border border-indigo-100",
     mahasiswa: "bg-emerald-50 text-emerald-700 border border-emerald-100",
   };
@@ -507,24 +697,42 @@ const getRoleBadgeClass = (role) => {
 };
 
 const getRoleIcon = (role) => {
-  const icons = { admin: "security", dosen: "school", mahasiswa: "backpack" };
+  const icons = {
+    super_admin: "admin_panel_settings",
+    admin: "security",
+    staff: "badge",
+    dosen: "school",
+    mahasiswa: "backpack",
+  };
   return icons[role] || "person";
 };
 
 const getRoleLabel = (role) => {
-  const labels = { admin: "Admin", dosen: "Dosen", mahasiswa: "Mahasiswa" };
+  const labels = {
+    super_admin: "Super Admin",
+    admin: "Admin",
+    staff: "Staff",
+    dosen: "Dosen",
+    mahasiswa: "Mahasiswa",
+  };
   return labels[role] || role;
 };
 
 const formatLastLogin = (date) => {
   if (!date) return "Belum pernah";
-  const diff = Date.now() - new Date(date).getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours < 1) return "Online";
-  if (hours < 24) return `${hours} jam lalu`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "Kemarin";
-  return `${days} hari lalu`;
+  const d = new Date(date);
+  return (
+    d.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }) +
+    ", " +
+    d.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  );
 };
 
 onMounted(() => {

@@ -23,6 +23,11 @@ class RoleMiddleware
             ], 401);
         }
 
+        // super_admin can access everything
+        if ($request->user()->role === 'super_admin') {
+            return $next($request);
+        }
+
         if (!in_array($request->user()->role, $roles)) {
             return response()->json([
                 'success' => false,
