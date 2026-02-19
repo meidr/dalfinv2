@@ -20,7 +20,6 @@ class Dosen extends Model
         'jabatan_fungsional',
         'bidang_keahlian',
         'prodi_id',
-        'jabatan_id',
         'email',
         'no_hp',
         'jenis_kelamin',
@@ -49,14 +48,6 @@ class Dosen extends Model
     public function prodi()
     {
         return $this->belongsTo(Prodi::class);
-    }
-
-    /**
-     * Get the structural jabatan
-     */
-    public function jabatan()
-    {
-        return $this->belongsTo(Jabatan::class);
     }
 
     /**

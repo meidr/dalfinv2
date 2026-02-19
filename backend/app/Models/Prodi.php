@@ -14,7 +14,7 @@ class Prodi extends Model
     protected $fillable = [
         'kode',
         'nama',
-        'fakultas',
+        'fakultas_id',
         'jenjang',
         'is_active',
     ];
@@ -22,6 +22,14 @@ class Prodi extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the fakultas
+     */
+    public function fakultas()
+    {
+        return $this->belongsTo(Fakultas::class);
+    }
 
     /**
      * Get all mahasiswa in this prodi

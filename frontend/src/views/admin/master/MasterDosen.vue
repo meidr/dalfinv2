@@ -114,7 +114,7 @@
                 </div>
               </td>
               <td class="px-6 py-4 text-text-secondary">
-                {{ item.jabatan?.name || item.jabatan_fungsional || "-" }}
+                {{ item.jabatan_fungsional || "-" }}
               </td>
               <td class="px-6 py-4">
                 <div class="flex flex-col gap-1.5 w-full max-w-[160px]">
@@ -302,15 +302,12 @@
                 <label class="block text-sm font-medium text-text-main mb-1"
                   >Jabatan Fungsional</label
                 >
-                <select
-                  v-model="form.jabatan_id"
+                <input
+                  v-model="form.jabatan_fungsional"
+                  type="text"
+                  placeholder="Contoh: Lektor Kepala"
                   class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light"
-                >
-                  <option value="">Pilih Jabatan</option>
-                  <option v-for="j in jabatanList" :key="j.id" :value="j.id">
-                    {{ j.name }}
-                  </option>
-                </select>
+                />
               </div>
               <div>
                 <label class="block text-sm font-medium text-text-main mb-1"
@@ -535,7 +532,7 @@ const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
 const dosenList = ref([]);
-const jabatanList = ref([]);
+
 const searchQuery = ref("");
 const filterStatus = ref("");
 const showModal = ref(false);
@@ -564,7 +561,6 @@ const form = reactive({
   email: "",
   password: "",
   jabatan_fungsional: "",
-  jabatan_id: "",
   kuota_bimbingan: 10,
 });
 
@@ -598,17 +594,6 @@ const fetchDosen = async () => {
   }
 };
 
-const fetchJabatan = async () => {
-  try {
-    const response = await adminService.getJabatan();
-    if (response.success) {
-      jabatanList.value = response.data;
-    }
-  } catch (error) {
-    console.error("Failed to fetch jabatan:", error);
-  }
-};
-
 const debouncedSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
@@ -633,7 +618,6 @@ const openAddModal = () => {
   form.email = "";
   form.password = "";
   form.jabatan_fungsional = "";
-  form.jabatan_id = "";
   form.kuota_bimbingan = 10;
   showModal.value = true;
 };
@@ -647,7 +631,6 @@ const openEditModal = (item) => {
   form.email = item.user?.email || item.email || "";
   form.password = "";
   form.jabatan_fungsional = item.jabatan_fungsional || "";
-  form.jabatan_id = item.jabatan_id || "";
   form.kuota_bimbingan = item.kuota_bimbingan || 10;
   showModal.value = true;
 };
@@ -665,7 +648,6 @@ const saveDosen = async () => {
       nama: form.nama_lengkap,
       email: form.email,
       jabatan_fungsional: form.jabatan_fungsional,
-      jabatan_id: form.jabatan_id,
       kuota_bimbingan: form.kuota_bimbingan,
     };
     if (!isEditing.value && form.password) {
@@ -812,6 +794,5 @@ const closeImportModal = () => {
 
 onMounted(() => {
   fetchDosen();
-  fetchJabatan();
 });
 </script>

@@ -1,10 +1,7 @@
 <?php
 
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Jabatan extends Model
-{
-    //
-}
+// This model has been replaced by MasterJabatan.php
+// The old 'jabatans' table has been restructured into:
+// - master_jabatan (MasterJabatan model)
+// - periode_jabatan (PeriodeJabatan model)
+// - jabatan_pejabat (JabatanPejabat model)

@@ -3,21 +3,28 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Jabatan;
+use App\Models\MasterJabatan;
 use Illuminate\Http\Request;
 
 class MasterJabatanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Jabatan::query();
+        $query = MasterJabatan::query();
 
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                    ->orWhere('kode', 'like', "%{$search}%");
+            });
         }
 
-        $jabatans = $query->orderBy('name', 'asc')->get();
+        if ($request->filled('level')) {
+            $query->where('level', $request->level);
+        }
+
+        $jabatans = $query->orderBy('level')->orderBy('nama')->get();
 
         return response()->json([
             'success' => true,
@@ -28,10 +35,12 @@ class MasterJabatanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|unique:jabatans,name',
+            'kode' => 'required|string|max:30|unique:master_jabatan,kode',
+            'nama' => 'required|string|max:100',
+            'level' => 'required|in:kampus,fakultas,prodi',
         ]);
 
-        $jabatan = Jabatan::create($request->all());
+        $jabatan = MasterJabatan::create($request->all());
 
         return response()->json([
             'success' => true,
@@ -43,10 +52,12 @@ class MasterJabatanController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required|string|unique:jabatans,name,' . $id,
+            'kode' => 'required|string|max:30|unique:master_jabatan,kode,' . $id,
+            'nama' => 'required|string|max:100',
+            'level' => 'required|in:kampus,fakultas,prodi',
         ]);
 
-        $jabatan = Jabatan::findOrFail($id);
+        $jabatan = MasterJabatan::findOrFail($id);
         $jabatan->update($request->all());
 
         return response()->json([
@@ -58,12 +69,12 @@ class MasterJabatanController extends Controller
 
     public function destroy($id)
     {
-        $jabatan = Jabatan::findOrFail($id);
+        $jabatan = MasterJabatan::findOrFail($id);
 
-        if ($jabatan->dosen()->exists()) {
+        if ($jabatan->pejabat()->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tidak dapat menghapus Jabatan yang memiliki data dosen'
+                'message' => 'Tidak dapat menghapus jabatan yang memiliki data pejabat'
             ], 422);
         }
 

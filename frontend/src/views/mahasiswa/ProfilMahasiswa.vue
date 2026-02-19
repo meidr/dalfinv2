@@ -92,7 +92,7 @@
               <div class="flex justify-between p-3 bg-sidebar-light rounded-lg">
                 <span class="text-sm text-text-secondary">Angkatan</span>
                 <span class="text-sm font-bold text-text-main">{{
-                  mahasiswa?.angkatan || "-"
+                  mahasiswa?.tahun?.name || "-"
                 }}</span>
               </div>
               <div

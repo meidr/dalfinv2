@@ -1480,7 +1480,7 @@ const fetchUjian = async () => {
 
 const fetchProdi = async () => {
   try {
-    const response = await adminService.getProdi();
+    const response = await adminService.getProdi({ active_only: true });
     if (response.success) {
       prodiList.value = response.data;
     }

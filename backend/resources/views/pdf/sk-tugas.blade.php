@@ -85,7 +85,6 @@
         /* isi dalam a */
 
         /* tanda tangan */
-        /* tanda tangan */
         .ttd {
             width: 300px;
             margin-left: auto;
@@ -94,48 +93,53 @@
             position: relative;
         }
 
-        /* nama jadi dasar layer */
+        .ttd-date,
+        .ttd-title {
+            position: relative;
+            z-index: 3;
+        }
+
+        /* nama di atas layer cap/ttd */
         .nama {
             font-weight: bold;
             text-decoration: underline;
             position: relative;
-            z-index: 1;
+            z-index: 3;
         }
 
         .niy {
             font-size: 11pt;
             position: relative;
-            z-index: 1;
+            z-index: 3;
         }
 
-        /* area ttd */
+        /* area ttd — mencakup dari judul sampai nama */
         .ttd-space {
-            height: 90px;
             position: relative;
+            height: 80px;
             margin-top: 5px;
         }
 
-        /* CAP di atas nama */
+        /* CAP */
         .ttd-space img.cap {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            margin-left: -80px;
-            top: -25px;
-            /* turun menimpa nama */
-            width: 150px;
+            margin-left: -120px;
+            top: -85px;
+            width: 250px;
             opacity: .8;
             z-index: 2;
         }
 
-        /* TTD paling atas */
+        /* TTD di belakang semua teks */
         .ttd-space img.ttd-img {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            top: -5px;
-            width: 85px;
-            z-index: 3;
+            top: 5px;
+            width: 210px;
+            z-index: 1;
         }
     </style>
 </head>
@@ -159,9 +163,9 @@
             <td class="c2">Lembaga yang memberi tugas</td>
             <td class="c3">:</td>
             <td class="c4">
-                {{ $signer['position'] ?? 'Kepala Prodi' }} {{ $prodi_lengkap ?? '' }}
-                {{ $signer['institution'] ?? "Universitas Islam Internasional Darullughah Wadda'wah" }},
-                {{ $signer['city'] ?? 'Bangil' }}.
+                Kepala Program Studi {{ $prodi_kode ?? '' }}
+                Universitas Islam Internasional Darullughah Wadda'wah,
+                Bangil.
             </td>
         </tr>
 
@@ -220,7 +224,7 @@
             <td class="c1 sub"></td>
             <td class="c2">c. Fakultas / Prodi</td>
             <td class="c3">:</td>
-            <td class="c4">{{ $skripsi->mahasiswa->prodi->fakultas ?? '-' }} /
+            <td class="c4">{{ $skripsi->mahasiswa->prodi->fakultas->nama_fakultas ?? '-' }} /
                 {{ $skripsi->mahasiswa->prodi->nama ?? '-' }}</td>
         </tr>
 
@@ -251,14 +255,14 @@
 
 
     <div class="ttd">
-        <div>{{ $signer['city'] ?? 'Bangil' }}, {{ $tanggal }}</div>
-        <div>{{ $signer['position'] ?? 'Kepala Prodi' }}</div>
+        <div class="ttd-date">Bangil, {{ $tanggal }}</div>
+        <div class="ttd-title">Kepala Program Studi {{ $prodi_kode ?? '' }}</div>
 
         <div class="ttd-space">
             @if (!empty($signer['signature']))
                 <img class="ttd-img" src="{{ $signer['signature'] }}">
             @endif
-            <img class="cap" src="{{ public_path('images/cap.jpg') }}">
+            <img class="cap" src="{{ public_path('images/capori.png') }}">
         </div>
 
         <div class="nama">{{ $signer['name'] ?? '-' }}</div>

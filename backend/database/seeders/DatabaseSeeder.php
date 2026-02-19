@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Prodi;
 use App\Models\Dosen;
 use App\Models\Mahasiswa;
+use App\Models\Tahun;
 use App\Models\Skripsi;
 use App\Models\Pembimbing;
 use Illuminate\Database\Seeder;
@@ -32,6 +33,10 @@ class DatabaseSeeder extends Seeder
             'fakultas' => 'Fakultas Teknik',
             'jenjang' => 'S1',
         ]);
+
+        // Create Tahun
+        $tahun2019 = Tahun::create(['name' => '2019']);
+        $tahun2020 = Tahun::create(['name' => '2020']);
 
         // Create Admin User
         User::create([
@@ -103,8 +108,8 @@ class DatabaseSeeder extends Seeder
             'nim' => '201910234',
             'nama' => 'Budi Santoso',
             'prodi_id' => $prodi1->id,
+            'tahun_id' => $tahun2019->id,
             'semester' => 8,
-            'angkatan' => '2019',
             'jenis_kelamin' => 'L',
             'email' => 'budi@example.com',
             'no_hp' => '081234567892',
@@ -123,8 +128,8 @@ class DatabaseSeeder extends Seeder
             'nim' => '202010123',
             'nama' => 'Dewi Lestari',
             'prodi_id' => $prodi1->id,
+            'tahun_id' => $tahun2020->id,
             'semester' => 6,
-            'angkatan' => '2020',
             'jenis_kelamin' => 'P',
             'email' => 'dewi@example.com',
             'no_hp' => '081234567893',

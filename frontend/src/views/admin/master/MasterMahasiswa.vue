@@ -109,7 +109,7 @@
                 </th>
                 <th class="px-6 py-4">NIM</th>
                 <th class="px-6 py-4">Mahasiswa</th>
-                <th class="px-6 py-4">Angkatan</th>
+                <th class="px-6 py-4">Tahun</th>
                 <th class="px-6 py-4">Program Studi</th>
                 <th class="px-6 py-4">Status</th>
                 <th class="px-6 py-4 text-right">Aksi</th>
@@ -151,7 +151,7 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 text-text-secondary">
-                  {{ item.tahun?.name || item.angkatan }}
+                  {{ item.tahun?.name || "-" }}
                 </td>
                 <td class="px-6 py-4 text-text-secondary">
                   {{ item.prodi?.nama || "-" }}
@@ -281,7 +281,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-text-main mb-1"
-                  >Angkatan</label
+                  >Tahun</label
                 >
                 <select
                   v-model="form.tahun_id"
@@ -580,7 +580,6 @@ const form = reactive({
   nama: "",
   email: "",
   password: "",
-  angkatan: "", // No longer used as string, but kept for compatibility. Using tahun_id now.
   tahun_id: "",
   prodi_id: "",
 });
@@ -640,7 +639,6 @@ const openAddModal = () => {
   form.nama = "";
   form.email = "";
   form.password = "";
-  form.angkatan = "";
   form.tahun_id = "";
   form.prodi_id = "";
   showModal.value = true;
@@ -653,7 +651,6 @@ const openEditModal = (item) => {
   form.nama = item.nama;
   form.email = item.user?.email || "";
   form.password = "";
-  form.angkatan = item.angkatan;
   form.tahun_id = item.tahun_id || "";
   form.prodi_id = item.prodi_id || "";
   showModal.value = true;
@@ -672,7 +669,6 @@ const saveMahasiswa = async () => {
       email: form.email,
       tahun_id: form.tahun_id,
       prodi_id: form.prodi_id,
-      angkatan: "0", // Fallback, will be handled by backend
     };
     if (!isEditing.value && form.password) {
       data.password = form.password;
@@ -797,7 +793,7 @@ const closeImportModal = () => {
 
 const fetchProdi = async () => {
   try {
-    const response = await adminService.getProdi();
+    const response = await adminService.getProdi({ active_only: true });
     if (response.success) {
       prodiList.value = response.data;
     }

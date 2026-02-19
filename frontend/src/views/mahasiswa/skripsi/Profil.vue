@@ -39,7 +39,9 @@
             >Angkatan</span
           >
           <span class="font-medium">{{
-            skripsi?.mahasiswa?.angkatan || authStore.profile?.angkatan || "-"
+            skripsi?.mahasiswa?.tahun?.name ||
+            authStore.profile?.tahun?.name ||
+            "-"
           }}</span>
         </div>
       </div>

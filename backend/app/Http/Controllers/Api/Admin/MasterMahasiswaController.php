@@ -69,9 +69,6 @@ class MasterMahasiswaController extends Controller
             'is_active' => true,
         ]);
 
-        // Get tahun name for backward compatibility with angkatan string
-        $tahun = \App\Models\Tahun::find($request->tahun_id);
-
         // Create mahasiswa profile
         $mahasiswa = Mahasiswa::create([
             'user_id' => $user->id,
@@ -79,7 +76,6 @@ class MasterMahasiswaController extends Controller
             'nama' => $request->nama,
             'prodi_id' => $request->prodi_id,
             'tahun_id' => $request->tahun_id,
-            'angkatan' => $tahun ? $tahun->name : date('Y'), // Fallback
             'semester' => $request->semester ?? 1,
             'jenis_kelamin' => $request->jenis_kelamin,
             'no_hp' => $request->no_hp,
@@ -135,13 +131,7 @@ class MasterMahasiswaController extends Controller
             'is_active'
         ]);
 
-        // Sync angkatan string if tahun_id changes
-        if ($request->filled('tahun_id')) {
-            $tahun = \App\Models\Tahun::find($request->tahun_id);
-            if ($tahun) {
-                $data['angkatan'] = $tahun->name;
-            }
-        }
+
 
         $mahasiswa->fill($data);
         $mahasiswa->save();
@@ -181,8 +171,8 @@ class MasterMahasiswaController extends Controller
      */
     public function downloadTemplate()
     {
-        $headers = ['nim', 'nama', 'email', 'angkatan', 'prodi_id', 'jenis_kelamin', 'no_hp'];
-        $example = ['2024001', 'John Doe', 'john@email.com', '2024', '1', 'L', '08123456789'];
+        $headers = ['nim', 'nama', 'email', 'tahun_id', 'prodi_id', 'jenis_kelamin', 'no_hp'];
+        $example = ['2024001', 'John Doe', 'john@email.com', '1', '1', 'L', '08123456789'];
 
         $callback = function () use ($headers, $example) {
             $file = fopen('php://output', 'w');
@@ -222,7 +212,7 @@ class MasterMahasiswaController extends Controller
         $header[0] = preg_replace('/[\x{FEFF}]/u', '', $header[0]);
         $header = array_map('trim', array_map('strtolower', $header));
 
-        $required = ['nim', 'nama', 'email', 'angkatan', 'prodi_id'];
+        $required = ['nim', 'nama', 'email', 'tahun_id', 'prodi_id'];
         foreach ($required as $col) {
             if (!in_array($col, $header)) {
                 fclose($handle);
@@ -252,10 +242,10 @@ class MasterMahasiswaController extends Controller
                 $nim = trim($rowData['nim'] ?? '');
                 $nama = trim($rowData['nama'] ?? '');
                 $email = trim($rowData['email'] ?? '');
-                $angkatan = trim($rowData['angkatan'] ?? '');
+                $tahunId = trim($rowData['tahun_id'] ?? '');
                 $prodiId = trim($rowData['prodi_id'] ?? '');
 
-                if (!$nim || !$nama || !$email || !$angkatan || !$prodiId) {
+                if (!$nim || !$nama || !$email || !$tahunId || !$prodiId) {
                     $errors[] = "Baris {$row}: data wajib tidak lengkap";
                     $failed++;
                     continue;
@@ -286,7 +276,7 @@ class MasterMahasiswaController extends Controller
                     'nim' => $nim,
                     'nama' => $nama,
                     'prodi_id' => $prodiId,
-                    'angkatan' => $angkatan,
+                    'tahun_id' => $tahunId,
                     'semester' => 1,
                     'jenis_kelamin' => trim($rowData['jenis_kelamin'] ?? '') ?: null,
                     'no_hp' => trim($rowData['no_hp'] ?? '') ?: null,

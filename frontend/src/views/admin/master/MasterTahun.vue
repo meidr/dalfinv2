@@ -71,6 +71,8 @@
           >
             <tr>
               <th class="px-6 py-4">Nama (Angkatan)</th>
+              <th class="px-6 py-4">Kode</th>
+              <th class="px-6 py-4">Semester</th>
               <th class="px-6 py-4">Status</th>
               <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
@@ -78,7 +80,7 @@
           <tbody class="divide-y divide-border-light">
             <tr v-if="items.length === 0">
               <td
-                colspan="3"
+                colspan="5"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data ditemukan
@@ -92,6 +94,12 @@
             >
               <td class="px-6 py-4 text-text-main font-medium">
                 {{ item.name }}
+              </td>
+              <td class="px-6 py-4 text-text-secondary">
+                {{ item.kode || "-" }}
+              </td>
+              <td class="px-6 py-4 text-text-secondary">
+                {{ item.semester || "-" }}
               </td>
               <td class="px-6 py-4">
                 <span
@@ -167,6 +175,31 @@
               />
             </div>
 
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-1"
+                  >Kode</label
+                >
+                <input
+                  v-model="form.kode"
+                  type="text"
+                  placeholder="Contoh: 2024/2025"
+                  class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-1"
+                  >Semester</label
+                >
+                <input
+                  v-model="form.semester"
+                  type="text"
+                  placeholder="Contoh: Ganjil"
+                  class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
+                />
+              </div>
+            </div>
+
             <div class="flex items-center gap-2">
               <input
                 v-model="form.is_active"
@@ -224,6 +257,8 @@ const filters = reactive({
 
 const form = reactive({
   name: "",
+  kode: "",
+  semester: "",
   is_active: true,
 });
 
@@ -246,11 +281,15 @@ const openModal = (item = null) => {
     isEditing.value = true;
     currentId.value = item.id;
     form.name = item.name;
+    form.kode = item.kode || "";
+    form.semester = item.semester || "";
     form.is_active = item.is_active;
   } else {
     isEditing.value = false;
     currentId.value = null;
     form.name = "";
+    form.kode = "";
+    form.semester = "";
     form.is_active = true;
   }
   showModal.value = true;

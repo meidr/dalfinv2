@@ -9,13 +9,13 @@
           >Dashboard</router-link
         >
         <span>/</span>
-        <span class="text-text-main font-medium">Master Program Studi</span>
+        <span class="text-text-main font-medium">Master Fakultas</span>
       </div>
       <h1 class="text-text-main text-3xl font-bold leading-tight">
-        Master Program Studi
+        Master Fakultas
       </h1>
       <p class="text-text-secondary text-sm font-normal">
-        Kelola data program studi
+        Kelola data fakultas
       </p>
     </div>
 
@@ -39,7 +39,7 @@
           <input
             v-model="filters.search"
             type="text"
-            placeholder="Cari prodi..."
+            placeholder="Cari fakultas..."
             class="block w-full pl-10 pr-3 py-2.5 border border-border-light rounded-lg leading-5 bg-background-light text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-shadow dark:bg-background"
           />
         </div>
@@ -50,7 +50,7 @@
             class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-blue-600 text-white rounded-lg font-medium text-sm shadow-sm shadow-blue-500/20 transition-all w-full md:w-auto whitespace-nowrap"
           >
             <span class="material-symbols-outlined text-[20px]">add</span>
-            Tambah Prodi
+            Tambah Fakultas
           </button>
         </div>
       </div>
@@ -71,9 +71,9 @@
           >
             <tr>
               <th class="px-6 py-4">Kode</th>
-              <th class="px-6 py-4">Nama Prodi</th>
-              <th class="px-6 py-4">Jenjang</th>
-              <th class="px-6 py-4">Fakultas</th>
+              <th class="px-6 py-4">Nama Fakultas</th>
+              <th class="px-6 py-4">Dekan</th>
+              <th class="px-6 py-4">Wakil Dekan</th>
               <th class="px-6 py-4">Status</th>
               <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
@@ -97,13 +97,13 @@
                 {{ item.kode }}
               </td>
               <td class="px-6 py-4 text-text-main font-medium">
-                {{ item.nama }}
+                {{ item.nama_fakultas }}
               </td>
               <td class="px-6 py-4 text-text-secondary">
-                {{ item.jenjang }}
+                {{ item.dekan?.full_name || "-" }}
               </td>
               <td class="px-6 py-4 text-text-secondary">
-                {{ item.fakultas?.nama_fakultas || "-" }}
+                {{ item.wakil_dekan?.full_name || "-" }}
               </td>
               <td class="px-6 py-4">
                 <span
@@ -158,66 +158,65 @@
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       >
         <div
-          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg"
         >
           <div class="p-6 border-b border-border-light">
             <h2 class="text-xl font-bold text-text-main">
-              {{ isEditing ? "Edit Prodi" : "Tambah Prodi" }}
+              {{ isEditing ? "Edit Fakultas" : "Tambah Fakultas" }}
             </h2>
           </div>
           <form @submit.prevent="saveItem" class="p-6 space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-text-main mb-1"
-                >Kode Prodi <span class="text-red-500">*</span></label
-              >
-              <input
-                v-model="form.kode"
-                type="text"
-                required
-                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
-              />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-1"
+                  >Kode <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="form.kode"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-1"
+                  >Nama Fakultas <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="form.nama_fakultas"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
+                />
+              </div>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
-                >Nama Prodi <span class="text-red-500">*</span></label
-              >
-              <input
-                v-model="form.nama"
-                type="text"
-                required
-                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-text-main mb-1"
-                >Jenjang</label
+                >Dekan</label
               >
               <select
-                v-model="form.jenjang"
-                required
+                v-model="form.dekan_id"
                 class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
               >
-                <option value="D3">D3</option>
-                <option value="D4">D4</option>
-                <option value="S1">S1</option>
-                <option value="S2">S2</option>
-                <option value="S3">S3</option>
+                <option :value="null">-- Tidak Ada --</option>
+                <option v-for="d in dosenList" :key="d.id" :value="d.id">
+                  {{ d.full_name }} ({{ d.nip }})
+                </option>
               </select>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
-                >Fakultas</label
+                >Wakil Dekan</label
               >
               <select
-                v-model="form.fakultas_id"
+                v-model="form.wakil_dekan_id"
                 class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
               >
-                <option :value="null">-- Pilih Fakultas --</option>
-                <option v-for="f in fakultasList" :key="f.id" :value="f.id">
-                  {{ f.nama_fakultas }}
+                <option :value="null">-- Tidak Ada --</option>
+                <option v-for="d in dosenList" :key="d.id" :value="d.id">
+                  {{ d.full_name }} ({{ d.nip }})
                 </option>
               </select>
             </div>
@@ -269,7 +268,7 @@ const toast = useToast();
 const loading = ref(false);
 const saving = ref(false);
 const items = ref([]);
-const fakultasList = ref([]);
+const dosenList = ref([]);
 const showModal = ref(false);
 const isEditing = ref(false);
 const currentId = ref(null);
@@ -280,16 +279,16 @@ const filters = reactive({
 
 const form = reactive({
   kode: "",
-  nama: "",
-  jenjang: "S1",
-  fakultas_id: null,
+  nama_fakultas: "",
+  dekan_id: null,
+  wakil_dekan_id: null,
   is_active: true,
 });
 
 const fetchData = async () => {
   loading.value = true;
   try {
-    const response = await adminService.getProdi(filters);
+    const response = await adminService.getFakultas(filters);
     if (response.success) {
       items.value = response.data;
     }
@@ -300,14 +299,14 @@ const fetchData = async () => {
   }
 };
 
-const fetchFakultas = async () => {
+const fetchDosen = async () => {
   try {
-    const response = await adminService.getFakultas({ active_only: true });
+    const response = await adminService.getDosen({ active_only: true });
     if (response.success) {
-      fakultasList.value = response.data;
+      dosenList.value = response.data?.data || response.data || [];
     }
   } catch (error) {
-    console.error("Failed to load fakultas:", error);
+    console.error("Failed to load dosen:", error);
   }
 };
 
@@ -316,17 +315,17 @@ const openModal = (item = null) => {
     isEditing.value = true;
     currentId.value = item.id;
     form.kode = item.kode;
-    form.nama = item.nama;
-    form.jenjang = item.jenjang;
-    form.fakultas_id = item.fakultas_id;
+    form.nama_fakultas = item.nama_fakultas;
+    form.dekan_id = item.dekan_id;
+    form.wakil_dekan_id = item.wakil_dekan_id;
     form.is_active = item.is_active;
   } else {
     isEditing.value = false;
     currentId.value = null;
     form.kode = "";
-    form.nama = "";
-    form.jenjang = "S1";
-    form.fakultas_id = null;
+    form.nama_fakultas = "";
+    form.dekan_id = null;
+    form.wakil_dekan_id = null;
     form.is_active = true;
   }
   showModal.value = true;
@@ -341,11 +340,11 @@ const saveItem = async () => {
   try {
     const payload = { ...form };
     if (isEditing.value) {
-      await adminService.updateProdi(currentId.value, payload);
-      toast.success("Prodi berhasil diperbarui");
+      await adminService.updateFakultas(currentId.value, payload);
+      toast.success("Fakultas berhasil diperbarui");
     } else {
-      await adminService.createProdi(payload);
-      toast.success("Prodi berhasil ditambahkan");
+      await adminService.createFakultas(payload);
+      toast.success("Fakultas berhasil ditambahkan");
     }
     closeModal();
     await fetchData();
@@ -359,7 +358,7 @@ const saveItem = async () => {
 const confirmDelete = async (item) => {
   const result = await Swal.fire({
     title: "Apakah Anda yakin?",
-    text: `Akan menghapus prodi ${item.nama}`,
+    text: `Akan menghapus fakultas ${item.nama_fakultas}`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",
@@ -370,8 +369,8 @@ const confirmDelete = async (item) => {
 
   if (result.isConfirmed) {
     try {
-      await adminService.deleteProdi(item.id);
-      toast.success("Prodi berhasil dihapus");
+      await adminService.deleteFakultas(item.id);
+      toast.success("Fakultas berhasil dihapus");
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || "Gagal menghapus data");
@@ -388,6 +387,6 @@ watch(
 
 onMounted(() => {
   fetchData();
-  fetchFakultas();
+  fetchDosen();
 });
 </script>

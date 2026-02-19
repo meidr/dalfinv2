@@ -18,7 +18,7 @@ class Mahasiswa extends Model
         'prodi_id',
         'tahun_id',
         'semester',
-        'angkatan',
+
         'jenis_kelamin',
         'tempat_lahir',
         'tanggal_lahir',
@@ -52,7 +52,7 @@ class Mahasiswa extends Model
     }
 
     /**
-     * Get the tahun (angkatan)
+     * Get the tahun
      */
     public function tahun()
     {

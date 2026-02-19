@@ -242,17 +242,7 @@ export const adminService = {
   },
 
   // PDF Generation
-  async getSkTugasPdf(skripsiId, data = null) {
-    if (data) {
-      const response = await api.post(
-        `/admin/pdf/sk-tugas/${skripsiId}`,
-        data,
-        {
-          responseType: "blob",
-        },
-      );
-      return response;
-    }
+  async getSkTugasPdf(skripsiId) {
     const response = await api.get(`/admin/pdf/sk-tugas/${skripsiId}`, {
       responseType: "blob",
     });
@@ -337,11 +327,6 @@ export const adminService = {
       responseType: "blob",
     });
     return response;
-  },
-
-  async getProdi() {
-    const response = await api.get("/admin/prodi");
-    return response.data;
   },
 
   async getJadwalUjianPdf(params = {}) {
@@ -506,6 +491,27 @@ export const adminService = {
   },
 
   // Master Data
+  // Fakultas
+  async getFakultas(params = {}) {
+    const response = await api.get("/admin/fakultas", { params });
+    return response.data;
+  },
+
+  async createFakultas(data) {
+    const response = await api.post("/admin/fakultas", data);
+    return response.data;
+  },
+
+  async updateFakultas(id, data) {
+    const response = await api.put(`/admin/fakultas/${id}`, data);
+    return response.data;
+  },
+
+  async deleteFakultas(id) {
+    const response = await api.delete(`/admin/fakultas/${id}`);
+    return response.data;
+  },
+
   // Prodi
   async getProdi(params = {}) {
     const response = await api.get("/admin/prodi", { params });
@@ -611,6 +617,85 @@ export const adminService = {
 
   async getTrashedRecords(params = {}) {
     const response = await api.get("/super-admin/trashed", { params });
+    return response.data;
+  },
+
+  // Periode Jabatan
+  async getPeriodeJabatan(params = {}) {
+    const response = await api.get("/super-admin/periode-jabatan", { params });
+    return response.data;
+  },
+
+  async createPeriodeJabatan(data) {
+    const response = await api.post("/super-admin/periode-jabatan", data);
+    return response.data;
+  },
+
+  async updatePeriodeJabatan(id, data) {
+    const response = await api.put(`/super-admin/periode-jabatan/${id}`, data);
+    return response.data;
+  },
+
+  async deletePeriodeJabatan(id) {
+    const response = await api.delete(`/super-admin/periode-jabatan/${id}`);
+    return response.data;
+  },
+
+  // Jabatan Pejabat
+  async getJabatanPejabat(params = {}) {
+    const response = await api.get("/super-admin/jabatan-pejabat", { params });
+    return response.data;
+  },
+
+  async createJabatanPejabat(data) {
+    const response = await api.post("/super-admin/jabatan-pejabat", data);
+    return response.data;
+  },
+
+  async updateJabatanPejabat(id, data) {
+    const response = await api.put(`/super-admin/jabatan-pejabat/${id}`, data);
+    return response.data;
+  },
+
+  async deleteJabatanPejabat(id) {
+    const response = await api.delete(`/super-admin/jabatan-pejabat/${id}`);
+    return response.data;
+  },
+
+  async resolveJabatanPejabat(params) {
+    const response = await api.get("/super-admin/jabatan-pejabat-resolve", {
+      params,
+    });
+    return response.data;
+  },
+
+  // Tanda Tangan
+  async getTandaTangan(params = {}) {
+    const response = await api.get("/super-admin/tanda-tangan", { params });
+    return response.data;
+  },
+
+  async createTandaTangan(formData) {
+    const response = await api.post("/super-admin/tanda-tangan", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  async updateTandaTangan(id, formData) {
+    formData.append("_method", "PUT");
+    const response = await api.post(
+      `/super-admin/tanda-tangan/${id}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  async deleteTandaTangan(id) {
+    const response = await api.delete(`/super-admin/tanda-tangan/${id}`);
     return response.data;
   },
 };

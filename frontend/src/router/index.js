@@ -121,6 +121,11 @@ const routes = [
         component: () => import("../views/admin/master/MasterDosen.vue"),
       },
       {
+        path: "master/fakultas",
+        name: "MasterFakultas",
+        component: () => import("../views/admin/master/MasterFakultas.vue"),
+      },
+      {
         path: "master/prodi",
         name: "MasterProdi",
         component: () => import("../views/admin/master/MasterProdi.vue"),
@@ -154,6 +159,18 @@ const routes = [
         path: "chat-monitor",
         name: "AdminChatMonitor",
         component: () => import("../views/admin/AdminChatMonitor.vue"),
+      },
+      {
+        path: "otoritas-jabatan",
+        name: "OtoritasJabatan",
+        component: () =>
+          import("../views/admin/superadmin/OtoritasJabatan.vue"),
+      },
+      {
+        path: "otoritas-tandatangan",
+        name: "OtoritasTandaTangan",
+        component: () =>
+          import("../views/admin/superadmin/OtoritasTandaTangan.vue"),
       },
     ],
   },

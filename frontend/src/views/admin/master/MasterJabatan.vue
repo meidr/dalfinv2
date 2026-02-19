@@ -15,7 +15,7 @@
         Master Jabatan
       </h1>
       <p class="text-text-secondary text-sm font-normal">
-        Kelola data jabatan struktural dosen
+        Kelola daftar jabatan struktural (REKTOR, DEKAN, KAPRODI, dll)
       </p>
     </div>
 
@@ -70,14 +70,16 @@
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
           >
             <tr>
+              <th class="px-6 py-4">Kode</th>
               <th class="px-6 py-4">Nama Jabatan</th>
+              <th class="px-6 py-4">Level</th>
               <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
             <tr v-if="items.length === 0">
               <td
-                colspan="2"
+                colspan="4"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data ditemukan
@@ -89,8 +91,23 @@
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                >
+                  {{ item.kode }}
+                </span>
+              </td>
               <td class="px-6 py-4 text-text-main font-medium">
-                {{ item.name }}
+                {{ item.nama }}
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  :class="getLevelClass(item.level)"
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize"
+                >
+                  {{ item.level }}
+                </span>
               </td>
               <td class="px-6 py-4 text-right">
                 <div
@@ -139,14 +156,44 @@
           <form @submit.prevent="saveItem" class="p-6 space-y-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
+                >Kode <span class="text-red-500">*</span></label
+              >
+              <input
+                v-model="form.kode"
+                type="text"
+                required
+                maxlength="30"
+                placeholder="Contoh: KAPRODI"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background uppercase"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
                 >Nama Jabatan <span class="text-red-500">*</span></label
               >
               <input
-                v-model="form.name"
+                v-model="form.nama"
                 type="text"
                 required
+                maxlength="100"
+                placeholder="Contoh: Ketua Program Studi"
                 class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
               />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Level <span class="text-red-500">*</span></label
+              >
+              <select
+                v-model="form.level"
+                required
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
+              >
+                <option value="">Pilih Level</option>
+                <option value="kampus">Kampus</option>
+                <option value="fakultas">Fakultas</option>
+                <option value="prodi">Prodi</option>
+              </select>
             </div>
 
             <div class="flex gap-3 pt-4">
@@ -191,8 +238,22 @@ const filters = reactive({
 });
 
 const form = reactive({
-  name: "",
+  kode: "",
+  nama: "",
+  level: "",
 });
+
+const getLevelClass = (level) => {
+  const classes = {
+    kampus:
+      "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
+    fakultas:
+      "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400",
+    prodi:
+      "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  };
+  return classes[level] || "bg-gray-50 text-gray-700";
+};
 
 const fetchData = async () => {
   loading.value = true;
@@ -212,11 +273,15 @@ const openModal = (item = null) => {
   if (item) {
     isEditing.value = true;
     currentId.value = item.id;
-    form.name = item.name;
+    form.kode = item.kode;
+    form.nama = item.nama;
+    form.level = item.level;
   } else {
     isEditing.value = false;
     currentId.value = null;
-    form.name = "";
+    form.kode = "";
+    form.nama = "";
+    form.level = "";
   }
   showModal.value = true;
 };
@@ -247,7 +312,7 @@ const saveItem = async () => {
 const confirmDelete = async (item) => {
   const result = await Swal.fire({
     title: "Apakah Anda yakin?",
-    text: `Akan menghapus jabatan ${item.name}`,
+    text: `Akan menghapus jabatan ${item.nama}`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",

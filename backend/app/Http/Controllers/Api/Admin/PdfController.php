@@ -21,7 +21,7 @@ class PdfController extends Controller
      */
     public function skTugas(Request $request, Skripsi $skripsi)
     {
-        $skripsi->load(['mahasiswa.prodi', 'pembimbing.dosen']);
+        $skripsi->load(['mahasiswa.prodi.fakultas', 'pembimbing.dosen']);
 
         // Get or create SK Tugas
         $skTugas = $skripsi->skTugas;
@@ -35,26 +35,81 @@ class PdfController extends Controller
             ]);
         }
 
+        // Auto-resolve KAPRODI for this mahasiswa's prodi
+        $prodi = $skripsi->mahasiswa->prodi;
+        $signer = $this->resolveKaprodi($prodi);
+
         $data = [
             'skripsi' => $skripsi,
             'skTugas' => $skTugas,
             'tanggal' => now()->translatedFormat('d F Y'),
             'tahun_ajaran' => $this->getTahunAjaran(),
-            'prodi_lengkap' => $skripsi->mahasiswa->prodi->nama ?? '',
-            'signer' => [
-                'name' => $request->input('signer_name', 'Nama Pejabat'),
-                'nip' => $request->input('signer_nip', '-'),
-                'position' => $request->input('signer_position', 'Kepala Prodi'),
-                'city' => $request->input('signer_city', 'Bangil'),
-                'institution' => $request->input('signer_institution', 'Universitas Islam Internasional Darullughah Wadda\'wah'),
-                'signature' => $request->input('signer_signature'),
-            ]
+            'prodi_kode' => $prodi->kode ?? '',
+            'prodi_nama' => $prodi->nama ?? '',
+            'signer' => $signer,
         ];
 
         $pdf = Pdf::loadView('pdf.sk-tugas', $data);
         $pdf->setPaper('a4', 'portrait');
 
         return $pdf->download("SK_Tugas_{$skripsi->mahasiswa->nim}.pdf");
+    }
+
+    /**
+     * Resolve the active KAPRODI for a given prodi
+     */
+    private function resolveKaprodi($prodi)
+    {
+        $jabatan = \App\Models\MasterJabatan::where('kode', 'KAPRODI')->first();
+
+        $signer = [
+            'name' => '-',
+            'nip' => '-',
+            'position' => 'Kepala Program Studi ' . ($prodi->kode ?? ''),
+            'signature' => null,
+        ];
+
+        if (!$jabatan || !$prodi) return $signer;
+
+        // Find active periode
+        $periode = \App\Models\PeriodeJabatan::where('is_active', true)->first();
+        if (!$periode) return $signer;
+
+        $today = now()->toDateString();
+        $pejabat = \App\Models\JabatanPejabat::with('dosen')
+            ->where('periode_id', $periode->id)
+            ->where('jabatan_id', $jabatan->id)
+            ->where('prodi_id', $prodi->id)
+            ->where('tgl_mulai', '<=', $today)
+            ->where(function ($q) use ($today) {
+                $q->whereNull('tgl_selesai')
+                    ->orWhere('tgl_selesai', '>=', $today);
+            })
+            ->first();
+
+        if (!$pejabat || !$pejabat->dosen) return $signer;
+
+        $dosen = $pejabat->dosen;
+
+        // Build full name
+        $parts = array_filter([
+            $dosen->gelar_depan,
+            $dosen->nama,
+            $dosen->gelar_belakang,
+        ]);
+        $signer['name'] = implode(' ', $parts) ?: $dosen->nama;
+        $signer['nip'] = $dosen->nip ?? '-';
+
+        // Get tanda tangan
+        $ttd = \App\Models\TandaTangan::where('dosen_id', $dosen->id)->first();
+        if ($ttd && $ttd->ttd) {
+            $path = storage_path('app/public/' . $ttd->ttd);
+            if (file_exists($path)) {
+                $signer['signature'] = $path;
+            }
+        }
+
+        return $signer;
     }
 
     /**

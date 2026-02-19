@@ -49,7 +49,7 @@ class AuthController extends Controller
             }
 
             // Load profile based on role
-            $user->load($user->role === 'mahasiswa' ? 'mahasiswa.prodi' : ($user->role === 'dosen' ? 'dosen.prodi' : []));
+            $user->load($user->role === 'mahasiswa' ? ['mahasiswa.prodi', 'mahasiswa.tahun'] : ($user->role === 'dosen' ? 'dosen.prodi' : []));
 
             return response()->json([
                 'success' => true,
@@ -100,7 +100,7 @@ class AuthController extends Controller
                 ]);
             }
 
-            $user->load($user->role === 'mahasiswa' ? 'mahasiswa.prodi' : ($user->role === 'dosen' ? 'dosen.prodi' : []));
+            $user->load($user->role === 'mahasiswa' ? ['mahasiswa.prodi', 'mahasiswa.tahun'] : ($user->role === 'dosen' ? 'dosen.prodi' : []));
 
             return response()->json([
                 'success' => true,
@@ -150,7 +150,7 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         $user = $request->user();
-        $user->load($user->role === 'mahasiswa' ? 'mahasiswa.prodi' : ($user->role === 'dosen' ? 'dosen.prodi' : []));
+        $user->load($user->role === 'mahasiswa' ? ['mahasiswa.prodi', 'mahasiswa.tahun'] : ($user->role === 'dosen' ? 'dosen.prodi' : []));
 
         return response()->json([
             'success' => true,

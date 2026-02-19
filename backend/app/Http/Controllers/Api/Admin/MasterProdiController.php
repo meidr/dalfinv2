@@ -10,13 +10,16 @@ class MasterProdiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Prodi::query();
+        $query = Prodi::with('fakultas');
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                    ->orWhere('kode', 'like', "%{$search}%");
+                    ->orWhere('kode', 'like', "%{$search}%")
+                    ->orWhereHas('fakultas', function ($fq) use ($search) {
+                        $fq->where('nama_fakultas', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -38,10 +41,11 @@ class MasterProdiController extends Controller
             'kode' => 'required|string|unique:prodi,kode',
             'nama' => 'required|string',
             'jenjang' => 'required|string',
-            'fakultas' => 'nullable|string',
+            'fakultas_id' => 'nullable|exists:fakultas,id',
         ]);
 
         $prodi = Prodi::create($request->all());
+        $prodi->load('fakultas');
 
         return response()->json([
             'success' => true,
@@ -56,10 +60,12 @@ class MasterProdiController extends Controller
             'kode' => 'required|string|unique:prodi,kode,' . $id,
             'nama' => 'required|string',
             'jenjang' => 'required|string',
+            'fakultas_id' => 'nullable|exists:fakultas,id',
         ]);
 
         $prodi = Prodi::findOrFail($id);
         $prodi->update($request->all());
+        $prodi->load('fakultas');
 
         return response()->json([
             'success' => true,

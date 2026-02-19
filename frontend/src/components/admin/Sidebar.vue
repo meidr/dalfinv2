@@ -362,6 +362,14 @@
                 Dosen
               </router-link>
               <router-link
+                to="/admin/master/fakultas"
+                active-class="text-primary bg-blue-50 dark:bg-blue-900/20"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all text-sm"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                Fakultas
+              </router-link>
+              <router-link
                 to="/admin/master/prodi"
                 active-class="text-primary bg-blue-50 dark:bg-blue-900/20"
                 class="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all text-sm"
@@ -469,6 +477,40 @@
               class="text-sm font-medium whitespace-nowrap"
             >
               Monitoring Chat
+            </p>
+          </router-link>
+          <router-link
+            to="/admin/otoritas-jabatan"
+            active-class="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-red-600 hover:bg-red-50 transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >assignment_ind</span
+            >
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Otoritas Jabatan
+            </p>
+          </router-link>
+          <router-link
+            to="/admin/otoritas-tandatangan"
+            active-class="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-red-600 hover:bg-red-50 transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span class="material-symbols-outlined text-[20px]">draw</span>
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Tanda Tangan
             </p>
           </router-link>
         </div>

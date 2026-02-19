@@ -55,6 +55,10 @@ use App\Http\Controllers\Api\Admin\SkripsiVerificationController;
 use App\Http\Controllers\Api\Admin\MasterProdiController;
 use App\Http\Controllers\Api\Admin\MasterTahunController;
 use App\Http\Controllers\Api\Admin\MasterJabatanController;
+use App\Http\Controllers\Api\Admin\MasterFakultasController;
+use App\Http\Controllers\Api\Admin\PeriodeJabatanController;
+use App\Http\Controllers\Api\Admin\JabatanPejabatController;
+use App\Http\Controllers\Api\Admin\TandaTanganController;
 
 Route::prefix('tes')->group(function () {
     Route::get('/pembimbing', [AdminPembimbingController::class, 'index']);
@@ -112,6 +116,7 @@ Route::prefix('admin')
 
         // Master Data (Admin & Super Admin Only)
         Route::middleware(['role:admin,super_admin'])->group(function () {
+            Route::apiResource('fakultas', MasterFakultasController::class);
             Route::apiResource('prodi', MasterProdiController::class);
             Route::apiResource('tahun', MasterTahunController::class);
             Route::apiResource('jabatan', MasterJabatanController::class);
@@ -173,13 +178,6 @@ Route::prefix('admin')
         Route::put('/ujian/{ujian}', [AdminUjianController::class, 'update']);
         Route::get('/ujian/{ujian}/available-penguji', [AdminUjianController::class, 'availablePenguji']);
 
-        // Prodi list (for filters)
-        Route::get('/prodi', function () {
-            return response()->json([
-                'success' => true,
-                'data' => \App\Models\Prodi::where('is_active', true)->orderBy('nama')->get()
-            ]);
-        });
 
         // Jadwal Ujian Export PDF
         Route::match(['get', 'post'], '/pdf/jadwal-ujian', [AdminPdfController::class, 'jadwalUjian']);
@@ -236,6 +234,14 @@ Route::prefix('super-admin')
         Route::post('/toggle-system-lock', [SuperAdminController::class, 'toggleSystemLock']);
         Route::get('/system-status', [SuperAdminController::class, 'systemStatus']);
         Route::get('/trashed', [SuperAdminController::class, 'trashedRecords']);
+
+        // Jabatan Pejabat Management
+        Route::apiResource('periode-jabatan', PeriodeJabatanController::class);
+        Route::apiResource('jabatan-pejabat', JabatanPejabatController::class);
+        Route::get('/jabatan-pejabat-resolve', [JabatanPejabatController::class, 'resolve']);
+
+        // Tanda Tangan Management
+        Route::apiResource('tanda-tangan', TandaTanganController::class);
     });
 
 // Stop impersonate — accessible by any authenticated user (since the token belongs to the impersonated user)

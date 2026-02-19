@@ -14,7 +14,10 @@ class MasterTahunController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('kode', 'like', "%{$search}%");
+            });
         }
 
         if ($request->has('active_only')) {
@@ -33,6 +36,8 @@ class MasterTahunController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:tahuns,name',
+            'kode' => 'nullable|string|max:20',
+            'semester' => 'nullable|string|max:50',
             'is_active' => 'boolean',
         ]);
 
@@ -49,6 +54,8 @@ class MasterTahunController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:tahuns,name,' . $id,
+            'kode' => 'nullable|string|max:20',
+            'semester' => 'nullable|string|max:50',
             'is_active' => 'boolean',
         ]);
 

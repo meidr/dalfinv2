@@ -22,7 +22,7 @@ class DashboardController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'mahasiswa' => $mahasiswa->load('prodi'),
+                    'mahasiswa' => $mahasiswa->load(['prodi', 'tahun']),
                     'skripsi' => null,
                     'message' => 'Anda belum memiliki skripsi aktif'
                 ]
@@ -80,7 +80,7 @@ class DashboardController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'mahasiswa' => $mahasiswa->load('prodi'),
+                'mahasiswa' => $mahasiswa->load(['prodi', 'tahun']),
                 'skripsi' => $skripsi,
                 'stats' => [
                     'progress' => $skripsi->progress_percentage,

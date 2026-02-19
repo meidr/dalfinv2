@@ -16,7 +16,7 @@ class MasterDosenController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Dosen::with(['prodi', 'user', 'jabatan'])
+        $query = Dosen::with(['prodi', 'user'])
             ->withCount(['pembimbing as current_bimbingan' => function ($q) {
                 $q->where('is_active', true);
             }]);
@@ -52,7 +52,6 @@ class MasterDosenController extends Controller
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'prodi_id' => 'nullable|exists:prodi,id',
-            'jabatan_id' => 'nullable|exists:jabatans,id',
             'gelar_depan' => 'nullable|string',
             'gelar_belakang' => 'nullable|string',
             'jabatan_fungsional' => 'nullable|string',
@@ -81,7 +80,6 @@ class MasterDosenController extends Controller
             'jabatan_fungsional' => $request->jabatan_fungsional,
             'bidang_keahlian' => $request->bidang_keahlian,
             'prodi_id' => $request->prodi_id,
-            'jabatan_id' => $request->jabatan_id,
             'email' => $request->email,
             'no_hp' => $request->no_hp,
             'jenis_kelamin' => $request->jenis_kelamin,
@@ -92,7 +90,7 @@ class MasterDosenController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Dosen berhasil ditambahkan',
-            'data' => $dosen->load(['prodi', 'user', 'jabatan'])
+            'data' => $dosen->load(['prodi', 'user'])
         ], 201);
     }
 
@@ -101,7 +99,7 @@ class MasterDosenController extends Controller
      */
     public function show(Dosen $dosen)
     {
-        $dosen->load(['prodi', 'user', 'jabatan', 'pembimbing.skripsi.mahasiswa']);
+        $dosen->load(['prodi', 'user', 'pembimbing.skripsi.mahasiswa']);
 
         return response()->json([
             'success' => true,
@@ -117,7 +115,6 @@ class MasterDosenController extends Controller
         $request->validate([
             'nama' => 'sometimes|string|max:255',
             'prodi_id' => 'nullable|exists:prodi,id',
-            'jabatan_id' => 'nullable|exists:jabatans,id',
             'gelar_depan' => 'nullable|string',
             'gelar_belakang' => 'nullable|string',
             'jabatan_fungsional' => 'nullable|string',
@@ -131,7 +128,6 @@ class MasterDosenController extends Controller
         $dosen->fill($request->only([
             'nama',
             'prodi_id',
-            'jabatan_id',
             'gelar_depan',
             'gelar_belakang',
             'jabatan_fungsional',
