@@ -32,7 +32,7 @@
             <option value="lainnya">Lainnya</option>
           </select>
           <button
-            v-if="!isDosen"
+            v-if="!isDosen && isActive"
             @click="showUploadModal = true"
             class="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all shrink-0"
           >
@@ -108,7 +108,7 @@
                     Unduh
                   </a>
                   <button
-                    v-if="doc.status === 'pending' && !isDosen"
+                    v-if="doc.status === 'pending' && !isDosen && isActive"
                     @click="confirmDelete(doc)"
                     class="inline-flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-600 transition-colors ml-auto"
                   >
@@ -554,8 +554,13 @@ import dosenService from "../../../services/dosenService";
 const route = useRoute();
 const skripsi = inject("skripsi");
 
+// Auth store for module settings
+import { useAuthStore } from "../../../stores/auth";
+const authStore = useAuthStore();
+
 // Detect context: dosen or mahasiswa
 const isDosen = computed(() => route.path.startsWith("/dosen"));
+const isActive = computed(() => skripsi.value?.is_active !== false);
 const skripsiId = computed(() => route.params.id || skripsi.value?.id);
 
 // ===== Computed data =====
@@ -691,8 +696,10 @@ const officialDocuments = computed(() => {
     });
   }
 
-  // 4. Seminar Hasil documents
-  const semhas = (s.seminar || []).find((sem) => sem.jenis === "semhas");
+  // 4. Seminar Hasil documents (only if module enabled)
+  const semhas = authStore.semhasEnabled
+    ? (s.seminar || []).find((sem) => sem.jenis === "semhas")
+    : null;
   if (semhas) {
     const hasShPenguji = semhas.penguji && semhas.penguji.length > 0;
     docs.push({

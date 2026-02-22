@@ -135,8 +135,11 @@
             <option value="">Semua Status</option>
             <option value="proposal">Proposal</option>
             <option value="sempro">Seminar Proposal</option>
+            <option value="penentuan_dospem">Penentuan Dospem</option>
             <option value="bimbingan">Bimbingan</option>
-            <option value="semhas">Seminar Hasil</option>
+            <option v-if="authStore.semhasEnabled" value="semhas">
+              Seminar Hasil
+            </option>
             <option value="sidang">Sidang</option>
             <option value="revisi">Revisi</option>
             <option value="lulus">Lulus</option>
@@ -199,6 +202,7 @@
                 </div>
               </th>
               <th class="px-6 py-4">Pembimbing</th>
+              <th class="px-6 py-4">Aktif</th>
               <th
                 class="px-6 py-4 cursor-pointer hover:text-primary transition-colors select-none group"
                 @click="handleSort('status')"
@@ -231,7 +235,7 @@
           <tbody class="divide-y divide-border-light">
             <tr v-if="skripsiList.length === 0">
               <td
-                colspan="6"
+                colspan="7"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data skripsi
@@ -274,6 +278,22 @@
               </td>
               <td class="px-6 py-4 text-text-secondary">
                 {{ getPembimbing(item.pembimbing) }}
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                  :class="
+                    item.is_active
+                      ? 'bg-green-50 text-green-600 border border-green-100'
+                      : 'bg-red-50 text-red-600 border border-red-100'
+                  "
+                >
+                  <span
+                    class="w-1.5 h-1.5 rounded-full"
+                    :class="item.is_active ? 'bg-green-600' : 'bg-red-600'"
+                  ></span>
+                  {{ item.is_active ? "Aktif" : "Nonaktif" }}
+                </span>
               </td>
               <td class="px-6 py-4">
                 <span
@@ -515,12 +535,32 @@
                 <option value="pengajuan">Pengajuan</option>
                 <option value="proposal">Proposal</option>
                 <option value="sempro">Seminar Proposal</option>
+                <option value="penentuan_dospem">Penentuan Dospem</option>
                 <option value="bimbingan">Bimbingan</option>
-                <option value="semhas">Seminar Hasil</option>
+                <option v-if="authStore.semhasEnabled" value="semhas">
+                  Seminar Hasil
+                </option>
                 <option value="sidang">Sidang</option>
                 <option value="revisi">Revisi</option>
                 <option value="lulus">Lulus</option>
               </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Status Aktif</label
+              >
+              <select
+                v-model="form.is_active"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              >
+                <option :value="true">Aktif</option>
+                <option :value="false">Nonaktif</option>
+              </select>
+              <p class="mt-1 text-xs text-text-secondary">
+                Jika dipilih <strong>Aktif</strong>, skripsi lain milik
+                mahasiswa ini akan otomatis menjadi <strong>Nonaktif</strong>.
+              </p>
             </div>
 
             <div
@@ -623,8 +663,10 @@
 import { ref, onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
 import adminService from "../../../services/adminService";
+import { useAuthStore } from "../../../stores/auth";
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const loading = ref(true);
 const saving = ref(false);
@@ -743,6 +785,7 @@ const form = reactive({
   mahasiswa_id: null,
   judul: "",
   status: "pengajuan",
+  is_active: true,
   alasan: "",
   file_skripsi: null,
   file_url: null,
@@ -809,6 +852,7 @@ const openAddModal = () => {
   form.mahasiswa_id = null;
   form.judul = "";
   form.status = "pengajuan";
+  form.is_active = true;
   form.alasan = "";
   form.file_skripsi = null;
   form.file_url = null;
@@ -824,6 +868,7 @@ const openEditModal = (item) => {
   form.id = item.id;
   form.judul = item.judul;
   form.status = item.status;
+  form.is_active = item.is_active ?? true;
   form.alasan = "";
   form.file_skripsi = item.file_skripsi; // Store boolean/string presence
   form.file_url = item.file_url; // Virtual attribute from backend
@@ -858,6 +903,7 @@ const saveSkripsi = async () => {
 
     const formData = new FormData();
     if (form.mahasiswa_id) formData.append("mahasiswa_id", form.mahasiswa_id);
+    formData.append("is_active", form.is_active ? "1" : "0");
     formData.append("judul", form.judul);
     formData.append("status", form.status);
     if (form.file_skripsi instanceof File) {
@@ -966,6 +1012,7 @@ const getStatusClass = (status) => {
     proposal: "bg-yellow-50 text-yellow-600 border border-yellow-100",
     bimbingan: "bg-purple-50 text-purple-600 border border-purple-100",
     sempro: "bg-blue-50 text-blue-600 border border-blue-100",
+    penentuan_dospem: "bg-indigo-50 text-indigo-600 border border-indigo-100",
     semhas: "bg-cyan-50 text-cyan-600 border border-cyan-100",
     sidang: "bg-orange-50 text-orange-600 border border-orange-100",
     revisi: "bg-amber-50 text-amber-600 border border-amber-100",
@@ -979,6 +1026,7 @@ const getStatusDot = (status) => {
     proposal: "bg-yellow-600",
     bimbingan: "bg-purple-600",
     sempro: "bg-blue-600",
+    penentuan_dospem: "bg-indigo-600",
     semhas: "bg-cyan-600",
     sidang: "bg-orange-600",
     revisi: "bg-amber-600",
@@ -992,6 +1040,7 @@ const getStatusLabel = (status) => {
     proposal: "Proposal",
     bimbingan: "Bimbingan",
     sempro: "Sem. Proposal",
+    penentuan_dospem: "Dospem",
     semhas: "Sem. Hasil",
     sidang: "Sidang",
     revisi: "Revisi",

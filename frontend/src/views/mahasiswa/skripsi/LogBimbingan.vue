@@ -12,7 +12,7 @@
         </p>
       </div>
       <button
-        v-if="!isDosen"
+        v-if="!isDosen && isActive"
         @click="showForm = true"
         class="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all shrink-0"
       >
@@ -217,7 +217,9 @@
                     >
                   </a>
                   <!-- Dosen Actions -->
-                  <template v-if="isDosen && item.status === 'pending'">
+                  <template
+                    v-if="isDosen && isActive && item.status === 'pending'"
+                  >
                     <button
                       @click="openDosenAction(item, 'approved')"
                       class="size-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 border border-green-100 hover:bg-green-100 transition-all"
@@ -670,6 +672,7 @@ const props = defineProps({
 
 const route = useRoute();
 const skripsi = inject("skripsi");
+const isActive = computed(() => skripsi.value?.is_active !== false);
 
 const loading = ref(true);
 const bimbinganList = ref([]);

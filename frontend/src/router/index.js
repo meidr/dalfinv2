@@ -172,6 +172,12 @@ const routes = [
         component: () =>
           import("../views/admin/superadmin/OtoritasTandaTangan.vue"),
       },
+      {
+        path: "pengaturan-modul",
+        name: "PengaturanModul",
+        component: () =>
+          import("../views/admin/superadmin/PengaturanModul.vue"),
+      },
     ],
   },
   {
@@ -312,6 +318,53 @@ const routes = [
         ],
       },
       {
+        path: "skripsi/history/:id",
+        component: () => import("../views/mahasiswa/DetailSkripsiHistory.vue"),
+        children: [
+          {
+            path: "",
+            redirect: { name: "HistorySkripsiProgress" },
+          },
+          {
+            path: "progress",
+            name: "HistorySkripsiProgress",
+            component: () => import("../views/mahasiswa/skripsi/Progress.vue"),
+          },
+          {
+            path: "profil",
+            name: "HistorySkripsiProfil",
+            component: () => import("../views/mahasiswa/skripsi/Profil.vue"),
+          },
+          {
+            path: "pembimbing",
+            name: "HistorySkripsiPembimbing",
+            component: () =>
+              import("../views/mahasiswa/skripsi/Pembimbing.vue"),
+          },
+          {
+            path: "log",
+            name: "HistorySkripsiLog",
+            component: () =>
+              import("../views/mahasiswa/skripsi/LogBimbingan.vue"),
+          },
+          {
+            path: "jadwal",
+            name: "HistorySkripsiJadwal",
+            component: () => import("../views/mahasiswa/skripsi/Jadwal.vue"),
+          },
+          {
+            path: "nilai",
+            name: "HistorySkripsiNilai",
+            component: () => import("../views/mahasiswa/skripsi/Nilai.vue"),
+          },
+          {
+            path: "dokumen",
+            name: "HistorySkripsiDokumen",
+            component: () => import("../views/mahasiswa/skripsi/Dokumen.vue"),
+          },
+        ],
+      },
+      {
         path: "profil",
         name: "ProfilMahasiswa",
         component: () => import("../views/mahasiswa/ProfilMahasiswa.vue"),
@@ -335,8 +388,50 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+let moduleSettingsFetched = false;
+
+router.beforeEach(async (to, from, next) => {
   startProgress();
+
+  // Fetch module settings once per session for authenticated users
+  if (!moduleSettingsFetched) {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (user) {
+      try {
+        const { useAuthStore } = await import("../stores/auth");
+        const { createPinia, setActivePinia } = await import("pinia");
+        const authStore = useAuthStore();
+        await authStore.fetchModuleSettings();
+        moduleSettingsFetched = true;
+
+        // Block seminarhasil routes if module disabled
+        if (
+          !authStore.semhasEnabled &&
+          (to.name === "DataSeminarHasil" || to.name === "DetailSeminarHasil")
+        ) {
+          return next("/admin/dashboard");
+        }
+      } catch (e) {
+        // Silently continue if fetch fails
+        moduleSettingsFetched = true;
+      }
+    }
+  } else {
+    // Check on subsequent navigations too
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (user) {
+      const semhasEnabled = JSON.parse(
+        localStorage.getItem("semhas_enabled") ?? "true",
+      );
+      if (
+        !semhasEnabled &&
+        (to.name === "DataSeminarHasil" || to.name === "DetailSeminarHasil")
+      ) {
+        return next("/admin/dashboard");
+      }
+    }
+  }
+
   next();
 });
 

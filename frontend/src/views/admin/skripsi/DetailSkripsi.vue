@@ -210,7 +210,7 @@
           <div v-else-if="activeTab === 'seminar'">
             <div class="space-y-4">
               <div
-                v-for="seminar in skripsi.seminar"
+                v-for="seminar in filteredSeminars"
                 :key="seminar.id"
                 class="p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light"
               >
@@ -260,7 +260,7 @@
                 </div>
               </div>
               <div
-                v-if="!skripsi.seminar?.length"
+                v-if="!filteredSeminars?.length"
                 class="text-center py-8 text-text-secondary"
               >
                 <span class="material-symbols-outlined text-4xl mb-2 block"
@@ -479,7 +479,9 @@
                 <option value="proposal">Proposal</option>
                 <option value="sempro">Sempro</option>
                 <option value="bimbingan">Bimbingan</option>
-                <option value="semhas">Semhas</option>
+                <option v-if="authStore.semhasEnabled" value="semhas">
+                  Semhas
+                </option>
                 <option value="sidang">Sidang</option>
                 <option value="revisi">Revisi</option>
                 <option value="lulus">Lulus</option>
@@ -527,6 +529,9 @@ import adminService from "../../../services/adminService";
 const route = useRoute();
 const router = useRouter();
 
+import { useAuthStore } from "../../../stores/auth";
+const authStore = useAuthStore();
+
 const loading = ref(true);
 const saving = ref(false);
 const skripsi = ref(null);
@@ -547,6 +552,14 @@ const tabs = [
 
 const pembimbing = computed(() => {
   return skripsi.value?.pembimbing || [];
+});
+
+const filteredSeminars = computed(() => {
+  const seminars = skripsi.value?.seminar || [];
+  if (!authStore.semhasEnabled) {
+    return seminars.filter((s) => s.jenis !== "semhas");
+  }
+  return seminars;
 });
 
 const fetchSkripsi = async () => {

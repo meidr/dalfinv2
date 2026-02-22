@@ -179,6 +179,113 @@
         </div>
       </div>
 
+      <!-- Dokumen Proposal Section -->
+      <div
+        class="bg-surface-light border border-border-light rounded-xl shadow-sm"
+      >
+        <div
+          class="p-5 border-b border-border-light flex items-center justify-between"
+        >
+          <div>
+            <h3 class="text-lg font-bold text-text-main">Dokumen Proposal</h3>
+            <p class="text-sm text-text-secondary">
+              Upload atau download dokumen proposal skripsi
+            </p>
+          </div>
+        </div>
+        <div class="p-5">
+          <!-- File exists -->
+          <div
+            v-if="seminar.skripsi?.file_skripsi_url"
+            class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl"
+          >
+            <div class="flex items-center gap-4">
+              <div
+                class="size-12 rounded-xl flex items-center justify-center bg-green-100 text-green-600"
+              >
+                <span class="material-symbols-outlined">description</span>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-green-800">
+                  Dokumen Proposal
+                </h4>
+                <p class="text-xs text-green-600">File sudah diupload</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <a
+                :href="seminar.skripsi.file_skripsi_url"
+                target="_blank"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors"
+              >
+                <span class="material-symbols-outlined text-[16px]"
+                  >visibility</span
+                >
+                Lihat
+              </a>
+              <a
+                :href="seminar.skripsi.file_skripsi_url"
+                download
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+              >
+                <span class="material-symbols-outlined text-[16px]"
+                  >download</span
+                >
+                Download
+              </a>
+              <button
+                @click="triggerProposalUpload"
+                :disabled="uploadingProposal"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50"
+              >
+                <span class="material-symbols-outlined text-[16px]"
+                  >upload</span
+                >
+                Upload Ulang
+              </button>
+            </div>
+          </div>
+          <!-- No file -->
+          <div v-else>
+            <div
+              @click="triggerProposalUpload"
+              class="border-2 border-dashed border-border-light rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-blue-50/30 transition-all"
+              :class="{ 'pointer-events-none opacity-60': uploadingProposal }"
+            >
+              <span
+                v-if="!uploadingProposal"
+                class="material-symbols-outlined text-4xl text-text-secondary/50 block mb-2"
+                >cloud_upload</span
+              >
+              <div
+                v-else
+                class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"
+              ></div>
+              <p class="text-sm font-medium text-text-secondary">
+                {{
+                  uploadingProposal
+                    ? "Mengupload..."
+                    : "Klik untuk upload dokumen proposal"
+                }}
+              </p>
+              <p
+                v-if="!uploadingProposal"
+                class="text-xs text-text-secondary/70 mt-0.5"
+              >
+                PDF, DOC, DOCX (max 10MB)
+              </p>
+            </div>
+          </div>
+          <input
+            ref="proposalFileInput"
+            type="file"
+            accept=".pdf,.doc,.docx"
+            class="hidden"
+            @change="uploadProposalFile"
+          />
+        </div>
+      </div>
+
       <!-- Dosen Penguji Section -->
       <div
         class="bg-surface-light border border-border-light rounded-xl shadow-sm"
@@ -820,6 +927,8 @@ const showDosenDropdown = ref(false);
 const downloadingPdf = ref(null);
 const previewingPdf = ref(null);
 const filteredDosenList = ref([]);
+const uploadingProposal = ref(false);
+const proposalFileInput = ref(null);
 
 const showEditJadwalModal = ref(false);
 const showAddPengujiModal = ref(false);
@@ -899,6 +1008,38 @@ const deleteSeminar = async () => {
       "Gagal menghapus seminar: " +
         (error.response?.data?.message || error.message),
     );
+  }
+};
+
+const triggerProposalUpload = () => {
+  proposalFileInput.value?.click();
+};
+
+const uploadProposalFile = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = "";
+  try {
+    uploadingProposal.value = true;
+    const response = await adminService.uploadSeminarProposal(
+      seminar.value.id,
+      file,
+    );
+    if (response.success) {
+      // Update the local skripsi data with new file URL
+      if (seminar.value.skripsi) {
+        seminar.value.skripsi.file_skripsi_url = response.data.file_skripsi_url;
+      }
+      alert("Dokumen proposal berhasil diupload");
+    }
+  } catch (error) {
+    console.error("Failed to upload proposal:", error);
+    alert(
+      "Gagal mengupload dokumen: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    uploadingProposal.value = false;
   }
 };
 

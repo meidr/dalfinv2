@@ -366,7 +366,9 @@
 
 <script setup>
 import { inject, computed } from "vue";
+import { useAuthStore } from "../../../stores/auth";
 
+const authStore = useAuthStore();
 const skripsi = inject("skripsi");
 
 // Ujian (Sidang Skripsi) with any scoring activity
@@ -381,10 +383,12 @@ const ujianWithNilai = computed(() => {
 // Seminars (Sempro + Semhas) with any scoring activity
 const seminarsWithNilai = computed(() => {
   const seminars = skripsi.value?.seminar || [];
-  return seminars.filter(
-    (s) =>
-      (s.penguji?.length > 0 && s.scored_count > 0) || s.status === "selesai",
-  );
+  return seminars.filter((s) => {
+    if (s.jenis === "semhas" && !authStore.semhasEnabled) return false;
+    return (
+      (s.penguji?.length > 0 && s.scored_count > 0) || s.status === "selesai"
+    );
+  });
 });
 
 const getPeranLabel = (peran) => {

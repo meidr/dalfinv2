@@ -330,7 +330,8 @@ class ChatController extends Controller
 
             if ($mahasiswa) {
                 $allowedDosenUserIds = \App\Models\Pembimbing::whereHas('skripsi', function ($q) use ($mahasiswa) {
-                    $q->where('mahasiswa_id', $mahasiswa->id);
+                    $q->where('mahasiswa_id', $mahasiswa->id)
+                        ->where('is_active', true);
                 })
                     ->where('is_active', true)
                     ->with('dosen')
@@ -350,8 +351,19 @@ class ChatController extends Controller
                     });
             });
         } elseif ($currentUser->role === 'staff') {
-            // Staff: chat with mahasiswa and admin/super_admin/staff
-            $query->whereIn('role', ['mahasiswa', 'admin', 'super_admin', 'staff']);
+            // Staff: chat with mahasiswa (matching gender) and admin/staff (NOT super_admin)
+            $staffGender = $currentUser->jenis_kelamin;
+            $query->where(function ($q) use ($staffGender) {
+                $q->whereIn('role', ['admin', 'staff'])
+                    ->orWhere(function ($q2) use ($staffGender) {
+                        $q2->where('role', 'mahasiswa');
+                        if ($staffGender) {
+                            $q2->whereHas('mahasiswa', function ($mq) use ($staffGender) {
+                                $mq->where('jenis_kelamin', $staffGender);
+                            });
+                        }
+                    });
+            });
         } else {
             // Admin: can chat with everyone
             $query->whereIn('role', ['admin', 'super_admin', 'dosen', 'mahasiswa', 'staff']);

@@ -121,6 +121,45 @@ class SkripsiController extends Controller
     }
 
     /**
+     * Get skripsi detail by ID (for history viewing)
+     */
+    public function showById(Request $request, $id)
+    {
+        $mahasiswa = $request->user()->mahasiswa;
+
+        $skripsi = Skripsi::where('id', $id)
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->first();
+
+        if (!$skripsi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skripsi tidak ditemukan'
+            ], 404);
+        }
+
+        $skripsi->load([
+            'pembimbing.dosen',
+            'bimbingan.dosen',
+            'seminar.penguji.dosen',
+            'seminar.beritaAcara',
+            'ujian.penguji.dosen',
+            'ujian.beritaAcara',
+            'dokumen',
+            'nilai',
+            'skTugas',
+            'notaBimbingan',
+            'skYudisium',
+            'history'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->addSeminarGrades($skripsi)
+        ]);
+    }
+
+    /**
      * Update skripsi (only allowed in certain statuses)
      */
     public function update(Request $request)

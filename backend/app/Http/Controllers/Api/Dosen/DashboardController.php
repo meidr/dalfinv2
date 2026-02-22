@@ -19,13 +19,17 @@ class DashboardController extends Controller
         $dosen = $request->user()->dosen;
 
         // === Stats ===
-        $activeBimbingan = $dosen->pembimbing()->where('is_active', true)->count();
-        $inactiveBimbingan = $dosen->pembimbing()->where('is_active', false)->count();
-        $totalBimbingan = $activeBimbingan + $inactiveBimbingan;
+        // Count unique skripsi (mahasiswa) where this dosen is an active pembimbing, active skripsi only
+        $totalBimbingan = Skripsi::whereHas('pembimbing', function ($q) use ($dosen) {
+            $q->where('dosen_id', $dosen->id)->where('is_active', true);
+        })->where('is_active', true)->count();
 
-        // Pending bimbingan logs (waiting for dosen review)
+        // Pending bimbingan logs (waiting for dosen review) - only from active skripsi
         $pendingLogs = Bimbingan::where('dosen_id', $dosen->id)
             ->where('status', 'pending')
+            ->whereHas('skripsi', function ($q) {
+                $q->where('is_active', true);
+            })
             ->count();
 
         // Pending by type breakdown - just return total since bimbingan doesn't have jenis_bimbingan
@@ -46,9 +50,12 @@ class DashboardController extends Controller
             ->orderBy('waktu', 'asc')
             ->first();
 
-        // === Recent activities (latest bimbingan logs for this dosen) ===
+        // === Recent activities (latest bimbingan logs for this dosen, active skripsi only) ===
         $recentActivities = Bimbingan::with(['skripsi.mahasiswa'])
             ->where('dosen_id', $dosen->id)
+            ->whereHas('skripsi', function ($q) {
+                $q->where('is_active', true);
+            })
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
@@ -110,8 +117,6 @@ class DashboardController extends Controller
                 ],
                 'stats' => [
                     'total_bimbingan' => $totalBimbingan,
-                    'active_count' => $activeBimbingan,
-                    'inactive_count' => $inactiveBimbingan,
                     'kuota_bimbingan' => $dosen->kuota_bimbingan,
                     'pending_approvals' => $pendingLogs,
                     'pending_by_type' => $pendingByType,

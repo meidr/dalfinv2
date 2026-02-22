@@ -262,14 +262,16 @@
 
 <script setup>
 import { inject, computed } from "vue";
+import { useAuthStore } from "../../../stores/auth";
 
+const authStore = useAuthStore();
 const skripsi = inject("skripsi");
 
-const seminarList = computed(() =>
-  (skripsi.value?.seminar || []).filter(
-    (s) => s.jenis === "sempro" || s.jenis === "semhas",
-  ),
-);
+const seminarList = computed(() => {
+  const types = ["sempro"];
+  if (authStore.semhasEnabled) types.push("semhas");
+  return (skripsi.value?.seminar || []).filter((s) => types.includes(s.jenis));
+});
 const ujianFromSeminar = computed(() =>
   (skripsi.value?.seminar || []).filter((s) => s.jenis === "sidang"),
 );

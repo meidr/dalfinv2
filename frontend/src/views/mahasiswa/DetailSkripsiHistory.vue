@@ -10,7 +10,7 @@
       <span class="material-symbols-outlined text-text-secondary text-sm"
         >chevron_right</span
       >
-      <span class="text-text-main font-bold">Detail Skripsi</span>
+      <span class="text-text-main font-bold">Detail Riwayat Skripsi</span>
     </div>
 
     <!-- Loading -->
@@ -45,18 +45,30 @@
       >
         <div class="flex flex-col gap-1">
           <h1 class="text-3xl font-bold tracking-tight text-text-main">
-            Detail Skripsi
+            Detail Riwayat Skripsi
           </h1>
           <p class="text-text-secondary text-base">
-            Kelola progres, dokumen, dan bimbingan skripsi Anda.
+            Lihat detail progress dan informasi dari riwayat skripsi Anda.
           </p>
         </div>
-        <span
-          :class="statusBadgeClass"
-          class="px-3 py-1 rounded-full text-sm font-bold border"
-        >
-          Status: {{ statusLabel }}
-        </span>
+        <div class="flex items-center gap-2">
+          <span
+            :class="statusBadgeClass"
+            class="px-3 py-1 rounded-full text-sm font-bold border"
+          >
+            Status: {{ statusLabel }}
+          </span>
+          <span
+            class="px-3 py-1 rounded-full text-sm font-bold border"
+            :class="
+              skripsi.is_active
+                ? 'bg-green-50 text-green-600 border-green-100'
+                : 'bg-red-50 text-red-500 border-red-100'
+            "
+          >
+            {{ skripsi.is_active ? "Aktif" : "Nonaktif" }}
+          </span>
+        </div>
       </div>
 
       <!-- Tabs Navigation -->
@@ -92,8 +104,10 @@
 
 <script setup>
 import { ref, computed, provide, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import { mahasiswaService } from "../../services/mahasiswaService";
 
+const route = useRoute();
 const loading = ref(true);
 const error = ref("");
 const skripsi = ref(null);
@@ -128,11 +142,6 @@ const statusMap = {
     label: "Sudah Sempro",
     class:
       "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
-  },
-  penentuan_dospem: {
-    label: "Dospem",
-    class:
-      "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800",
   },
   bimbingan: {
     label: "Proses Bimbingan",
@@ -169,13 +178,17 @@ const statusBadgeClass = computed(
 );
 
 const tabs = [
-  { id: "progress", label: "Progress", routeName: "SkripsiProgress" },
-  { id: "umum", label: "Profil & Judul", routeName: "SkripsiProfil" },
-  { id: "pembimbing", label: "Pembimbing", routeName: "SkripsiPembimbing" },
-  { id: "log", label: "Log Bimbingan", routeName: "SkripsiLog" },
-  { id: "jadwal", label: "Jadwal", routeName: "SkripsiJadwal" },
-  { id: "nilai", label: "Nilai", routeName: "SkripsiNilai" },
-  { id: "dokumen", label: "Dokumen", routeName: "SkripsiDokumen" },
+  { id: "progress", label: "Progress", routeName: "HistorySkripsiProgress" },
+  { id: "umum", label: "Profil & Judul", routeName: "HistorySkripsiProfil" },
+  {
+    id: "pembimbing",
+    label: "Pembimbing",
+    routeName: "HistorySkripsiPembimbing",
+  },
+  { id: "log", label: "Log Bimbingan", routeName: "HistorySkripsiLog" },
+  { id: "jadwal", label: "Jadwal", routeName: "HistorySkripsiJadwal" },
+  { id: "nilai", label: "Nilai", routeName: "HistorySkripsiNilai" },
+  { id: "dokumen", label: "Dokumen", routeName: "HistorySkripsiDokumen" },
 ];
 
 // Provide skripsi data to child components
@@ -185,7 +198,8 @@ const fetchData = async () => {
   loading.value = true;
   error.value = "";
   try {
-    const res = await mahasiswaService.getSkripsiDetail();
+    const id = route.params.id;
+    const res = await mahasiswaService.getSkripsiDetailById(id);
     if (res.success) {
       skripsi.value = res.data;
     } else {

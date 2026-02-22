@@ -1,11 +1,13 @@
 import { defineStore } from "pinia";
 import authService from "../services/authService";
+import adminService from "../services/adminService";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: authService.getStoredUser(),
     loading: false,
     error: null,
+    semhasEnabled: JSON.parse(localStorage.getItem("semhas_enabled") ?? "true"),
   }),
 
   getters: {
@@ -82,6 +84,21 @@ export const useAuthStore = defineStore("auth", {
     clearAuth() {
       this.user = null;
       localStorage.removeItem("user");
+    },
+
+    async fetchModuleSettings() {
+      try {
+        const result = await adminService.getModuleSettings();
+        if (result.success) {
+          this.semhasEnabled = result.data.semhas_enabled;
+          localStorage.setItem(
+            "semhas_enabled",
+            JSON.stringify(this.semhasEnabled),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch module settings:", error);
+      }
     },
   },
 });

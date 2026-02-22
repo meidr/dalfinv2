@@ -195,6 +195,17 @@ export const adminService = {
     return response.data;
   },
 
+  async uploadSeminarProposal(seminarId, file) {
+    const formData = new FormData();
+    formData.append("file_skripsi", file);
+    const response = await api.post(
+      `/admin/seminar/${seminarId}/upload-proposal`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return response.data;
+  },
+
   // Seminar Hasil
   async getSeminarHasil(params = {}) {
     const response = await api.get("/admin/seminar-hasil", { params });
@@ -588,6 +599,11 @@ export const adminService = {
     return response.data;
   },
 
+  async updateUser(userId, data) {
+    const response = await api.put(`/admin/users/${userId}`, data);
+    return response.data;
+  },
+
   async impersonateUser(userId) {
     const response = await api.post(`/super-admin/impersonate/${userId}`);
     return response.data;
@@ -612,6 +628,16 @@ export const adminService = {
 
   async getSystemStatus() {
     const response = await api.get("/super-admin/system-status");
+    return response.data;
+  },
+
+  async getModuleSettings() {
+    const response = await api.get("/module-settings");
+    return response.data;
+  },
+
+  async toggleSemhas() {
+    const response = await api.post("/super-admin/toggle-semhas");
     return response.data;
   },
 

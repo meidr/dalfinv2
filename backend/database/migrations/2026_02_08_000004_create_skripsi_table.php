@@ -24,6 +24,7 @@ return new class extends Migration
                 'ditolak',
                 'proposal',
                 'sempro',
+                'penentuan_dospem',
                 'bimbingan',
                 'semhas',
                 'sidang',

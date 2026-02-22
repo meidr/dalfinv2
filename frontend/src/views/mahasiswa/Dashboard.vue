@@ -405,6 +405,7 @@
       <!-- Dokumen Semhas Section -->
       <section
         v-if="
+          authStore.semhasEnabled &&
           semhasSeminar &&
           (semhasSeminar.penguji?.length || semhasSeminar.berita_acara)
         "
@@ -676,7 +677,9 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { mahasiswaService } from "../../services/mahasiswaService";
+import { useAuthStore } from "../../stores/auth";
 
+const authStore = useAuthStore();
 const loading = ref(true);
 const mahasiswa = ref(null);
 const skripsi = ref(null);
@@ -778,16 +781,22 @@ const lastUpdated = computed(() => {
 });
 
 // Milestones for progress bar
-const milestoneSteps = [
-  {
-    key: "proposal",
-    label: "Proposal",
-    statuses: ["proposal", "pengajuan", "disetujui"],
-  },
-  { key: "sempro", label: "Sempro", statuses: ["sempro"] },
-  { key: "semhas", label: "Semhas", statuses: ["semhas", "bimbingan"] },
-  { key: "sidang", label: "Sidang", statuses: ["sidang", "revisi", "lulus"] },
-];
+const milestoneSteps = computed(() => {
+  const allSteps = [
+    {
+      key: "proposal",
+      label: "Proposal",
+      statuses: ["proposal", "pengajuan", "disetujui"],
+    },
+    { key: "sempro", label: "Sempro", statuses: ["sempro"] },
+    { key: "semhas", label: "Semhas", statuses: ["semhas", "bimbingan"] },
+    { key: "sidang", label: "Sidang", statuses: ["sidang", "revisi", "lulus"] },
+  ];
+  if (!authStore.semhasEnabled) {
+    return allSteps.filter((s) => s.key !== "semhas");
+  }
+  return allSteps;
+});
 
 const statusOrder = [
   "draft",
@@ -803,9 +812,9 @@ const statusOrder = [
 ];
 
 const milestones = computed(() => {
-  if (!skripsi.value) return milestoneSteps;
+  if (!skripsi.value) return milestoneSteps.value;
   const currentIdx = statusOrder.indexOf(skripsi.value.status);
-  return milestoneSteps.map((m) => {
+  return milestoneSteps.value.map((m) => {
     const mStatuses = m.statuses;
     const mMaxIdx = Math.max(...mStatuses.map((s) => statusOrder.indexOf(s)));
     const mMinIdx = Math.min(...mStatuses.map((s) => statusOrder.indexOf(s)));

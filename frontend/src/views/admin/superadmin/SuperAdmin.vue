@@ -289,6 +289,7 @@
           >
             <option value="">Semua Role</option>
             <option value="admin">Admin</option>
+            <option value="staff">Staff</option>
             <option value="dosen">Dosen</option>
             <option value="mahasiswa">Mahasiswa</option>
           </select>
@@ -302,13 +303,14 @@
                 <th class="px-6 py-3">User</th>
                 <th class="px-6 py-3">Email</th>
                 <th class="px-6 py-3">Role</th>
+                <th class="px-6 py-3">JK</th>
                 <th class="px-6 py-3">Status</th>
                 <th class="px-6 py-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-border-light">
               <tr v-if="usersLoading">
-                <td colspan="5" class="p-8 text-center text-text-secondary">
+                <td colspan="6" class="p-8 text-center text-text-secondary">
                   <div
                     class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"
                   ></div>
@@ -329,6 +331,20 @@
                     :class="getRoleBadge(u.role)"
                     >{{ u.role }}</span
                   >
+                </td>
+                <td class="px-6 py-3">
+                  <template v-if="u.role === 'staff'">
+                    <select
+                      :value="u.jenis_kelamin || ''"
+                      @change="updateStaffGender(u, $event.target.value)"
+                      class="px-2 py-1 border border-border-light rounded-lg bg-background-light text-text-main text-xs focus:ring-1 focus:ring-primary w-16"
+                    >
+                      <option value="" disabled>-</option>
+                      <option value="L">L</option>
+                      <option value="P">P</option>
+                    </select>
+                  </template>
+                  <span v-else class="text-text-secondary text-xs">-</span>
                 </td>
                 <td class="px-6 py-3">
                   <span
@@ -809,6 +825,8 @@ const getActionBadge = (action) => {
 const getRoleBadge = (role) => {
   const badges = {
     admin: "bg-purple-50 text-purple-700",
+    super_admin: "bg-red-50 text-red-700",
+    staff: "bg-amber-50 text-amber-700",
     dosen: "bg-indigo-50 text-indigo-700",
     mahasiswa: "bg-emerald-50 text-emerald-700",
   };
@@ -831,6 +849,24 @@ const formatTime = (date) => {
       second: "2-digit",
     })
   );
+};
+
+const updateStaffGender = async (user, gender) => {
+  try {
+    const response = await adminService.updateUser(user.id, {
+      jenis_kelamin: gender,
+    });
+    if (response.success) {
+      user.jenis_kelamin = gender;
+    }
+  } catch (e) {
+    console.error("Failed to update staff gender:", e);
+    alert(
+      "Gagal mengupdate jenis kelamin: " +
+        (e.response?.data?.message || e.message),
+    );
+    fetchUsers();
+  }
 };
 
 onMounted(() => {

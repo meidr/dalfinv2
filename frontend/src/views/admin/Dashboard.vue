@@ -299,8 +299,13 @@ const distribution = computed(() => {
     },
     {
       label: "Sem",
-      count: stats.value.sempro + stats.value.semhas,
-      height: ((stats.value.sempro + stats.value.semhas) / max) * 100,
+      count:
+        stats.value.sempro + (authStore.semhasEnabled ? stats.value.semhas : 0),
+      height:
+        ((stats.value.sempro +
+          (authStore.semhasEnabled ? stats.value.semhas : 0)) /
+          max) *
+        100,
       color: "bg-primary/20 group-hover:bg-primary",
     },
     {

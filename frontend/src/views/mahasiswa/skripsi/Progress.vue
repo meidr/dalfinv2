@@ -57,6 +57,7 @@
                       ? 'text-primary'
                       : 'text-gray-400'
                 "
+                :title="step.tooltip || ''"
               >
                 {{ step.label }}
               </h4>
@@ -122,6 +123,60 @@
       </div>
     </div>
 
+    <!-- Upload Proposal Instructions (only when status is proposal) -->
+    <div
+      v-if="skripsi?.status === 'proposal'"
+      class="bg-surface-light rounded-xl shadow-sm border border-blue-200 p-6"
+    >
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2 bg-blue-100 rounded-lg text-primary">
+          <span class="material-symbols-outlined">upload_file</span>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-text-main">
+            Upload Dokumen Proposal
+          </h3>
+          <p class="text-sm text-text-secondary">
+            Silakan upload dokumen proposal skripsi Anda
+          </p>
+        </div>
+      </div>
+      <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4 mb-4">
+        <p class="text-sm font-bold text-text-main mb-3">
+          <span
+            class="material-symbols-outlined text-[16px] align-text-bottom mr-1 text-primary"
+            >info</span
+          >
+          Tata Cara Upload
+        </p>
+        <ol
+          class="text-sm text-text-secondary space-y-1.5 list-decimal list-inside"
+        >
+          <li>
+            Klik tombol
+            <span class="font-semibold text-text-main">Upload Berkas</span> di
+            bawah
+          </li>
+          <li>
+            Pilih jenis berkas
+            <span class="font-semibold text-text-main">Proposal</span>
+          </li>
+          <li>Pilih file yang akan diupload</li>
+          <li>
+            Berikan catatan jika diperlukan
+            <span class="italic">(opsional)</span>
+          </li>
+        </ol>
+      </div>
+      <router-link
+        :to="{ name: 'SkripsiDokumen' }"
+        class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-blue-600 transition-colors shadow-sm"
+      >
+        <span class="material-symbols-outlined text-[18px]">upload_file</span>
+        Upload Berkas
+      </router-link>
+    </div>
+
     <!-- Progress Bar -->
     <div
       class="bg-surface-light rounded-xl shadow-sm border border-border-light p-6"
@@ -146,7 +201,9 @@
 
 <script setup>
 import { inject, computed } from "vue";
+import { useAuthStore } from "../../../stores/auth";
 
+const authStore = useAuthStore();
 const skripsi = inject("skripsi");
 
 const statusMap = {
@@ -156,6 +213,7 @@ const statusMap = {
   ditolak: "Ditolak",
   proposal: "Tahap Proposal",
   sempro: "Sudah Sempro",
+  penentuan_dospem: "Penentuan Dospem",
   bimbingan: "Proses Bimbingan",
   semhas: "Seminar Hasil",
   sidang: "Sidang Skripsi",
@@ -173,6 +231,7 @@ const statusOrder = [
   "disetujui",
   "proposal",
   "sempro",
+  "penentuan_dospem",
   "bimbingan",
   "semhas",
   "sidang",
@@ -180,23 +239,34 @@ const statusOrder = [
   "lulus",
 ];
 
-const stepDefs = [
-  { key: "judul", label: "Judul", after: ["pengajuan", "disetujui"] },
-  { key: "dospem", label: "Dospem", after: ["disetujui"] },
-  { key: "proposal", label: "Proposal", after: ["proposal"] },
-  { key: "sempro", label: "Sempro", after: ["sempro"] },
-  { key: "bimbingan", label: "Bimbingan", after: ["bimbingan"] },
-  { key: "semhas", label: "Semhas", after: ["semhas"] },
-  { key: "sidang", label: "Sidang", after: ["sidang"] },
-  { key: "revisi", label: "Revisi", after: ["revisi"] },
-  { key: "lulus", label: "Lulus", after: ["lulus"] },
-];
+const stepDefs = computed(() => {
+  const allSteps = [
+    { key: "judul", label: "Judul", after: ["pengajuan", "disetujui"] },
+    { key: "proposal", label: "Proposal", after: ["proposal"] },
+    { key: "sempro", label: "Sempro", after: ["sempro"] },
+    {
+      key: "penentuan_dospem",
+      label: "Dospem",
+      tooltip: "Penentuan Dosen Pembimbing",
+      after: ["penentuan_dospem"],
+    },
+    { key: "bimbingan", label: "Bimbingan", after: ["bimbingan"] },
+    { key: "semhas", label: "Semhas", after: ["semhas"] },
+    { key: "sidang", label: "Sidang", after: ["sidang"] },
+    { key: "revisi", label: "Revisi", after: ["revisi"] },
+    { key: "lulus", label: "Lulus", after: ["lulus"] },
+  ];
+  if (!authStore.semhasEnabled) {
+    return allSteps.filter((s) => s.key !== "semhas");
+  }
+  return allSteps;
+});
 
 const steps = computed(() => {
   const status = skripsi.value?.status || "draft";
   const currentIdx = statusOrder.indexOf(status);
 
-  return stepDefs.map((step) => {
+  return stepDefs.value.map((step) => {
     const stepIdx = statusOrder.indexOf(step.after[step.after.length - 1]);
     let state = "pending";
     if (stepIdx < currentIdx) state = "done";

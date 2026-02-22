@@ -71,7 +71,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'required|string|in:admin,super_admin',
+            'role' => 'required|string|in:admin,super_admin,staff',
+            'jenis_kelamin' => 'nullable|string|in:L,P',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -123,6 +124,7 @@ class UserController extends Controller
             'is_active' => 'sometimes|boolean',
             'password' => 'sometimes|nullable|string|min:6',
             'phone' => 'sometimes|nullable|string|max:20',
+            'jenis_kelamin' => 'nullable|string|in:L,P',
         ]);
 
         // Hash password if provided

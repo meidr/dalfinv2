@@ -18,6 +18,11 @@ export const mahasiswaService = {
     return response.data;
   },
 
+  async getSkripsiDetailById(id) {
+    const response = await api.get(`/mahasiswa/skripsi/${id}/detail`);
+    return response.data;
+  },
+
   async createSkripsi(data) {
     const response = await api.post("/mahasiswa/skripsi", data);
     return response.data;

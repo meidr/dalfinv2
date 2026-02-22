@@ -135,6 +135,14 @@ class BimbinganController extends Controller
             ], 403);
         }
 
+        // Prevent mutations on inactive skripsi
+        if (!$bimbingan->skripsi->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skripsi sudah tidak aktif, tidak dapat mengubah status bimbingan'
+            ], 422);
+        }
+
         $bimbingan->status = $request->status;
         $bimbingan->catatan_dosen = $request->catatan_dosen;
         $bimbingan->dosen_id = $dosen->id;

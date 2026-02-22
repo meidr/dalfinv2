@@ -147,6 +147,12 @@ class SeminarNilaiController extends Controller
                     $updateData['hasil'] = $average >= 55 ? 'lulus' : 'tidak_lulus';
                 }
                 $updateData['status'] = 'selesai';
+
+                // Update skripsi status to penentuan_dospem
+                $skripsi = $seminar->skripsi;
+                if ($skripsi && in_array($skripsi->status, ['proposal', 'sempro'])) {
+                    $skripsi->update(['status' => 'penentuan_dospem']);
+                }
             }
 
             // If ketua explicitly sets hasil even before all scored

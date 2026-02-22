@@ -295,6 +295,7 @@ class SuperAdminController extends Controller
                 'locked_by' => SystemSetting::get('locked_by'),
                 'total_users' => User::count(),
                 'active_sessions' => DB::table('sessions')->count(),
+                'semhas_enabled' => SystemSetting::get('semhas_enabled', 'true') === 'true',
             ],
         ]);
     }
@@ -322,7 +323,7 @@ class SuperAdminController extends Controller
     public function userList(Request $request)
     {
         $query = User::where('role', '!=', 'super_admin')
-            ->select('id', 'name', 'email', 'role', 'is_active', 'created_at');
+            ->select('id', 'name', 'email', 'role', 'jenis_kelamin', 'is_active', 'created_at');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -341,6 +342,43 @@ class SuperAdminController extends Controller
         return response()->json([
             'success' => true,
             'data' => $users,
+        ]);
+    }
+
+    /**
+     * Get module settings
+     */
+    public function getModuleSettings()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'semhas_enabled' => SystemSetting::get('semhas_enabled', 'true') === 'true',
+            ],
+        ]);
+    }
+
+    /**
+     * Toggle seminar hasil module
+     */
+    public function toggleSemhasModule()
+    {
+        $isEnabled = SystemSetting::get('semhas_enabled', 'true') === 'true';
+
+        SystemSetting::set('semhas_enabled', $isEnabled ? 'false' : 'true');
+
+        $newState = !$isEnabled;
+        ActivityLog::log(
+            'update',
+            'Modul Seminar Hasil ' . ($newState ? 'diaktifkan' : 'dinonaktifkan')
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Modul Seminar Hasil berhasil ' . ($newState ? 'diaktifkan' : 'dinonaktifkan'),
+            'data' => [
+                'semhas_enabled' => $newState,
+            ],
         ]);
     }
 }

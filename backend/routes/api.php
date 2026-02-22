@@ -114,16 +114,26 @@ Route::prefix('admin')
         Route::put('/pembimbing/{pembimbing}', [AdminPembimbingController::class, 'update']);
         Route::delete('/pembimbing/{pembimbing}', [AdminPembimbingController::class, 'destroy']);
 
+        // Mahasiswa & Dosen - Read Only (accessible by admin, super_admin, staff)
+        Route::get('mahasiswa', [MasterMahasiswaController::class, 'index']);
+        Route::get('mahasiswa/{mahasiswa}', [MasterMahasiswaController::class, 'show']);
+        Route::get('dosen', [MasterDosenController::class, 'index']);
+        Route::get('dosen/{dosen}', [MasterDosenController::class, 'show']);
+
         // Master Data (Admin & Super Admin Only)
         Route::middleware(['role:admin,super_admin'])->group(function () {
             Route::apiResource('fakultas', MasterFakultasController::class);
             Route::apiResource('prodi', MasterProdiController::class);
             Route::apiResource('tahun', MasterTahunController::class);
             Route::apiResource('jabatan', MasterJabatanController::class);
-            Route::apiResource('mahasiswa', MasterMahasiswaController::class);
+            Route::post('mahasiswa', [MasterMahasiswaController::class, 'store']);
+            Route::put('mahasiswa/{mahasiswa}', [MasterMahasiswaController::class, 'update']);
+            Route::delete('mahasiswa/{mahasiswa}', [MasterMahasiswaController::class, 'destroy']);
             Route::get('mahasiswa-template', [MasterMahasiswaController::class, 'downloadTemplate']);
             Route::post('mahasiswa-import', [MasterMahasiswaController::class, 'import']);
-            Route::apiResource('dosen', MasterDosenController::class);
+            Route::post('dosen', [MasterDosenController::class, 'store']);
+            Route::put('dosen/{dosen}', [MasterDosenController::class, 'update']);
+            Route::delete('dosen/{dosen}', [MasterDosenController::class, 'destroy']);
             Route::get('dosen-template', [MasterDosenController::class, 'downloadTemplate']);
             Route::post('dosen-import', [MasterDosenController::class, 'import']);
 
@@ -144,6 +154,7 @@ Route::prefix('admin')
         Route::post('/seminar/{seminar}/penguji', [AdminSeminarController::class, 'addPenguji']);
         Route::put('/seminar/{seminar}/penguji/{penguji}', [AdminSeminarController::class, 'updatePenguji']);
         Route::delete('/seminar/{seminar}/penguji/{penguji}', [AdminSeminarController::class, 'removePenguji']);
+        Route::post('/seminar/{seminar}/upload-proposal', [AdminSeminarController::class, 'uploadProposal']);
 
         // Seminar Hasil Management
         Route::get('/seminar-hasil', [AdminSeminarHasilController::class, 'index']);
@@ -242,7 +253,15 @@ Route::prefix('super-admin')
 
         // Tanda Tangan Management
         Route::apiResource('tanda-tangan', TandaTanganController::class);
+
+        // Module Settings
+        Route::get('/module-settings', [SuperAdminController::class, 'getModuleSettings']);
+        Route::post('/toggle-semhas', [SuperAdminController::class, 'toggleSemhasModule']);
     });
+
+// Module settings (accessible by all authenticated users)
+Route::get('/module-settings', [SuperAdminController::class, 'getModuleSettings'])
+    ->middleware('auth:sanctum');
 
 // Stop impersonate — accessible by any authenticated user (since the token belongs to the impersonated user)
 Route::post('/super-admin/stop-impersonate', [SuperAdminController::class, 'stopImpersonate'])
@@ -289,6 +308,7 @@ Route::prefix('mahasiswa')
         Route::get('/skripsi', [MahasiswaSkripsiController::class, 'index']);
         Route::post('/skripsi', [MahasiswaSkripsiController::class, 'store']);
         Route::get('/skripsi/detail', [MahasiswaSkripsiController::class, 'show']);
+        Route::get('/skripsi/{id}/detail', [MahasiswaSkripsiController::class, 'showById']);
         Route::put('/skripsi', [MahasiswaSkripsiController::class, 'update']);
         Route::get('/skripsi/bimbingan', [MahasiswaSkripsiController::class, 'bimbingan']);
         Route::post('/skripsi/bimbingan', [MahasiswaSkripsiController::class, 'addBimbingan']);

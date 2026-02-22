@@ -201,6 +201,7 @@
               </p>
             </router-link>
             <router-link
+              v-if="authStore.semhasEnabled"
               to="/admin/seminarhasil"
               active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
               :class="[
@@ -511,6 +512,22 @@
               class="text-sm font-medium whitespace-nowrap"
             >
               Tanda Tangan
+            </p>
+          </router-link>
+          <router-link
+            to="/admin/pengaturan-modul"
+            active-class="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-red-600 hover:bg-red-50 transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span class="material-symbols-outlined text-[20px]">tune</span>
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Pengaturan Modul
             </p>
           </router-link>
         </div>

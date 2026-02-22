@@ -228,11 +228,39 @@
               {{ item.judul }}
             </h4>
             <p
-              class="text-sm text-text-secondary mb-4"
+              class="text-sm text-text-secondary mb-3"
               v-if="item.catatan_admin"
             >
               Alasan: {{ item.catatan_admin }}
             </p>
+            <!-- Progress bar mini -->
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs text-text-secondary font-medium"
+                  >Progress</span
+                >
+                <span class="text-xs font-bold text-primary"
+                  >{{ item.progress_percentage ?? 0 }}%</span
+                >
+              </div>
+              <div
+                class="w-full bg-sidebar-light rounded-full h-1.5 overflow-hidden"
+              >
+                <div
+                  class="bg-primary h-1.5 rounded-full transition-all"
+                  :style="{ width: (item.progress_percentage ?? 0) + '%' }"
+                ></div>
+              </div>
+            </div>
+            <router-link
+              :to="`/mahasiswa/skripsi/history/${item.id}`"
+              class="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-blue-600 transition-colors"
+            >
+              <span class="material-symbols-outlined text-[18px]"
+                >visibility</span
+              >
+              Lihat Detail
+            </router-link>
           </div>
         </div>
       </div>

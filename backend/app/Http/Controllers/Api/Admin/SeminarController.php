@@ -20,6 +20,7 @@ class SeminarController extends Controller
         $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen', 'seminar' => function ($q) {
             $q->where('jenis', 'sempro')->latest('tanggal');
         }])
+            ->where('is_active', true)
             ->whereIn('status', ['pengajuan', 'proposal', 'sempro', 'bimbingan']);
 
         // Search filter
@@ -84,6 +85,13 @@ class SeminarController extends Controller
             'penguji.*.dosen_id' => 'required|exists:dosen,id',
             'penguji.*.peran' => 'required|in:ketua,penguji_1,penguji_2',
         ]);
+
+        // Update skripsi status to 'proposal'
+        $skripsi = Skripsi::findOrFail($request->skripsi_id);
+        if (in_array($skripsi->status, ['pengajuan', 'draft', 'ditolak'])) {
+            $skripsi->status = 'sempro';
+            $skripsi->save();
+        }
 
         $seminar = Seminar::create([
             'skripsi_id' => $request->skripsi_id,
@@ -274,6 +282,36 @@ class SeminarController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Penguji berhasil dihapus'
+        ]);
+    }
+
+    /**
+     * Upload or re-upload proposal document for the seminar's skripsi
+     */
+    public function uploadProposal(Request $request, Seminar $seminar)
+    {
+        $request->validate([
+            'file_skripsi' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ]);
+
+        $skripsi = $seminar->skripsi;
+
+        // Delete old file if exists
+        if ($skripsi->file_skripsi && \Illuminate\Support\Facades\Storage::disk('public')->exists($skripsi->file_skripsi)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($skripsi->file_skripsi);
+        }
+
+        $file = $request->file('file_skripsi');
+        $fileName = time() . '_' . $file->getClientOriginalName();
+        $skripsi->file_skripsi = $file->storeAs('skripsi_files', $fileName, 'public');
+        $skripsi->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Dokumen proposal berhasil diupload',
+            'data' => [
+                'file_skripsi_url' => $skripsi->file_skripsi_url,
+            ]
         ]);
     }
 }

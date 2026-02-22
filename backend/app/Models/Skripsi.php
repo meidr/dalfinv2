@@ -53,6 +53,7 @@ class Skripsi extends Model
     const STATUS_DITOLAK = 'ditolak';
     const STATUS_PROPOSAL = 'proposal';
     const STATUS_SEMPRO = 'sempro';
+    const STATUS_PENENTUAN_DOSPEM = 'penentuan_dospem';
     const STATUS_BIMBINGAN = 'bimbingan';
     const STATUS_SEMHAS = 'semhas';
     const STATUS_SIDANG = 'sidang';

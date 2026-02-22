@@ -76,12 +76,8 @@
             ></div>
           </div>
           <p class="text-xs text-text-secondary mt-2">
-            <span class="text-green-600 font-medium"
-              >{{ stats.active_count }} Aktif</span
-            >
-            <span v-if="stats.inactive_count > 0">
-              · {{ stats.inactive_count }} Tidak Aktif</span
-            >
+            Kuota: {{ stats.total_bimbingan }} /
+            {{ stats.kuota_bimbingan || "-" }}
           </p>
         </router-link>
 

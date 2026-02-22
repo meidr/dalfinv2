@@ -16,6 +16,14 @@ class SkripsiController extends Controller
     {
         $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen']);
 
+        // Staff: only see mahasiswa matching their gender
+        $user = $request->user();
+        if ($user->role === 'staff' && $user->jenis_kelamin) {
+            $query->whereHas('mahasiswa', function ($q) use ($user) {
+                $q->where('jenis_kelamin', $user->jenis_kelamin);
+            });
+        }
+
         // Filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -94,6 +102,14 @@ class SkripsiController extends Controller
             $filePath = $file->storeAs('skripsi_files', $fileName, 'public');
         }
 
+        $isActive = $request->has('is_active') ? filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN) : true;
+
+        // If this skripsi will be active, deactivate all other skripsi for the same mahasiswa
+        if ($isActive) {
+            Skripsi::where('mahasiswa_id', $request->mahasiswa_id)
+                ->update(['is_active' => false]);
+        }
+
         $skripsi = Skripsi::create([
             'mahasiswa_id' => $request->mahasiswa_id,
             'judul' => $request->judul,
@@ -103,7 +119,7 @@ class SkripsiController extends Controller
             'file_skripsi' => $filePath,
             'tanggal_daftar' => now(),
             'semester_daftar' => $this->getCurrentSemester(),
-            'is_active' => true,
+            'is_active' => $isActive,
         ]);
 
         $skripsi->logHistory(null, null, 'Pendaftaran skripsi baru', $request->user());
@@ -151,6 +167,7 @@ class SkripsiController extends Controller
             'kata_kunci' => 'nullable|string',
             'status' => 'sometimes|string',
             'catatan_admin' => 'nullable|string',
+            'is_active' => 'sometimes',
             'file_skripsi' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
 
@@ -178,6 +195,19 @@ class SkripsiController extends Controller
             'status',
             'catatan_admin'
         ]);
+
+        // Handle is_active toggle
+        if ($request->has('is_active')) {
+            $isActive = filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN);
+            $fillData['is_active'] = $isActive;
+
+            // If setting to active, deactivate all other skripsi for the same mahasiswa
+            if ($isActive) {
+                Skripsi::where('mahasiswa_id', $skripsi->mahasiswa_id)
+                    ->where('id', '!=', $skripsi->id)
+                    ->update(['is_active' => false]);
+            }
+        }
 
         if ($request->hasFile('file_skripsi')) {
             // Delete old file if exists
