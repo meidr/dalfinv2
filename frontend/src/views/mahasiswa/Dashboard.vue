@@ -297,7 +297,9 @@
       <section
         v-if="
           skripsi?.status === 'bimbingan' ||
-          skripsi?.status === 'pengajuan_sidang'
+          skripsi?.status === 'pengajuan_sidang' ||
+          skripsi?.status === 'pengajuan_sidang_tolak' ||
+          skripsi?.status === 'pengajuan_sidang_acc'
         "
         class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden hover:shadow-md transition-all"
       >
@@ -332,6 +334,64 @@
               Pengajuan ujian skripsi Anda sedang menunggu persetujuan dosen
               pembimbing utama.
             </p>
+          </div>
+
+          <!-- Approved: waiting for admin to schedule -->
+          <div
+            v-else-if="skripsi?.status === 'pengajuan_sidang_acc'"
+            class="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/10 rounded-lg border-l-4 border-green-400"
+          >
+            <span class="material-symbols-outlined text-green-600"
+              >check_circle</span
+            >
+            <p class="text-sm text-text-main">
+              Pengajuan ujian skripsi Anda telah <strong>disetujui</strong> oleh
+              dosen pembimbing. Menunggu admin menjadwalkan ujian.
+            </p>
+          </div>
+
+          <!-- Rejected: show reason + re-submit -->
+          <div
+            v-else-if="skripsi?.status === 'pengajuan_sidang_tolak'"
+            class="flex flex-col gap-4"
+          >
+            <div
+              class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border-l-4 border-red-400"
+            >
+              <span class="material-symbols-outlined text-red-600 mt-0.5"
+                >error</span
+              >
+              <div>
+                <p class="text-sm font-bold text-red-700 mb-1">
+                  Pengajuan Ujian Ditolak
+                </p>
+                <p
+                  v-if="skripsi?.alasan_tolak_sidang"
+                  class="text-sm text-text-main"
+                >
+                  <strong>Alasan:</strong> {{ skripsi.alasan_tolak_sidang }}
+                </p>
+                <p v-else class="text-sm text-text-secondary italic">
+                  Tidak ada alasan yang diberikan.
+                </p>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button
+                @click="submitUjianRequest"
+                :disabled="submittingUjian"
+                class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20 text-sm"
+              >
+                <span
+                  v-if="submittingUjian"
+                  class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                ></span>
+                <span v-else class="material-symbols-outlined text-[20px]"
+                  >refresh</span
+                >
+                {{ submittingUjian ? "Mengirim..." : "Ajukan Ulang" }}
+              </button>
+            </div>
           </div>
 
           <!-- Eligibility Check -->
@@ -449,6 +509,142 @@
           </div>
         </div>
       </Transition>
+
+      <!-- Revisi Pasca Sidang Section -->
+      <section
+        v-if="skripsi?.status === 'revisi'"
+        class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden hover:shadow-md transition-all"
+      >
+        <div
+          class="p-5 border-b border-border-light flex items-center justify-between"
+        >
+          <div>
+            <h3 class="text-lg font-bold text-text-main">
+              Revisi Pasca Sidang
+            </h3>
+            <p class="text-sm text-text-secondary">
+              Unggah dokumen revisi sesuai catatan dosen penguji
+            </p>
+          </div>
+          <span
+            class="px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200"
+          >
+            Perlu Revisi
+          </span>
+        </div>
+        <div class="p-5 space-y-4">
+          <!-- Info alert -->
+          <div
+            class="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border-l-4 border-blue-400"
+          >
+            <span class="material-symbols-outlined text-blue-600 mt-0.5"
+              >info</span
+            >
+            <div>
+              <p class="text-sm text-text-main">
+                Hasil sidang Anda adalah <strong>Lulus Bersyarat</strong>.
+                Silakan perbaiki skripsi sesuai catatan dari dosen penguji, lalu
+                unggah dokumen revisi di bawah ini. Setelah disetujui oleh
+                staff, status Anda akan berubah menjadi <strong>Lulus</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Upload form -->
+          <div class="border border-dashed border-border-light rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="material-symbols-outlined text-primary text-xl"
+                >upload_file</span
+              >
+              <p class="text-sm font-bold text-text-main">
+                Unggah Dokumen Revisi
+              </p>
+            </div>
+            <div class="flex gap-3">
+              <input
+                type="file"
+                ref="revisiFileInput"
+                accept=".pdf,.doc,.docx"
+                class="flex-1 px-3 py-2 border border-border-light rounded-lg bg-background-light text-text-main text-sm dark:bg-background"
+              />
+              <button
+                @click="uploadRevisiDoc"
+                :disabled="uploadingRevisi"
+                class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-bold disabled:opacity-50 flex items-center gap-2"
+              >
+                <span
+                  v-if="uploadingRevisi"
+                  class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                ></span>
+                <span v-else class="material-symbols-outlined text-[18px]"
+                  >cloud_upload</span
+                >
+                {{ uploadingRevisi ? "Mengunggah..." : "Unggah" }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Uploaded docs list -->
+          <div v-if="revisiDocsMhs.length > 0" class="space-y-2">
+            <p
+              class="text-xs font-bold text-text-secondary uppercase tracking-wider"
+            >
+              Dokumen yang Diunggah
+            </p>
+            <div
+              v-for="doc in revisiDocsMhs"
+              :key="doc.id"
+              class="flex items-center justify-between p-3 border border-border-light rounded-lg"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <span
+                  class="material-symbols-outlined text-xl"
+                  :class="
+                    doc.status === 'approved'
+                      ? 'text-green-600'
+                      : doc.status === 'rejected'
+                        ? 'text-red-600'
+                        : 'text-blue-600'
+                  "
+                  >description</span
+                >
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-text-main truncate">
+                    {{ doc.nama_file }}
+                  </p>
+                  <p class="text-[10px] text-text-secondary">
+                    {{
+                      new Date(doc.created_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    }}
+                  </p>
+                </div>
+              </div>
+              <span
+                class="px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0"
+                :class="
+                  doc.status === 'approved'
+                    ? 'bg-green-100 text-green-700'
+                    : doc.status === 'rejected'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-yellow-100 text-yellow-700'
+                "
+              >
+                {{
+                  doc.status === "approved"
+                    ? "Disetujui"
+                    : doc.status === "rejected"
+                      ? "Ditolak"
+                      : "Menunggu"
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- Dokumen Sempro Section -->
       <section
@@ -874,6 +1070,11 @@ const showUjianConfirmModal = ref(false);
 const submittingUjian = ref(false);
 const ujianToast = ref({ show: false, message: "", type: "success" });
 
+// Revisi state
+const revisiDocsMhs = ref([]);
+const uploadingRevisi = ref(false);
+const revisiFileInput = ref(null);
+
 const eligibilityChecklist = computed(() => {
   if (!ujianEligibility.value) return [];
   const e = ujianEligibility.value;
@@ -939,6 +1140,44 @@ const submitUjianRequest = async () => {
   }
 };
 
+// ---- REVISI DOCS (MAHASISWA) ----
+const fetchRevisiDocs = async () => {
+  if (!skripsi.value) return;
+  try {
+    const response = await mahasiswaService.getDokumen({ jenis: "revisi" });
+    if (response.success) {
+      revisiDocsMhs.value = response.data || [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch revisi docs:", error);
+  }
+};
+
+const uploadRevisiDoc = async () => {
+  const fileInput = revisiFileInput.value;
+  if (!fileInput?.files?.length) {
+    alert("Pilih file terlebih dahulu");
+    return;
+  }
+  try {
+    uploadingRevisi.value = true;
+    await mahasiswaService.uploadDokumen({
+      jenis: "revisi",
+      file: fileInput.files[0],
+    });
+    fileInput.value = "";
+    await fetchRevisiDocs();
+    alert("Dokumen revisi berhasil diunggah. Menunggu persetujuan staff.");
+  } catch (error) {
+    console.error("Failed to upload revisi:", error);
+    alert(
+      "Gagal mengunggah: " + (error.response?.data?.message || error.message),
+    );
+  } finally {
+    uploadingRevisi.value = false;
+  }
+};
+
 // Status mapping
 const statusMap = {
   draft: { label: "Draft", icon: "edit_note", color: "gray" },
@@ -966,6 +1205,16 @@ const statusMap = {
     label: "Pengajuan Sidang",
     icon: "pending_actions",
     color: "yellow",
+  },
+  pengajuan_sidang_acc: {
+    label: "Sidang Disetujui",
+    icon: "check_circle",
+    color: "green",
+  },
+  pengajuan_sidang_tolak: {
+    label: "Sidang Ditolak",
+    icon: "cancel",
+    color: "red",
   },
   semhas: { label: "Seminar Hasil", icon: "record_voice_over", color: "blue" },
   sidang: { label: "Sidang", icon: "school", color: "blue" },
@@ -1061,7 +1310,12 @@ const milestoneSteps = computed(() => {
     {
       key: "bimbingan",
       label: "Bimbingan",
-      statuses: ["bimbingan", "pengajuan_sidang"],
+      statuses: [
+        "bimbingan",
+        "pengajuan_sidang",
+        "pengajuan_sidang_acc",
+        "pengajuan_sidang_tolak",
+      ],
     },
     { key: "semhas", label: "Semhas", statuses: ["semhas"] },
     { key: "sidang", label: "Sidang", statuses: ["sidang", "revisi", "lulus"] },
@@ -1082,6 +1336,8 @@ const statusOrder = [
   "dospem",
   "bimbingan",
   "pengajuan_sidang",
+  "pengajuan_sidang_tolak",
+  "pengajuan_sidang_acc",
   "semhas",
   "sidang",
   "revisi",
@@ -1125,6 +1381,10 @@ const activeStageDescription = computed(() => {
       "Anda sedang dalam tahap bimbingan. Lakukan bimbingan secara rutin dengan dosen pembimbing untuk menyelesaikan skripsi.",
     pengajuan_sidang:
       "Pengajuan ujian skripsi Anda sedang menunggu persetujuan dosen pembimbing utama. Mohon tunggu konfirmasi.",
+    pengajuan_sidang_acc:
+      "Pengajuan ujian skripsi Anda telah disetujui oleh dosen pembimbing. Menunggu admin menjadwalkan ujian sidang.",
+    pengajuan_sidang_tolak:
+      "Pengajuan ujian skripsi Anda ditolak oleh dosen pembimbing. Silakan perbaiki sesuai catatan dan ajukan kembali.",
     semhas:
       "Anda sudah memasuki tahap Seminar Hasil. Persiapkan presentasi dan dokumen yang diperlukan.",
     sidang:
@@ -1218,6 +1478,11 @@ onMounted(async () => {
       // Check ujian eligibility if in bimbingan status
       if (res.data.skripsi?.status === "bimbingan") {
         checkUjianEligibility();
+      }
+
+      // Fetch revisi docs if in revisi status
+      if (res.data.skripsi?.status === "revisi") {
+        fetchRevisiDocs();
       }
     }
   } catch (err) {

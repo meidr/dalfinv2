@@ -239,6 +239,12 @@ class BimbinganController extends Controller
         $mahasiswa = $skripsi->mahasiswa;
 
         if ($request->action === 'approve') {
+            // Update status to approved
+            $skripsi->status = 'pengajuan_sidang_acc';
+            $skripsi->alasan_tolak_sidang = null;
+            $skripsi->progress_percentage = 65;
+            $skripsi->save();
+
             // Notify staff/admin that this skripsi is ready for scheduling
             \App\Models\Notification::broadcast(
                 'ujian_approved_dosen',
@@ -252,8 +258,9 @@ class BimbinganController extends Controller
                 'message' => 'Pengajuan ujian skripsi disetujui. Staff akan menjadwalkan ujian.',
             ]);
         } else {
-            // Reject: revert status to bimbingan
-            $skripsi->status = 'bimbingan';
+            // Reject: set status to pengajuan_sidang_tolak
+            $skripsi->status = 'pengajuan_sidang_tolak';
+            $skripsi->alasan_tolak_sidang = $request->alasan;
             $skripsi->save();
 
             // Notify mahasiswa

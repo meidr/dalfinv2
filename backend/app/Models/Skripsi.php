@@ -23,6 +23,7 @@ class Skripsi extends Model
         'catatan_admin',
         'is_active',
         'file_skripsi',
+        'alasan_tolak_sidang',
     ];
 
     protected $casts = [
@@ -57,6 +58,8 @@ class Skripsi extends Model
     const STATUS_DOSPEM = 'dospem';
     const STATUS_BIMBINGAN = 'bimbingan';
     const STATUS_PENGAJUAN_SIDANG = 'pengajuan_sidang';
+    const STATUS_PENGAJUAN_SIDANG_ACC = 'pengajuan_sidang_acc';
+    const STATUS_PENGAJUAN_SIDANG_TOLAK = 'pengajuan_sidang_tolak';
     const STATUS_SEMHAS = 'semhas';
     const STATUS_SIDANG = 'sidang';
     const STATUS_REVISI = 'revisi';

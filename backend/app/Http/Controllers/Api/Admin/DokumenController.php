@@ -111,8 +111,9 @@ class DokumenController extends Controller
     /**
      * Update document status
      */
-    public function update(Request $request, Dokumen $dokumen)
+    public function update(Request $request, $id)
     {
+        $dokumen = Dokumen::findOrFail($id);
         $request->validate([
             'status' => 'required|in:pending,approved,rejected',
             'catatan' => 'nullable|string',

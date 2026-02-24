@@ -54,6 +54,11 @@ export const mahasiswaService = {
   },
 
   // Dokumen
+  async getDokumen(params = {}) {
+    const response = await api.get("/mahasiswa/skripsi/dokumen", { params });
+    return response.data;
+  },
+
   async uploadDokumen(data) {
     const formData = new FormData();
     formData.append("jenis", data.jenis);

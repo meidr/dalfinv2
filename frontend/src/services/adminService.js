@@ -252,6 +252,11 @@ export const adminService = {
     return response;
   },
 
+  async updateDokumen(id, data) {
+    const response = await api.put(`/admin/dokumen/${id}`, data);
+    return response.data;
+  },
+
   // PDF Generation
   async getSkTugasPdf(skripsiId) {
     const response = await api.get(`/admin/pdf/sk-tugas/${skripsiId}`, {
@@ -295,6 +300,11 @@ export const adminService = {
   },
 
   // Ujian
+  async getEligibleSidang(params = {}) {
+    const response = await api.get("/admin/ujian/eligible", { params });
+    return response.data;
+  },
+
   async getUjian(params = {}) {
     const response = await api.get("/admin/ujian", { params });
     return response.data;
@@ -312,6 +322,11 @@ export const adminService = {
 
   async updateUjian(id, data) {
     const response = await api.put(`/admin/ujian/${id}`, data);
+    return response.data;
+  },
+
+  async deleteUjian(id) {
+    const response = await api.delete(`/admin/ujian/${id}`);
     return response.data;
   },
 

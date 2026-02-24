@@ -281,6 +281,35 @@ class SkripsiController extends Controller
     }
 
     /**
+     * Get dokumen for current mahasiswa's active skripsi
+     */
+    public function getDokumen(Request $request)
+    {
+        $mahasiswa = $request->user()->mahasiswa;
+        $skripsi = $mahasiswa->activeSkripsi;
+
+        if (!$skripsi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skripsi tidak ditemukan'
+            ], 404);
+        }
+
+        $query = Dokumen::where('skripsi_id', $skripsi->id);
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
+
+        $dokumen = $query->orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $dokumen
+        ]);
+    }
+
+    /**
      * Upload dokumen skripsi (bab, proposal, etc.)
      */
     public function uploadDokumen(Request $request)
@@ -464,7 +493,7 @@ class SkripsiController extends Controller
         $hasNaskahFinal = (bool) $naskahFinalDoc;
 
         // Check status
-        $isCorrectStatus = $skripsi->status === 'bimbingan';
+        $isCorrectStatus = in_array($skripsi->status, ['bimbingan', 'pengajuan_sidang_tolak']);
 
         // Already requested?
         $alreadyRequested = $skripsi->status === 'pengajuan_sidang';
@@ -518,10 +547,10 @@ class SkripsiController extends Controller
             ], 404);
         }
 
-        if ($skripsi->status !== 'bimbingan') {
+        if (!in_array($skripsi->status, ['bimbingan', 'pengajuan_sidang_tolak'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Pengajuan ujian hanya bisa dilakukan pada status bimbingan'
+                'message' => 'Pengajuan ujian hanya bisa dilakukan pada status bimbingan atau setelah penolakan'
             ], 422);
         }
 
@@ -571,6 +600,7 @@ class SkripsiController extends Controller
 
         // Update status
         $skripsi->status = 'pengajuan_sidang';
+        $skripsi->alasan_tolak_sidang = null;
         $skripsi->save();
 
         // Notify dosen pembimbing utama

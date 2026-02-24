@@ -183,10 +183,12 @@ Route::prefix('admin')
         Route::get('/bimbingan/{skripsi}', [AdminBimbinganController::class, 'show']);
 
         // Ujian Management
+        Route::get('/ujian/eligible', [AdminUjianController::class, 'eligible']);
         Route::get('/ujian', [AdminUjianController::class, 'index']);
         Route::get('/ujian/{ujian}', [AdminUjianController::class, 'show']);
         Route::post('/ujian', [AdminUjianController::class, 'store']);
         Route::put('/ujian/{ujian}', [AdminUjianController::class, 'update']);
+        Route::delete('/ujian/{ujian}', [AdminUjianController::class, 'destroy']);
         Route::get('/ujian/{ujian}/available-penguji', [AdminUjianController::class, 'availablePenguji']);
 
 
@@ -326,6 +328,7 @@ Route::prefix('mahasiswa')
         Route::post('/skripsi/request-ujian', [MahasiswaSkripsiController::class, 'requestUjian']);
 
         // Dokumen Management
+        Route::get('/skripsi/dokumen', [MahasiswaSkripsiController::class, 'getDokumen']);
         Route::post('/skripsi/dokumen', [MahasiswaSkripsiController::class, 'uploadDokumen']);
         Route::delete('/skripsi/dokumen/{dokumen}', [MahasiswaSkripsiController::class, 'deleteDokumen']);
         Route::get('/skripsi/pdf/{type}', [MahasiswaSkripsiController::class, 'downloadOfficialPdf']);

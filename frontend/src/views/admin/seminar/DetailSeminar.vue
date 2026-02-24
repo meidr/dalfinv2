@@ -1359,20 +1359,15 @@ const submitNilai = async () => {
       }
     }
 
-    // Update seminar nilai (average) and status
+    // Update seminar nilai (average), status, and hasil
+    // Backend will auto-update skripsi status to penentuan_dospem
+    // when hasil is lulus/lulus_bersyarat — no separate verification needed
     await adminService.updateSeminar(seminar.value.id, {
       nilai: averageNilai.value !== "-" ? Number(averageNilai.value) : null,
       catatan: nilaiForm.catatan,
       status: "selesai",
+      hasil: nilaiForm.hasil,
     });
-
-    // Update skripsi status to bimbingan
-    if (seminar.value.skripsi?.id) {
-      await adminService.updateSkripsi(seminar.value.skripsi.id, {
-        status: "bimbingan",
-        _method: "PUT",
-      });
-    }
 
     // Create berita acara
     try {

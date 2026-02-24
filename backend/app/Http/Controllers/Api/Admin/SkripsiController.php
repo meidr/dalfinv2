@@ -337,6 +337,8 @@ class SkripsiController extends Controller
             'dospem' => 40,
             'bimbingan' => 50,
             'pengajuan_sidang' => 60,
+            'pengajuan_sidang_acc' => 65,
+            'pengajuan_sidang_tolak' => 50,
             'semhas' => 70,
             'ujian' => 80,
             'sidang' => 85,

@@ -92,6 +92,75 @@ class UjianController extends Controller
         ]);
     }
 
+    /**
+     * List skripsi eligible for sidang (pengajuan_sidang approved by dosen)
+     * Follows the SeminarController.index pattern
+     */
+    public function eligible(Request $request)
+    {
+        $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen', 'seminar' => function ($q) {
+            $q->where('jenis', 'sidang')->with('penguji.dosen')->latest('tanggal');
+        }])
+            ->where('is_active', true)
+            ->whereIn('status', ['pengajuan_sidang_acc', 'sidang', 'revisi', 'lulus']);
+
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                    ->orWhereHas('mahasiswa', function ($mq) use ($search) {
+                        $mq->where('nama', 'like', "%{$search}%")
+                            ->orWhere('nim', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Jadwal filter: terjadwal or belum
+        if ($request->filled('jadwal')) {
+            if ($request->jadwal === 'terjadwal') {
+                $query->whereHas('seminar', function ($q) {
+                    $q->where('jenis', 'sidang');
+                });
+            } elseif ($request->jadwal === 'belum') {
+                $query->whereDoesntHave('seminar', function ($q) {
+                    $q->where('jenis', 'sidang');
+                });
+            }
+        }
+
+        $perPage = $request->get('per_page', 15);
+        $skripsiList = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        // Add computed fields
+        $skripsiList->getCollection()->transform(function ($skripsi) {
+            $seminarSidang = $skripsi->seminar->where('jenis', 'sidang')->first();
+            $skripsi->sidang_seminar = $seminarSidang;
+            $skripsi->is_scheduled = !is_null($seminarSidang);
+            return $skripsi;
+        });
+
+        // Stats
+        $baseQuery = Skripsi::where('is_active', true)
+            ->whereIn('status', ['pengajuan_sidang_acc', 'sidang', 'revisi', 'lulus']);
+        $terjadwal = (clone $baseQuery)->whereHas('seminar', function ($q) {
+            $q->where('jenis', 'sidang');
+        })->count();
+        $belum = (clone $baseQuery)->whereDoesntHave('seminar', function ($q) {
+            $q->where('jenis', 'sidang');
+        })->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => $skripsiList,
+            'stats' => [
+                'total' => $skripsiList->total(),
+                'terjadwal' => $terjadwal,
+                'belum' => $belum,
+            ]
+        ]);
+    }
+
     public function show($id)
     {
         $ujian = Seminar::with([
@@ -158,7 +227,7 @@ class UjianController extends Controller
 
         // Auto-update skripsi status to 'sidang' if currently 'pengajuan_sidang'
         $skripsi = Skripsi::find($validated['skripsi_id']);
-        if ($skripsi && $skripsi->status === 'pengajuan_sidang') {
+        if ($skripsi && $skripsi->status === 'pengajuan_sidang_acc') {
             $skripsi->update(['status' => 'sidang', 'progress_percentage' => 85]);
         }
 
@@ -380,6 +449,35 @@ class UjianController extends Controller
         return response()->json([
             'success' => true,
             'data' => $dosen
+        ]);
+    }
+
+    /**
+     * Delete an ujian (sidang) schedule.
+     * Reverts skripsi status to pengajuan_sidang_acc so it can be re-scheduled.
+     */
+    public function destroy($id)
+    {
+        $ujian = Seminar::where('jenis', 'sidang')->findOrFail($id);
+
+        // Revert skripsi status back to pengajuan_sidang_acc
+        $skripsi = Skripsi::find($ujian->skripsi_id);
+        if ($skripsi && $skripsi->status === 'sidang') {
+            $skripsi->update([
+                'status' => 'pengajuan_sidang_acc',
+                'progress_percentage' => 65,
+            ]);
+        }
+
+        // Delete penguji records
+        Penguji::where('seminar_id', $ujian->id)->delete();
+
+        // Delete the ujian
+        $ujian->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Jadwal sidang berhasil dihapus',
         ]);
     }
 }

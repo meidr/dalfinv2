@@ -1,169 +1,114 @@
 <template>
   <div class="max-w-7xl mx-auto flex flex-col gap-8 animate-fade-in-up">
+    <!-- Header -->
     <div class="flex flex-col gap-1">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-text-main text-3xl font-bold leading-tight">
-            Sidang Skripsi
-          </h1>
-          <p class="text-text-secondary text-sm font-normal">
-            Daftar mahasiswa yang siap melaksanakan sidang akhir skripsi.
-          </p>
-        </div>
-        <button
-          @click="openScheduleModal"
-          class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-all text-sm font-bold shadow-md shadow-primary/20"
+      <div class="flex items-center gap-2 text-sm text-text-secondary">
+        <router-link
+          to="/admin/dashboard"
+          class="hover:text-primary transition-colors"
+          >Dashboard</router-link
         >
-          <span class="material-symbols-outlined text-[18px]">add</span>
-          Jadwalkan Baru
-        </button>
+        <span>/</span>
+        <span class="text-text-main font-medium">Sidang Skripsi</span>
+      </div>
+      <h1 class="text-text-main text-3xl font-bold leading-tight">
+        Sidang Skripsi
+      </h1>
+      <p class="text-text-secondary text-sm font-normal">
+        Kelola penjadwalan sidang akhir skripsi mahasiswa.
+      </p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+      >
+        <div class="flex items-center justify-between">
+          <p
+            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
+          >
+            Total Mahasiswa
+          </p>
+          <div class="bg-primary/10 p-2 rounded-lg text-primary">
+            <span class="material-symbols-outlined">school</span>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ pagination.total }}
+          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="material-symbols-outlined text-primary text-[18px]"
+              >people</span
+            >
+            <p class="text-primary text-xs font-semibold">Eligible sidang</p>
+          </div>
+        </div>
       </div>
 
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-        <div
-          class="flex items-center p-4 bg-surface-light border border-border-light rounded-xl shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="p-2.5 bg-blue-50 text-blue-600 rounded-lg mr-3">
-            <span class="material-symbols-outlined text-[22px]">schedule</span>
-          </div>
-          <div>
-            <p
-              class="text-text-secondary text-[10px] font-bold uppercase tracking-wider mb-0.5"
-            >
-              Terjadwal
-            </p>
-            <h3 class="text-xl font-bold text-text-main">
-              {{ stats.terjadwal }}
-            </h3>
+      <div
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+      >
+        <div class="flex items-center justify-between">
+          <p
+            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
+          >
+            Sudah Dijadwalkan
+          </p>
+          <div class="bg-green-100 p-2 rounded-lg text-green-600">
+            <span class="material-symbols-outlined">event_available</span>
           </div>
         </div>
-        <div
-          class="flex items-center p-4 bg-surface-light border border-border-light rounded-xl shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="p-2.5 bg-orange-50 text-orange-600 rounded-lg mr-3">
-            <span class="material-symbols-outlined text-[22px]"
-              >pending_actions</span
-            >
-          </div>
-          <div>
-            <p
-              class="text-text-secondary text-[10px] font-bold uppercase tracking-wider mb-0.5"
-            >
-              Menunggu Nilai
-            </p>
-            <h3 class="text-xl font-bold text-text-main">
-              {{ stats.sedang_ujian }}
-            </h3>
-          </div>
-        </div>
-        <div
-          class="flex items-center p-4 bg-surface-light border border-border-light rounded-xl shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="p-2.5 bg-green-50 text-green-600 rounded-lg mr-3">
-            <span class="material-symbols-outlined text-[22px]"
+        <div class="mt-2">
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ statsCount.terjadwal }}
+          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="material-symbols-outlined text-green-600 text-[18px]"
               >check_circle</span
             >
-          </div>
-          <div>
-            <p
-              class="text-text-secondary text-[10px] font-bold uppercase tracking-wider mb-0.5"
-            >
-              Selesai
-            </p>
-            <h3 class="text-xl font-bold text-text-main">
-              {{ stats.selesai }}
-            </h3>
-          </div>
-        </div>
-        <div
-          class="flex items-center p-4 bg-surface-light border border-border-light rounded-xl shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="p-2.5 bg-purple-50 text-purple-600 rounded-lg mr-3">
-            <span class="material-symbols-outlined text-[22px]"
-              >history_edu</span
-            >
-          </div>
-          <div>
-            <p
-              class="text-text-secondary text-[10px] font-bold uppercase tracking-wider mb-0.5"
-            >
-              Total Sidang
-            </p>
-            <h3 class="text-xl font-bold text-text-main">{{ stats.total }}</h3>
+            <p class="text-green-600 text-xs font-semibold">Terjadwal sidang</p>
           </div>
         </div>
       </div>
 
-      <!-- Filters Row -->
-      <div class="flex flex-wrap items-center gap-3 mt-3">
-        <select
-          v-model="filterTahunAkademik"
-          @change="onFilterChange"
-          class="px-3 py-2 bg-white border border-border-light rounded-lg text-sm focus:ring-1 focus:ring-primary"
-        >
-          <option value="">Semua Tahun Akademik</option>
-          <option v-for="ta in tahunAkademikOptions" :key="ta" :value="ta">
-            {{ ta }}
-          </option>
-        </select>
-        <select
-          v-model="filterProdi"
-          @change="onFilterChange"
-          class="px-3 py-2 bg-white border border-border-light rounded-lg text-sm focus:ring-1 focus:ring-primary"
-        >
-          <option value="">Semua Prodi</option>
-          <option v-for="p in prodiList" :key="p.id" :value="p.id">
-            {{ p.nama }}
-          </option>
-        </select>
-        <select
-          v-model="filterSemester"
-          @change="onFilterChange"
-          class="px-3 py-2 bg-white border border-border-light rounded-lg text-sm focus:ring-1 focus:ring-primary"
-        >
-          <option value="">Semua Semester</option>
-          <option value="ganjil">Ganjil</option>
-          <option value="genap">Genap</option>
-        </select>
-        <select
-          v-model="filterStatus"
-          @change="onFilterChange"
-          class="px-3 py-2 bg-white border border-border-light rounded-lg text-sm focus:ring-1 focus:ring-primary"
-        >
-          <option value="">Semua Status</option>
-          <option value="pending">Menunggu Nilai</option>
-          <option value="selesai">Selesai</option>
-          <option value="terjadwal">Terjadwal</option>
-        </select>
-        <div class="flex-1"></div>
-        <button
-          @click="exportJadwalPdf"
-          :disabled="exporting"
-          class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-bold disabled:opacity-50"
-        >
-          <span class="material-symbols-outlined text-[18px]">download</span>
-          {{ exporting ? "Memproses..." : "Export Jadwal PDF" }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="loading" class="p-12 text-center">
       <div
-        class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"
-      ></div>
-      <p class="text-text-secondary text-sm mt-3">Memuat data...</p>
+        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+      >
+        <div class="flex items-center justify-between">
+          <p
+            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
+          >
+            Belum Dijadwalkan
+          </p>
+          <div class="bg-orange-100 p-2 rounded-lg text-orange-600">
+            <span class="material-symbols-outlined">event_busy</span>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-text-main text-3xl font-bold leading-tight">
+            {{ statsCount.belum }}
+          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="material-symbols-outlined text-orange-600 text-[18px]"
+              >pending</span
+            >
+            <p class="text-orange-600 text-xs font-semibold">Menunggu jadwal</p>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Table Container -->
+    <!-- Toolbar & Table -->
     <div
-      v-else
       class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
     >
+      <!-- Toolbar -->
       <div
         class="p-5 border-b border-border-light flex flex-col md:flex-row gap-4 items-center justify-between"
       >
+        <!-- Search -->
         <div class="relative w-full md:max-w-md">
           <div
             class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
@@ -176,184 +121,214 @@
             v-model="searchQuery"
             @input="debouncedSearch"
             class="block w-full pl-10 pr-3 py-2.5 border border-border-light rounded-lg leading-5 bg-background-light text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-shadow dark:bg-background"
-            placeholder="Cari mahasiswa..."
+            placeholder="Cari Mahasiswa, NIM, atau Judul..."
+            type="text"
           />
         </div>
-        <span
-          class="px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-xs font-bold border border-blue-100 flex items-center whitespace-nowrap"
-          >{{ pagination.total }} Data</span
-        >
+        <!-- Filters -->
+        <div class="flex gap-3 w-full md:w-auto">
+          <select
+            v-model="filterJadwal"
+            @change="fetchEligible"
+            class="px-4 py-2.5 bg-surface-light border border-border-light rounded-lg text-text-secondary text-sm focus:ring-1 focus:ring-primary"
+          >
+            <option value="">Semua Jadwal</option>
+            <option value="terjadwal">Sudah Dijadwalkan</option>
+            <option value="belum">Belum Dijadwalkan</option>
+          </select>
+        </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <!-- Loading -->
+      <div v-if="loading" class="p-12 text-center">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"
+        ></div>
+        <p class="text-text-secondary text-sm mt-3">Memuat data...</p>
+      </div>
+
+      <!-- Table -->
+      <div v-else class="overflow-x-auto">
         <table class="w-full text-left text-sm whitespace-nowrap">
           <thead
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
           >
             <tr>
               <th class="px-6 py-4">Mahasiswa</th>
-              <th class="px-6 py-4">Judul Skripsi</th>
-              <th class="px-6 py-4">Jadwal &amp; Ruang</th>
-              <th class="px-6 py-4">Penguji</th>
-              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4">Pembimbing</th>
+              <th class="px-6 py-4">Dosen Penguji</th>
+              <th class="px-6 py-4">Status & Jadwal</th>
               <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
-            <tr v-if="ujianList.length === 0">
-              <td colspan="6" class="p-12 text-center text-text-secondary">
-                Tidak ada data sidang
+            <tr v-if="eligibleList.length === 0">
+              <td
+                colspan="5"
+                class="px-6 py-12 text-center text-text-secondary"
+              >
+                Tidak ada data mahasiswa
               </td>
             </tr>
             <tr
-              v-for="item in ujianList"
+              v-for="item in eligibleList"
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
+              <!-- Mahasiswa + Judul -->
               <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                    :class="getAvatarColor(item.skripsi?.mahasiswa?.nama)"
+                <div>
+                  <p class="font-bold text-text-main text-sm">
+                    {{ item.mahasiswa?.nim || "-" }} -
+                    {{ item.mahasiswa?.nama || "-" }}
+                  </p>
+                  <p
+                    class="text-xs text-text-secondary mt-0.5 max-w-xs truncate"
+                    :title="item.judul"
                   >
-                    {{ getInitials(item.skripsi?.mahasiswa?.nama) }}
-                  </div>
-                  <div>
-                    <p class="font-bold text-text-main text-sm">
-                      {{ item.skripsi?.mahasiswa?.nama || "-" }}
-                    </p>
-                    <p
-                      class="text-xs text-text-secondary font-medium font-mono"
-                    >
-                      {{ item.skripsi?.mahasiswa?.nim || "-" }}
-                    </p>
-                  </div>
+                    {{ item.judul || "-" }}
+                  </p>
                 </div>
               </td>
-              <td
-                class="px-6 py-4 max-w-xs truncate"
-                :title="item.skripsi?.judul"
-              >
-                {{ item.skripsi?.judul || "-" }}
-              </td>
+              <!-- Pembimbing -->
               <td class="px-6 py-4">
                 <div class="flex flex-col gap-1">
                   <div
-                    class="flex items-center gap-1.5 text-text-main text-xs font-bold"
+                    v-for="(pembimbing, idx) in item.pembimbing || []"
+                    :key="idx"
+                    class="flex items-center gap-2"
                   >
                     <span
-                      class="material-symbols-outlined text-[14px] text-primary"
-                      >calendar_month</span
+                      class="size-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                      :class="
+                        idx === 0
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      "
+                      >{{ idx + 1 }}</span
                     >
-                    {{ formatDate(item.tanggal) }}
-                  </div>
-                  <div
-                    class="flex items-center gap-1.5 text-text-secondary text-xs"
-                  >
-                    <span class="material-symbols-outlined text-[14px]"
-                      >schedule</span
-                    >
-                    {{ formatTime(item.waktu) }}
-                  </div>
-                  <div
-                    class="flex items-center gap-1.5 text-text-secondary text-xs"
-                  >
-                    <span class="material-symbols-outlined text-[14px]"
-                      >meeting_room</span
-                    >
-                    {{ item.ruangan || "-" }}
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <div v-if="item.penguji?.length" class="flex flex-col gap-1">
-                  <div
-                    v-for="p in item.penguji"
-                    :key="p.id"
-                    class="flex items-center gap-1.5 text-xs"
-                  >
-                    <span
-                      class="material-symbols-outlined text-[14px] text-primary"
-                      >person</span
-                    >
-                    <span class="text-text-main font-medium">{{
-                      p.dosen?.full_name || p.dosen?.nama || "-"
+                    <span class="text-xs text-text-main">{{
+                      getDosenName(pembimbing.dosen)
                     }}</span>
-                    <span
-                      class="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-text-secondary"
-                      >{{ getPeranLabel(p.peran) }}</span
-                    >
+                  </div>
+                  <div
+                    v-if="!item.pembimbing?.length"
+                    class="text-xs text-text-secondary"
+                  >
+                    Belum ada pembimbing
                   </div>
                 </div>
-                <span v-else class="text-xs text-text-secondary italic"
-                  >Belum ada</span
-                >
               </td>
+              <!-- Dosen Penguji -->
               <td class="px-6 py-4">
-                <span
-                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                  :class="getStatusClass(item.status)"
-                >
-                  <span
-                    class="w-1.5 h-1.5 rounded-full"
-                    :class="getStatusDot(item.status)"
-                  ></span>
-                  {{ getStatusLabel(item.status) }}
-                </span>
-                <div
-                  v-if="item.status === 'selesai' && item.hasil"
-                  class="mt-1"
-                >
-                  <span
-                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold"
-                    :class="getHasilClass(item.hasil)"
+                <div class="flex flex-col gap-1">
+                  <div
+                    v-for="(penguji, idx) in item.sidang_seminar?.penguji || []"
+                    :key="idx"
+                    class="flex items-center gap-2"
                   >
-                    {{ getHasilLabel(item.hasil) }}
-                  </span>
+                    <span
+                      class="size-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                      >{{ idx + 1 }}</span
+                    >
+                    <span class="text-xs text-text-main">{{
+                      getDosenName(penguji.dosen)
+                    }}</span>
+                  </div>
+                  <div
+                    v-if="!item.sidang_seminar?.penguji?.length"
+                    class="text-xs text-text-secondary"
+                  >
+                    Belum ada penguji
+                  </div>
                 </div>
-                <div v-if="item.nilai" class="mt-1 flex items-center gap-1.5">
-                  <span class="text-xs text-text-secondary"
-                    >Rata-rata:
-                    <strong class="text-text-main">{{
-                      item.nilai
-                    }}</strong></span
-                  >
+              </td>
+              <!-- Status & Jadwal -->
+              <td class="px-6 py-4">
+                <div class="flex flex-col gap-1.5">
                   <span
-                    v-if="item.grade"
-                    class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200"
-                    >{{ item.grade }}</span
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium w-fit"
+                    :class="getSkripsiStatusClass(item.status)"
                   >
+                    <span
+                      class="w-1.5 h-1.5 rounded-full"
+                      :class="getSkripsiStatusDot(item.status)"
+                    ></span>
+                    {{ getSkripsiStatusLabel(item.status) }}
+                  </span>
+                  <template v-if="item.is_scheduled && item.sidang_seminar">
+                    <div
+                      class="flex items-center gap-1.5 text-xs text-text-main"
+                    >
+                      <span
+                        class="material-symbols-outlined text-[14px] text-green-600"
+                        >event_available</span
+                      >
+                      {{ formatDate(item.sidang_seminar.tanggal) }}
+                      <span class="text-text-secondary">
+                        {{ item.sidang_seminar.waktu || "" }}
+                        {{
+                          item.sidang_seminar.ruangan
+                            ? "• " + item.sidang_seminar.ruangan
+                            : ""
+                        }}
+                      </span>
+                    </div>
+                  </template>
+                  <span
+                    v-else
+                    class="flex items-center gap-1 text-xs text-orange-600"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >event_busy</span
+                    >
+                    Belum Dijadwalkan
+                  </span>
                 </div>
               </td>
               <td class="px-6 py-4 text-right">
-                <div class="flex items-center justify-end gap-1.5">
+                <div
+                  class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
                   <button
-                    @click="openEditModal(item)"
-                    class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-orange-500 hover:bg-orange-50 hover:border-orange-300 transition-all"
-                    title="Edit Sidang"
+                    v-if="!item.is_scheduled"
+                    @click="openScheduleModal(item)"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm"
                   >
-                    <span class="material-symbols-outlined text-[18px]"
+                    <span class="material-symbols-outlined text-[16px]"
+                      >calendar_month</span
+                    >
+                    Jadwalkan
+                  </button>
+                  <button
+                    v-if="item.is_scheduled"
+                    @click="openEditModal(item)"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-yellow-600 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-all border border-yellow-200"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
                       >edit</span
                     >
+                    Edit
                   </button>
                   <button
-                    @click="viewDetail(item)"
-                    class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-primary hover:bg-blue-50 hover:border-primary transition-all"
-                    title="Lihat Detail"
+                    v-if="item.is_scheduled"
+                    @click="viewDetail(item.sidang_seminar)"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-all"
                   >
-                    <span class="material-symbols-outlined text-[18px]"
+                    <span class="material-symbols-outlined text-[16px]"
                       >visibility</span
                     >
+                    Detail
                   </button>
                   <button
-                    v-if="item.penguji?.length"
-                    @click="downloadSkPenguji(item)"
-                    class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-green-600 hover:bg-green-50 hover:border-green-300 transition-all"
-                    title="Cetak SK Penguji"
+                    v-if="item.is_scheduled"
+                    @click="deleteSchedule(item.sidang_seminar)"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-all border border-red-200"
                   >
-                    <span class="material-symbols-outlined text-[18px]"
-                      >print</span
+                    <span class="material-symbols-outlined text-[16px]"
+                      >delete</span
                     >
+                    Hapus
                   </button>
                 </div>
               </td>
@@ -371,185 +346,103 @@
           <span class="font-medium text-text-main">{{
             pagination.from || 0
           }}</span>
-          -
+          sampai
           <span class="font-medium text-text-main">{{
             pagination.to || 0
           }}</span>
           dari
           <span class="font-medium text-text-main">{{ pagination.total }}</span>
+          data
         </p>
-        <div class="flex gap-1">
+        <div class="flex gap-2">
           <button
             @click="goToPage(pagination.current_page - 1)"
             :disabled="pagination.current_page <= 1"
-            class="size-8 flex items-center justify-center rounded border border-border-light hover:bg-gray-50 text-text-secondary disabled:opacity-50"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
-            <span class="material-symbols-outlined text-sm">chevron_left</span>
-          </button>
-          <button
-            class="size-8 flex items-center justify-center rounded border border-primary bg-primary text-white text-xs font-bold"
-          >
-            {{ pagination.current_page }}
+            Sebelumnya
           </button>
           <button
             @click="goToPage(pagination.current_page + 1)"
             :disabled="pagination.current_page >= pagination.last_page"
-            class="size-8 flex items-center justify-center rounded border border-border-light hover:bg-gray-50 text-text-secondary"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
           >
-            <span class="material-symbols-outlined text-sm">chevron_right</span>
+            Selanjutnya
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ========== SCHEDULE / CREATE MODAL ========== -->
+    <!-- Schedule Modal -->
     <Transition name="modal-fade">
       <div
         v-if="showScheduleModal"
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        @click.self="showScheduleModal = false"
       >
         <div
           class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg"
         >
           <div class="p-6 border-b border-border-light">
             <h2 class="text-xl font-bold text-text-main">
-              Jadwalkan Sidang Baru
+              Jadwalkan Sidang Skripsi
             </h2>
             <p class="text-sm text-text-secondary mt-1">
-              Pilih mahasiswa dan atur jadwal sidang skripsi
+              {{ selectedSkripsi?.mahasiswa?.nama }} -
+              {{ selectedSkripsi?.judul }}
             </p>
           </div>
-          <form @submit.prevent="saveSchedule" class="p-6 space-y-4">
-            <!-- Searchable Mahasiswa -->
-            <div class="relative">
-              <label class="block text-sm font-medium text-text-main mb-1"
-                >Mahasiswa (Skripsi)</label
-              >
-              <div class="relative">
-                <span
-                  class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-secondary"
-                  >search</span
-                >
-                <input
-                  v-model="mahasiswaSearch"
-                  @input="onMahasiswaSearch"
-                  @focus="showMahasiswaDropdown = true"
-                  type="text"
-                  class="w-full pl-10 pr-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-                  placeholder="Ketik nama atau NIM mahasiswa..."
-                  autocomplete="off"
-                />
-              </div>
-              <div
-                v-if="scheduleForm.skripsi_id && selectedMahasiswaName"
-                class="flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm"
-              >
-                <span class="material-symbols-outlined text-primary text-[16px]"
-                  >check_circle</span
-                >
-                <span class="text-primary font-medium">{{
-                  selectedMahasiswaName
-                }}</span>
-                <button
-                  type="button"
-                  @click="clearMahasiswaSelection"
-                  class="ml-auto text-text-secondary hover:text-red-500"
-                >
-                  <span class="material-symbols-outlined text-[16px]"
-                    >close</span
-                  >
-                </button>
-              </div>
-              <div
-                v-if="showMahasiswaDropdown && filteredSkripsi.length > 0"
-                class="absolute z-10 mt-1 w-full bg-white border border-border-light rounded-lg shadow-lg max-h-48 overflow-y-auto"
-              >
-                <button
-                  v-for="s in filteredSkripsi"
-                  :key="s.id"
-                  type="button"
-                  @click="selectMahasiswa(s)"
-                  class="w-full text-left px-4 py-2.5 hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-border-light last:border-0"
-                >
-                  <div
-                    class="size-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
-                    :class="getAvatarColor(s.mahasiswa?.nama)"
-                  >
-                    {{ getInitials(s.mahasiswa?.nama) }}
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-text-main">
-                      {{ s.mahasiswa?.nama }}
-                    </p>
-                    <p class="text-xs text-text-secondary font-mono">
-                      {{ s.mahasiswa?.nim }}
-                    </p>
-                  </div>
-                </button>
-              </div>
-              <div
-                v-if="
-                  showMahasiswaDropdown &&
-                  mahasiswaSearch.length >= 2 &&
-                  filteredSkripsi.length === 0 &&
-                  !loadingSkripsi
-                "
-                class="absolute z-10 mt-1 w-full bg-white border border-border-light rounded-lg shadow-lg p-4 text-center text-sm text-text-secondary"
-              >
-                Tidak ditemukan mahasiswa
-              </div>
-            </div>
+          <form @submit.prevent="saveSidangSchedule" class="p-6 space-y-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
-                >Tanggal</label
+                >Tanggal <span class="text-red-500">*</span></label
               >
               <input
                 v-model="scheduleForm.tanggal"
                 type="date"
-                class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               />
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-text-main mb-1"
-                  >Waktu</label
+                  >Jam Mulai <span class="text-red-500">*</span></label
                 >
                 <input
                   v-model="scheduleForm.waktu"
                   type="time"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   required
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium text-text-main mb-1"
-                  >Ruangan</label
+                  >Ruangan <span class="text-red-500">*</span></label
                 >
                 <input
                   v-model="scheduleForm.ruangan"
                   type="text"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder="Ruang Sidang A"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
                   required
                 />
               </div>
             </div>
+
             <div class="flex gap-3 pt-4">
               <button
                 type="button"
                 @click="showScheduleModal = false"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors text-sm font-medium"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                :disabled="savingSchedule"
-                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm font-bold"
+                :disabled="saving"
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
               >
-                {{ savingSchedule ? "Menyimpan..." : "Simpan Jadwal" }}
+                {{ saving ? "Menyimpan..." : "Simpan Jadwal" }}
               </button>
             </div>
           </form>
@@ -622,6 +515,22 @@
                 "
               >
                 Nilai &amp; Hasil
+              </button>
+              <button
+                v-if="editingSkripsiStatus === 'revisi'"
+                type="button"
+                @click="
+                  editTab = 'revisi';
+                  fetchRevisiDocs();
+                "
+                class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors"
+                :class="
+                  editTab === 'revisi'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-text-secondary hover:text-text-main'
+                "
+              >
+                Revisi
               </button>
             </div>
 
@@ -1021,6 +930,138 @@
               </div>
             </div>
 
+            <!-- TAB: Revisi -->
+            <div v-show="editTab === 'revisi'" class="space-y-4">
+              <div v-if="revisiLoading" class="py-8 text-center">
+                <div
+                  class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"
+                ></div>
+                <p class="text-xs text-text-secondary mt-2">
+                  Memuat dokumen revisi...
+                </p>
+              </div>
+
+              <div v-else-if="revisiDocs.length === 0" class="py-8 text-center">
+                <span
+                  class="material-symbols-outlined text-4xl text-text-secondary/30"
+                  >description</span
+                >
+                <p class="text-sm text-text-secondary mt-2">
+                  Belum ada dokumen revisi yang diunggah mahasiswa
+                </p>
+              </div>
+
+              <div v-else class="space-y-3">
+                <div
+                  v-for="doc in revisiDocs"
+                  :key="doc.id"
+                  class="border border-border-light rounded-xl p-4 hover:bg-sidebar-light/30 transition-colors"
+                >
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div
+                        class="size-10 rounded-lg flex items-center justify-center shrink-0"
+                        :class="
+                          doc.status === 'approved'
+                            ? 'bg-green-100 text-green-600'
+                            : doc.status === 'rejected'
+                              ? 'bg-red-100 text-red-600'
+                              : 'bg-blue-100 text-blue-600'
+                        "
+                      >
+                        <span class="material-symbols-outlined text-xl"
+                          >description</span
+                        >
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-sm font-bold text-text-main truncate">
+                          {{ doc.nama_file }}
+                        </p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                          <span class="text-xs text-text-secondary">
+                            v{{ doc.versi }} • {{ formatFileSize(doc.ukuran) }}
+                          </span>
+                          <span
+                            class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                            :class="
+                              doc.status === 'approved'
+                                ? 'bg-green-100 text-green-700'
+                                : doc.status === 'rejected'
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-yellow-100 text-yellow-700'
+                            "
+                          >
+                            {{
+                              doc.status === "approved"
+                                ? "Disetujui"
+                                : doc.status === "rejected"
+                                  ? "Ditolak"
+                                  : "Menunggu"
+                            }}
+                          </span>
+                        </div>
+                        <p
+                          v-if="doc.catatan"
+                          class="text-xs text-text-secondary mt-1 italic"
+                        >
+                          {{ doc.catatan }}
+                        </p>
+                        <p class="text-[10px] text-text-secondary mt-0.5">
+                          Diunggah:
+                          {{
+                            new Date(doc.created_at).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )
+                          }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        @click="downloadRevisiDoc(doc)"
+                        class="p-2 text-text-secondary hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Download"
+                      >
+                        <span class="material-symbols-outlined text-[18px]"
+                          >download</span
+                        >
+                      </button>
+                      <button
+                        v-if="doc.status === 'pending'"
+                        type="button"
+                        @click="approveRevisiDoc(doc)"
+                        class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="Setujui Revisi"
+                      >
+                        <span class="material-symbols-outlined text-[18px]"
+                          >check_circle</span
+                        >
+                      </button>
+                      <button
+                        v-if="doc.status === 'pending'"
+                        type="button"
+                        @click="rejectRevisiDoc(doc)"
+                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Tolak Revisi"
+                      >
+                        <span class="material-symbols-outlined text-[18px]"
+                          >cancel</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Common Buttons -->
             <div class="flex gap-3 pt-4 border-t border-border-light">
               <button
@@ -1343,38 +1384,19 @@ import adminService from "../../../services/adminService";
 
 const loading = ref(true);
 const saving = ref(false);
-const savingSchedule = ref(false);
-const ujianList = ref([]);
+const eligibleList = ref([]);
 const searchQuery = ref("");
-const filterStatus = ref("");
-const filterProdi = ref("");
-const filterTahunAkademik = ref("");
-const filterSemester = ref("");
-const exporting = ref(false);
-const prodiList = ref([]);
+const filterJadwal = ref("");
 const showScheduleModal = ref(false);
 const showEditModal = ref(false);
 const showDetailModal = ref(false);
 const editingUjian = ref(null);
 const detailUjian = ref(null);
 const editTab = ref("jadwal");
-
-// Generate tahun akademik options (last 5 years)
-const tahunAkademikOptions = (() => {
-  const currentYear = new Date().getFullYear();
-  const opts = [];
-  for (let y = currentYear + 1; y >= currentYear - 4; y--) {
-    opts.push(`${y - 1}/${y}`);
-  }
-  return opts;
-})();
-
-// Mahasiswa search (schedule modal)
-const mahasiswaSearch = ref("");
-const showMahasiswaDropdown = ref(false);
-const loadingSkripsi = ref(false);
-const filteredSkripsi = ref([]);
-const selectedMahasiswaName = ref("");
+const selectedSkripsi = ref(null);
+const editingSkripsiStatus = ref("");
+const revisiDocs = ref([]);
+const revisiLoading = ref(false);
 
 const pagination = reactive({
   current_page: 1,
@@ -1384,11 +1406,9 @@ const pagination = reactive({
   to: 0,
 });
 
-const stats = reactive({
+const statsCount = reactive({
   terjadwal: 0,
-  sedang_ujian: 0,
-  selesai: 0,
-  total: 0,
+  belum: 0,
 });
 
 const scheduleForm = reactive({
@@ -1443,21 +1463,17 @@ let searchTimeout = null;
 let mahasiswaSearchTimeout = null;
 
 // ---- DATA FETCH ----
-const fetchUjian = async () => {
+const fetchEligible = async () => {
   try {
     loading.value = true;
     const params = {
       page: pagination.current_page,
       search: searchQuery.value,
     };
-    if (filterStatus.value) params.status = filterStatus.value;
-    if (filterProdi.value) params.prodi_id = filterProdi.value;
-    if (filterTahunAkademik.value)
-      params.tahun_akademik = filterTahunAkademik.value;
-    if (filterSemester.value) params.semester = filterSemester.value;
-    const response = await adminService.getUjian(params);
+    if (filterJadwal.value) params.jadwal = filterJadwal.value;
+    const response = await adminService.getEligibleSidang(params);
     if (response.success) {
-      ujianList.value = response.data.data || response.data;
+      eligibleList.value = response.data.data || response.data;
       if (response.data.current_page) {
         Object.assign(pagination, {
           current_page: response.data.current_page,
@@ -1468,51 +1484,13 @@ const fetchUjian = async () => {
         });
       }
       if (response.stats) {
-        Object.assign(stats, response.stats);
+        Object.assign(statsCount, response.stats);
       }
     }
   } catch (error) {
-    console.error("Failed to fetch ujian:", error);
+    console.error("Failed to fetch eligible sidang:", error);
   } finally {
     loading.value = false;
-  }
-};
-
-const fetchProdi = async () => {
-  try {
-    const response = await adminService.getProdi({ active_only: true });
-    if (response.success) {
-      prodiList.value = response.data;
-    }
-  } catch (error) {
-    console.error("Failed to fetch prodi:", error);
-  }
-};
-
-const exportJadwalPdf = async () => {
-  try {
-    exporting.value = true;
-    const params = {};
-    if (filterProdi.value) params.prodi_id = filterProdi.value;
-    if (filterTahunAkademik.value)
-      params.tahun_akademik = filterTahunAkademik.value;
-    if (filterSemester.value) params.semester = filterSemester.value;
-    if (filterStatus.value) params.status = filterStatus.value;
-
-    const response = await adminService.getJadwalUjianPdf(params);
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "Jadwal_Ujian_Skripsi.pdf");
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("Failed to export jadwal:", error);
-    alert("Gagal mengexport jadwal ujian");
-  } finally {
-    exporting.value = false;
   }
 };
 
@@ -1520,83 +1498,30 @@ const debouncedSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     pagination.current_page = 1;
-    fetchUjian();
+    fetchEligible();
   }, 300);
-};
-
-const onFilterChange = () => {
-  pagination.current_page = 1;
-  fetchUjian();
 };
 
 const goToPage = (page) => {
   if (page >= 1 && page <= pagination.last_page) {
     pagination.current_page = page;
-    fetchUjian();
+    fetchEligible();
   }
 };
 
-// ---- SCHEDULE MODAL (CREATE) ----
-const fetchSkripsiBySearch = async (query) => {
-  try {
-    loadingSkripsi.value = true;
-    const response = await adminService.getSkripsi({
-      search: query,
-      per_page: 20,
-    });
-    if (response.success) {
-      filteredSkripsi.value = (response.data.data || response.data).filter(
-        (s) => s.mahasiswa,
-      );
-    }
-  } catch (error) {
-    console.error("Failed to fetch skripsi:", error);
-  } finally {
-    loadingSkripsi.value = false;
-  }
-};
-
-const onMahasiswaSearch = () => {
-  clearTimeout(mahasiswaSearchTimeout);
-  if (mahasiswaSearch.value.length < 2) {
-    filteredSkripsi.value = [];
-    return;
-  }
-  showMahasiswaDropdown.value = true;
-  mahasiswaSearchTimeout = setTimeout(() => {
-    fetchSkripsiBySearch(mahasiswaSearch.value);
-  }, 300);
-};
-
-const selectMahasiswa = (s) => {
-  scheduleForm.skripsi_id = s.id;
-  selectedMahasiswaName.value = `${s.mahasiswa?.nama} (${s.mahasiswa?.nim})`;
-  mahasiswaSearch.value = "";
-  showMahasiswaDropdown.value = false;
-  filteredSkripsi.value = [];
-};
-
-const clearMahasiswaSelection = () => {
-  scheduleForm.skripsi_id = "";
-  selectedMahasiswaName.value = "";
-  mahasiswaSearch.value = "";
-};
-
-const openScheduleModal = () => {
-  scheduleForm.skripsi_id = "";
+// ---- SCHEDULE MODAL ----
+const openScheduleModal = (item) => {
+  selectedSkripsi.value = item;
+  scheduleForm.skripsi_id = item.id;
   scheduleForm.tanggal = "";
   scheduleForm.waktu = "";
   scheduleForm.ruangan = "";
-  mahasiswaSearch.value = "";
-  selectedMahasiswaName.value = "";
-  filteredSkripsi.value = [];
-  showMahasiswaDropdown.value = false;
   showScheduleModal.value = true;
 };
 
-const saveSchedule = async () => {
+const saveSidangSchedule = async () => {
   try {
-    savingSchedule.value = true;
+    saving.value = true;
     await adminService.createUjian({
       skripsi_id: scheduleForm.skripsi_id,
       tanggal: scheduleForm.tanggal,
@@ -1604,7 +1529,7 @@ const saveSchedule = async () => {
       ruangan: scheduleForm.ruangan,
     });
     showScheduleModal.value = false;
-    fetchUjian();
+    fetchEligible();
   } catch (error) {
     console.error("Failed to save schedule:", error);
     alert(
@@ -1612,12 +1537,19 @@ const saveSchedule = async () => {
         (error.response?.data?.message || error.message),
     );
   } finally {
-    savingSchedule.value = false;
+    saving.value = false;
   }
 };
 
 // ---- EDIT MODAL ----
-const openEditModal = (item) => {
+const openEditModal = (skripsiItem) => {
+  const item = skripsiItem.sidang_seminar;
+  // Attach skripsi context for display in modal header
+  item.skripsi = {
+    mahasiswa: skripsiItem.mahasiswa,
+    judul: skripsiItem.judul,
+  };
+  editingSkripsiStatus.value = skripsiItem.status || "";
   editingUjian.value = item;
   editTab.value = "jadwal";
   editForm.tanggal = item.tanggal
@@ -1762,7 +1694,7 @@ const saveEdit = async () => {
 
     await adminService.updateUjian(editingUjian.value.id, payload);
     showEditModal.value = false;
-    fetchUjian();
+    fetchEligible();
   } catch (error) {
     console.error("Failed to save edit:", error);
     alert(
@@ -1808,7 +1740,157 @@ const downloadSkPenguji = async (item) => {
   }
 };
 
+// ---- REVISI DOCS ----
+const fetchRevisiDocs = async () => {
+  if (!editingUjian.value) return;
+  try {
+    revisiLoading.value = true;
+    const response = await adminService.getDokumen({
+      skripsi_id: editingUjian.value.skripsi_id,
+      jenis: "revisi",
+    });
+    if (response.success) {
+      revisiDocs.value = response.data?.data || response.data || [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch revisi docs:", error);
+  } finally {
+    revisiLoading.value = false;
+  }
+};
+
+const approveRevisiDoc = async (doc) => {
+  if (
+    !confirm(
+      "Setujui dokumen revisi ini? Status skripsi mahasiswa akan berubah menjadi LULUS.",
+    )
+  )
+    return;
+  try {
+    await adminService.updateDokumen(doc.id, { status: "approved" });
+    await fetchRevisiDocs();
+    fetchEligible();
+    alert("Dokumen revisi disetujui. Status skripsi telah diubah ke Lulus.");
+  } catch (error) {
+    console.error("Failed to approve revisi:", error);
+    alert(
+      "Gagal menyetujui dokumen: " +
+        (error.response?.data?.message || error.message),
+    );
+  }
+};
+
+const rejectRevisiDoc = async (doc) => {
+  const catatan = prompt("Alasan penolakan (opsional):");
+  if (catatan === null) return; // user cancelled
+  try {
+    await adminService.updateDokumen(doc.id, { status: "rejected", catatan });
+    await fetchRevisiDocs();
+    alert("Dokumen revisi ditolak. Mahasiswa perlu mengunggah ulang.");
+  } catch (error) {
+    console.error("Failed to reject revisi:", error);
+    alert(
+      "Gagal menolak dokumen: " +
+        (error.response?.data?.message || error.message),
+    );
+  }
+};
+
+const downloadRevisiDoc = async (doc) => {
+  try {
+    const response = await adminService.downloadDokumen(doc.id);
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", doc.nama_file || `revisi_${doc.id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to download revisi:", error);
+    alert("Gagal mengunduh dokumen");
+  }
+};
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return "-";
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+};
+
+// ---- DELETE SCHEDULE ----
+const deleteSchedule = async (item) => {
+  if (
+    !confirm(
+      'Apakah Anda yakin ingin menghapus jadwal sidang ini? Status skripsi akan dikembalikan ke "Disetujui Dosen".',
+    )
+  ) {
+    return;
+  }
+  try {
+    await adminService.deleteUjian(item.id);
+    fetchEligible();
+  } catch (error) {
+    console.error("Failed to delete schedule:", error);
+    alert(
+      "Gagal menghapus jadwal: " +
+        (error.response?.data?.message || error.message),
+    );
+  }
+};
+
 // ---- HELPERS ----
+const getPembimbing = (pembimbing) => {
+  if (!pembimbing || pembimbing.length === 0) return "-";
+  return pembimbing
+    .map((p) => p.dosen?.full_name || p.dosen?.nama || "-")
+    .join(", ");
+};
+
+const getDosenName = (dosen) => {
+  if (!dosen) return "-";
+  const parts = [];
+  if (dosen.gelar_depan) parts.push(dosen.gelar_depan);
+  if (dosen.nama) parts.push(dosen.nama);
+  if (dosen.gelar_belakang) parts.push(dosen.gelar_belakang);
+  return parts.join(" ") || dosen.nama || "-";
+};
+
+const getSkripsiStatusClass = (status) => {
+  const classes = {
+    pengajuan_sidang: "bg-blue-50 text-blue-600 border border-blue-100",
+    pengajuan_sidang_acc: "bg-green-50 text-green-600 border border-green-100",
+    sidang: "bg-purple-50 text-purple-600 border border-purple-100",
+    revisi: "bg-yellow-50 text-yellow-600 border border-yellow-100",
+    lulus: "bg-green-50 text-green-600 border border-green-100",
+  };
+  return classes[status] || "bg-gray-50 text-gray-600 border border-gray-100";
+};
+
+const getSkripsiStatusDot = (status) => {
+  const dots = {
+    pengajuan_sidang: "bg-blue-600",
+    pengajuan_sidang_acc: "bg-green-600",
+    sidang: "bg-purple-600",
+    revisi: "bg-yellow-600",
+    lulus: "bg-green-600",
+  };
+  return dots[status] || "bg-gray-600";
+};
+
+const getSkripsiStatusLabel = (status) => {
+  const labels = {
+    pengajuan_sidang: "Pengajuan Sidang",
+    pengajuan_sidang_acc: "Disetujui Dosen",
+    sidang: "Sidang",
+    revisi: "Revisi",
+    lulus: "Lulus",
+  };
+  return labels[status] || status || "-";
+};
+
 const getInitials = (name) => {
   if (!name) return "?";
   return name
@@ -1932,8 +2014,7 @@ const getGradeClass = (grade) => {
 };
 
 onMounted(() => {
-  fetchUjian();
-  fetchProdi();
+  fetchEligible();
 });
 </script>
 

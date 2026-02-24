@@ -149,6 +149,16 @@ const statusMap = {
     class:
       "bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
   },
+  pengajuan_sidang_acc: {
+    label: "Sidang Disetujui",
+    class:
+      "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+  },
+  pengajuan_sidang_tolak: {
+    label: "Sidang Ditolak",
+    class:
+      "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
+  },
   semhas: {
     label: "Seminar Hasil",
     class:

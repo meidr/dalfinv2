@@ -446,6 +446,8 @@ const statusMap = {
   sempro: "Sudah Sempro",
   bimbingan: "Proses Bimbingan",
   pengajuan_sidang: "Pengajuan Sidang",
+  pengajuan_sidang_acc: "Sidang Disetujui",
+  pengajuan_sidang_tolak: "Sidang Ditolak",
   semhas: "Seminar Hasil",
   sidang: "Sidang",
   revisi: "Revisi",
@@ -480,6 +482,10 @@ const getStatusBadgeClass = (status) => {
       "bg-blue-50 text-primary dark:bg-blue-900/30 dark:text-blue-300 border-blue-100 dark:border-blue-800",
     pengajuan_sidang:
       "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-100 dark:border-yellow-800",
+    pengajuan_sidang_acc:
+      "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-100 dark:border-green-800",
+    pengajuan_sidang_tolak:
+      "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 border-red-100 dark:border-red-800",
     semhas:
       "bg-blue-50 text-primary dark:bg-blue-900/30 dark:text-blue-300 border-blue-100 dark:border-blue-800",
     sidang:

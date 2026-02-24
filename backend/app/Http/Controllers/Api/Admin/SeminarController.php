@@ -150,6 +150,7 @@ class SeminarController extends Controller
             'status' => 'sometimes|in:terjadwal,berlangsung,selesai,batal',
             'nilai' => 'nullable|numeric|min:0|max:100',
             'catatan' => 'nullable|string',
+            'hasil' => 'sometimes|in:lulus,lulus_bersyarat,tidak_lulus,mengulang',
         ]);
 
         $seminar->fill($request->only([
@@ -160,12 +161,33 @@ class SeminarController extends Controller
             'nilai',
             'catatan'
         ]));
+
+        // If hasil passed via request, also save it
+        if ($request->has('hasil')) {
+            $seminar->hasil = $request->hasil;
+        }
+
         $seminar->save();
+
+        // Auto-update skripsi status when seminar is completed with lulus result
+        // This bypasses admin verification — status changes directly
+        if (
+            $seminar->status === 'selesai'
+            && $seminar->jenis === 'sempro'
+            && in_array($seminar->hasil, ['lulus', 'lulus_bersyarat'])
+        ) {
+            $skripsi = $seminar->skripsi;
+            if ($skripsi && in_array($skripsi->status, ['pengajuan', 'proposal', 'sempro'])) {
+                $skripsi->status = 'penentuan_dospem';
+                $skripsi->progress_percentage = 30;
+                $skripsi->save();
+            }
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Seminar berhasil diperbarui',
-            'data' => $seminar->load(['penguji.dosen'])
+            'data' => $seminar->load(['penguji.dosen', 'skripsi'])
         ]);
     }
 
@@ -174,6 +196,16 @@ class SeminarController extends Controller
      */
     public function destroy(Seminar $seminar)
     {
+        // Revert skripsi status to 'proposal' when sempro seminar is deleted
+        if ($seminar->jenis === 'sempro') {
+            $skripsi = $seminar->skripsi;
+            if ($skripsi && in_array($skripsi->status, ['sempro', 'penentuan_dospem'])) {
+                $skripsi->status = 'proposal';
+                $skripsi->progress_percentage = 15;
+                $skripsi->save();
+            }
+        }
+
         // Delete related records first
         $seminar->penguji()->delete();
         $seminar->beritaAcara()->delete();
