@@ -81,6 +81,13 @@ class DokumenController extends Controller
             ]
         );
 
+        // Auto-update skripsi status to bimbingan when SK Tugas is approved
+        if ($request->jenis === 'sk_tugas' && ($request->status ?? 'pending') === 'approved') {
+            Skripsi::where('id', $skripsi->id)
+                ->whereIn('status', ['pengajuan', 'disetujui', 'penentuan_dospem', 'dospem'])
+                ->update(['status' => 'bimbingan', 'progress_percentage' => 50]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Dokumen berhasil diupload',
@@ -114,6 +121,20 @@ class DokumenController extends Controller
         $dokumen->status = $request->status;
         $dokumen->catatan = $request->catatan;
         $dokumen->save();
+
+        // Auto-update skripsi status to bimbingan when SK Tugas is approved
+        if ($dokumen->jenis === 'sk_tugas' && $request->status === 'approved') {
+            Skripsi::where('id', $dokumen->skripsi_id)
+                ->whereIn('status', ['pengajuan', 'disetujui', 'penentuan_dospem', 'dospem'])
+                ->update(['status' => 'bimbingan', 'progress_percentage' => 50]);
+        }
+
+        // Auto-update skripsi status to lulus when revision document is approved
+        if ($dokumen->jenis === 'revisi' && $request->status === 'approved') {
+            Skripsi::where('id', $dokumen->skripsi_id)
+                ->where('status', 'revisi')
+                ->update(['status' => 'lulus', 'progress_percentage' => 100]);
+        }
 
         return response()->json([
             'success' => true,

@@ -225,6 +225,10 @@ Route::prefix('admin')
         // Configuration
         Route::get('/configuration/sk-tugas-signer', [AdminConfigurationController::class, 'getSkTugasSigner']);
         Route::post('/configuration/sk-tugas-signer', [AdminConfigurationController::class, 'saveSkTugasSigner']);
+        Route::get('/configuration/syarat-bimbingan', [AdminConfigurationController::class, 'getSyaratBimbingan']);
+        Route::post('/configuration/syarat-bimbingan', [AdminConfigurationController::class, 'saveSyaratBimbingan']);
+        Route::get('/configuration/kuota-bimbingan', [AdminConfigurationController::class, 'getKuotaBimbingan']);
+        Route::post('/configuration/kuota-bimbingan', [AdminConfigurationController::class, 'saveKuotaBimbingan']);
 
         // Notifications
         Route::get('/notifications', [AdminNotificationController::class, 'index']);
@@ -287,6 +291,10 @@ Route::prefix('dosen')
         // Jadwal (Seminar & Ujian)
         Route::get('/jadwal', [DosenBimbinganController::class, 'jadwal']);
 
+        // Ujian Skripsi Requests (Pengajuan)
+        Route::get('/ujian-requests', [DosenBimbinganController::class, 'ujianRequests']);
+        Route::post('/ujian-requests/{skripsi}/respond', [DosenBimbinganController::class, 'respondUjianRequest']);
+
         // Seminar Detail & Nilai Input (Penguji)
         Route::get('/seminar/{seminar}', [DosenSeminarNilaiController::class, 'show']);
         Route::put('/seminar/{seminar}/nilai', [DosenSeminarNilaiController::class, 'submitNilai']);
@@ -312,6 +320,10 @@ Route::prefix('mahasiswa')
         Route::put('/skripsi', [MahasiswaSkripsiController::class, 'update']);
         Route::get('/skripsi/bimbingan', [MahasiswaSkripsiController::class, 'bimbingan']);
         Route::post('/skripsi/bimbingan', [MahasiswaSkripsiController::class, 'addBimbingan']);
+
+        // Ujian Skripsi Request
+        Route::get('/skripsi/ujian-eligibility', [MahasiswaSkripsiController::class, 'checkUjianEligibility']);
+        Route::post('/skripsi/request-ujian', [MahasiswaSkripsiController::class, 'requestUjian']);
 
         // Dokumen Management
         Route::post('/skripsi/dokumen', [MahasiswaSkripsiController::class, 'uploadDokumen']);

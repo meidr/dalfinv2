@@ -416,6 +416,24 @@
           </router-link>
 
           <router-link
+            v-if="!isStaff"
+            to="/admin/konfigurasi"
+            active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span class="material-symbols-outlined text-[20px]">settings</span>
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Konfigurasi
+            </p>
+          </router-link>
+
+          <router-link
             to="/admin/profil"
             active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
             :class="[

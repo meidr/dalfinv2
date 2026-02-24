@@ -148,6 +148,11 @@ const statusMap = {
     class:
       "bg-blue-50 text-primary border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
   },
+  pengajuan_sidang: {
+    label: "Pengajuan Sidang",
+    class:
+      "bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
+  },
   semhas: {
     label: "Seminar Hasil",
     class:

@@ -293,6 +293,163 @@
         </div>
       </section>
 
+      <!-- Ujian Skripsi Request Section -->
+      <section
+        v-if="
+          skripsi?.status === 'bimbingan' ||
+          skripsi?.status === 'pengajuan_sidang'
+        "
+        class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden hover:shadow-md transition-all"
+      >
+        <div
+          class="p-5 border-b border-border-light flex items-center justify-between"
+        >
+          <div>
+            <h3 class="text-lg font-bold text-text-main">
+              Pengajuan Ujian Skripsi
+            </h3>
+            <p class="text-sm text-text-secondary">
+              Ajukan ujian skripsi setelah memenuhi syarat bimbingan
+            </p>
+          </div>
+          <span
+            v-if="skripsi?.status === 'pengajuan_sidang'"
+            class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800"
+          >
+            Menunggu Persetujuan Dosen
+          </span>
+        </div>
+        <div class="p-5">
+          <!-- Already submitted -->
+          <div
+            v-if="skripsi?.status === 'pengajuan_sidang'"
+            class="flex items-center gap-3 p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border-l-4 border-yellow-400"
+          >
+            <span class="material-symbols-outlined text-yellow-600"
+              >pending_actions</span
+            >
+            <p class="text-sm text-text-main">
+              Pengajuan ujian skripsi Anda sedang menunggu persetujuan dosen
+              pembimbing utama.
+            </p>
+          </div>
+
+          <!-- Eligibility Check -->
+          <div v-else>
+            <div
+              v-if="ujianEligibility === null"
+              class="flex items-center gap-3 text-text-secondary"
+            >
+              <span
+                class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"
+              ></span>
+              <span class="text-sm">Memeriksa kelayakan...</span>
+            </div>
+            <div v-else class="flex flex-col gap-4">
+              <!-- Checklist -->
+              <div class="space-y-3">
+                <div
+                  v-for="(item, idx) in eligibilityChecklist"
+                  :key="idx"
+                  class="flex items-center gap-3 p-3 rounded-lg border"
+                  :class="
+                    item.met
+                      ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
+                      : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
+                  "
+                >
+                  <span
+                    class="material-symbols-outlined text-[20px]"
+                    :class="item.met ? 'text-green-600' : 'text-red-500'"
+                    >{{ item.met ? "check_circle" : "cancel" }}</span
+                  >
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-text-main">
+                      {{ item.label }}
+                    </p>
+                    <p class="text-xs text-text-secondary">{{ item.detail }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="flex justify-end pt-2">
+                <button
+                  v-if="ujianEligibility?.eligible"
+                  @click="showUjianConfirmModal = true"
+                  class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20 text-sm"
+                >
+                  <span class="material-symbols-outlined text-[20px]"
+                    >school</span
+                  >
+                  Ajukan Ujian Skripsi
+                </button>
+                <p v-else class="text-sm text-red-500 font-medium">
+                  Anda belum memenuhi semua syarat untuk mengajukan ujian
+                  skripsi.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ujian Confirmation Modal -->
+      <Transition name="modal-fade">
+        <div
+          v-if="showUjianConfirmModal"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <div
+            class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            @click="showUjianConfirmModal = false"
+          ></div>
+          <div
+            class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-md p-6 flex flex-col gap-5"
+          >
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-primary/10 rounded-lg text-primary">
+                <span class="material-symbols-outlined">school</span>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-text-main">
+                  Konfirmasi Pengajuan
+                </h3>
+                <p class="text-xs text-text-secondary">
+                  Pengajuan ini akan dikirim ke dosen pembimbing utama
+                </p>
+              </div>
+            </div>
+            <p class="text-sm text-text-secondary">
+              Apakah Anda yakin ingin mengajukan ujian skripsi? Pastikan semua
+              persyaratan sudah terpenuhi dan naskah final sudah diunggah.
+            </p>
+            <div class="flex justify-end gap-3 pt-2">
+              <button
+                @click="showUjianConfirmModal = false"
+                class="px-5 py-2.5 rounded-lg text-text-secondary font-bold hover:bg-sidebar-light transition-colors text-sm"
+              >
+                Batal
+              </button>
+              <button
+                @click="submitUjianRequest"
+                :disabled="submittingUjian"
+                class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-blue-600 transition-colors shadow-sm text-sm flex items-center gap-2 disabled:opacity-50"
+              >
+                <span
+                  v-if="submittingUjian"
+                  class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                ></span>
+                <span v-else class="material-symbols-outlined text-[18px]"
+                  >send</span
+                >
+                {{ submittingUjian ? "Mengirim..." : "Ajukan Ujian" }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Dokumen Sempro Section -->
       <section
         v-if="
@@ -671,6 +828,24 @@
         </div>
       </section>
     </template>
+
+    <!-- Ujian Toast -->
+    <Transition name="toast-slide">
+      <div
+        v-if="ujianToast.show"
+        class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg text-white text-sm font-bold"
+        :class="
+          ujianToast.type === 'success'
+            ? 'bg-green-600 shadow-green-600/30'
+            : 'bg-red-600 shadow-red-600/30'
+        "
+      >
+        <span class="material-symbols-outlined text-[20px]">{{
+          ujianToast.type === "success" ? "check_circle" : "error"
+        }}</span>
+        {{ ujianToast.message }}
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -693,6 +868,77 @@ const skYudisium = ref(null);
 const downloadingPdf = ref(null);
 const previewingPdf = ref(null);
 
+// Ujian request state
+const ujianEligibility = ref(null);
+const showUjianConfirmModal = ref(false);
+const submittingUjian = ref(false);
+const ujianToast = ref({ show: false, message: "", type: "success" });
+
+const eligibilityChecklist = computed(() => {
+  if (!ujianEligibility.value) return [];
+  const e = ujianEligibility.value;
+  return [
+    {
+      label: `Bimbingan Pembimbing 1`,
+      detail: `${e.bimbingan?.pembimbing_1?.count ?? 0} / ${e.bimbingan?.pembimbing_1?.required ?? 8} sesi (disetujui)`,
+      met: e.bimbingan?.pembimbing_1?.met ?? false,
+    },
+    {
+      label: `Bimbingan Pembimbing 2`,
+      detail: `${e.bimbingan?.pembimbing_2?.count ?? 0} / ${e.bimbingan?.pembimbing_2?.required ?? 4} sesi (disetujui)`,
+      met: e.bimbingan?.pembimbing_2?.met ?? false,
+    },
+    {
+      label: "Naskah Final",
+      detail: e.naskah_final?.uploaded ? "Sudah diunggah" : "Belum diunggah",
+      met: e.naskah_final?.uploaded ?? false,
+    },
+  ];
+});
+
+const checkUjianEligibility = async () => {
+  try {
+    const res = await mahasiswaService.checkUjianEligibility();
+    if (res.success) {
+      ujianEligibility.value = res.data;
+    }
+  } catch (err) {
+    console.error("Failed to check ujian eligibility:", err);
+  }
+};
+
+const submitUjianRequest = async () => {
+  submittingUjian.value = true;
+  try {
+    const res = await mahasiswaService.requestUjian();
+    if (res.success) {
+      showUjianConfirmModal.value = false;
+      // Update skripsi status locally
+      if (skripsi.value) {
+        skripsi.value.status = "pengajuan_sidang";
+      }
+      ujianToast.value = {
+        show: true,
+        message: "Pengajuan ujian skripsi berhasil dikirim!",
+        type: "success",
+      };
+      setTimeout(() => {
+        ujianToast.value.show = false;
+      }, 3000);
+    }
+  } catch (err) {
+    console.error("Failed to submit ujian request:", err);
+    const msg =
+      err.response?.data?.message || "Gagal mengajukan ujian skripsi.";
+    ujianToast.value = { show: true, message: msg, type: "error" };
+    setTimeout(() => {
+      ujianToast.value.show = false;
+    }, 4000);
+  } finally {
+    submittingUjian.value = false;
+  }
+};
+
 // Status mapping
 const statusMap = {
   draft: { label: "Draft", icon: "edit_note", color: "gray" },
@@ -701,10 +947,25 @@ const statusMap = {
   ditolak: { label: "Ditolak", icon: "cancel", color: "red" },
   proposal: { label: "Tahap Proposal", icon: "description", color: "blue" },
   sempro: { label: "Sudah Sempro", icon: "check_circle", color: "green" },
+  penentuan_dospem: {
+    label: "Penentuan Dospem",
+    icon: "supervisor_account",
+    color: "blue",
+  },
+  dospem: {
+    label: "Dospem Ditentukan",
+    icon: "supervisor_account",
+    color: "indigo",
+  },
   bimbingan: {
     label: "Proses Bimbingan",
     icon: "auto_stories",
     color: "blue",
+  },
+  pengajuan_sidang: {
+    label: "Pengajuan Sidang",
+    icon: "pending_actions",
+    color: "yellow",
   },
   semhas: { label: "Seminar Hasil", icon: "record_voice_over", color: "blue" },
   sidang: { label: "Sidang", icon: "school", color: "blue" },
@@ -729,6 +990,8 @@ const statusBadgeClass = computed(() => {
     green:
       "bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 text-green-700 dark:text-green-400",
     blue: "bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 text-blue-700 dark:text-blue-400",
+    indigo:
+      "bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400",
     yellow:
       "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400",
     red: "bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 text-red-700 dark:text-red-400",
@@ -745,6 +1008,7 @@ const statusIconClass = computed(() => {
   const classes = {
     green: "text-green-600 dark:text-green-400",
     blue: "text-blue-600 dark:text-blue-400",
+    indigo: "text-indigo-600 dark:text-indigo-400",
     yellow: "text-yellow-600 dark:text-yellow-400",
     red: "text-red-600 dark:text-red-400",
     orange: "text-orange-600 dark:text-orange-400",
@@ -789,7 +1053,17 @@ const milestoneSteps = computed(() => {
       statuses: ["proposal", "pengajuan", "disetujui"],
     },
     { key: "sempro", label: "Sempro", statuses: ["sempro"] },
-    { key: "semhas", label: "Semhas", statuses: ["semhas", "bimbingan"] },
+    {
+      key: "dospem",
+      label: "Dospem",
+      statuses: ["penentuan_dospem", "dospem"],
+    },
+    {
+      key: "bimbingan",
+      label: "Bimbingan",
+      statuses: ["bimbingan", "pengajuan_sidang"],
+    },
+    { key: "semhas", label: "Semhas", statuses: ["semhas"] },
     { key: "sidang", label: "Sidang", statuses: ["sidang", "revisi", "lulus"] },
   ];
   if (!authStore.semhasEnabled) {
@@ -804,7 +1078,10 @@ const statusOrder = [
   "disetujui",
   "proposal",
   "sempro",
+  "penentuan_dospem",
+  "dospem",
   "bimbingan",
+  "pengajuan_sidang",
   "semhas",
   "sidang",
   "revisi",
@@ -840,8 +1117,14 @@ const activeStageDescription = computed(() => {
       "Anda sedang dalam tahap proposal. Persiapkan materi proposal Anda untuk seminar proposal.",
     sempro:
       "Selamat! Anda telah menyelesaikan Seminar Proposal. Langkah selanjutnya adalah melakukan Revisi Pasca Sempro sesuai dengan catatan dari dosen penguji.",
+    penentuan_dospem:
+      "Pembimbing skripsi Anda sedang ditentukan oleh admin. Mohon tunggu hingga SK Tugas Pembimbing diterbitkan.",
+    dospem:
+      "Dosen pembimbing Anda telah ditentukan. Menunggu SK Tugas Pembimbing disetujui oleh admin sebelum tahap bimbingan dimulai.",
     bimbingan:
       "Anda sedang dalam tahap bimbingan. Lakukan bimbingan secara rutin dengan dosen pembimbing untuk menyelesaikan skripsi.",
+    pengajuan_sidang:
+      "Pengajuan ujian skripsi Anda sedang menunggu persetujuan dosen pembimbing utama. Mohon tunggu konfirmasi.",
     semhas:
       "Anda sudah memasuki tahap Seminar Hasil. Persiapkan presentasi dan dokumen yang diperlukan.",
     sidang:
@@ -931,6 +1214,11 @@ onMounted(async () => {
       semhasSeminar.value = res.data.semhas_seminar;
       sidangSeminar.value = res.data.sidang_seminar;
       skYudisium.value = res.data.sk_yudisium;
+
+      // Check ujian eligibility if in bimbingan status
+      if (res.data.skripsi?.status === "bimbingan") {
+        checkUjianEligibility();
+      }
     }
   } catch (err) {
     console.error("Failed to load dashboard:", err);
@@ -939,3 +1227,25 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.toast-slide-enter-active {
+  transition: all 0.3s ease-out;
+}
+.toast-slide-leave-active {
+  transition: all 0.2s ease-in;
+}
+.toast-slide-enter-from,
+.toast-slide-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
+</style>

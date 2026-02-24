@@ -172,6 +172,155 @@
         </router-link>
       </div>
 
+      <!-- Ujian Skripsi Requests -->
+      <section
+        v-if="ujianRequests.length > 0"
+        class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden"
+      >
+        <div
+          class="p-5 border-b border-border-light flex items-center justify-between"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-600"
+            >
+              <span class="material-symbols-outlined">school</span>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-text-main">
+                Pengajuan Ujian Skripsi
+              </h3>
+              <p class="text-sm text-text-secondary">
+                {{ ujianRequests.length }} mahasiswa mengajukan ujian
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="divide-y divide-border-light">
+          <div
+            v-for="req in ujianRequests"
+            :key="req.id"
+            class="p-5 flex flex-col md:flex-row md:items-center gap-4"
+          >
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                class="size-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                :style="{
+                  backgroundColor: getAvatarColor(req.mahasiswa?.nama || ''),
+                }"
+              >
+                {{ getInitials(req.mahasiswa?.nama || "") }}
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-bold text-text-main truncate">
+                  {{ req.mahasiswa?.nama || "-" }}
+                </p>
+                <p class="text-xs text-text-secondary">
+                  {{ req.mahasiswa?.nim || "-" }} ·
+                  {{ req.judul || "Tanpa judul" }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button
+                @click="approveUjian(req.id)"
+                :disabled="processingUjian === req.id"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-bold transition-colors disabled:opacity-50"
+              >
+                <span class="material-symbols-outlined text-[18px]">check</span>
+                Setujui
+              </button>
+              <button
+                @click="openRejectModal(req)"
+                :disabled="processingUjian === req.id"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold transition-colors border border-red-200 disabled:opacity-50"
+              >
+                <span class="material-symbols-outlined text-[18px]">close</span>
+                Tolak
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ujian Reject Modal -->
+      <Transition name="modal-fade">
+        <div
+          v-if="rejectModal.show"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <div
+            class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            @click="rejectModal.show = false"
+          ></div>
+          <div
+            class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-md p-6 flex flex-col gap-5"
+          >
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-red-50 rounded-lg text-red-500">
+                <span class="material-symbols-outlined">block</span>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-text-main">
+                  Tolak Pengajuan
+                </h3>
+                <p class="text-xs text-text-secondary">
+                  {{ rejectModal.mahasiswaNama }}
+                </p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">
+                Alasan Penolakan <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                v-model="rejectModal.alasan"
+                rows="3"
+                class="w-full border border-border-light rounded-lg px-4 py-2.5 text-sm text-text-main bg-surface-light focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+                placeholder="Jelaskan alasan penolakan..."
+              ></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+              <button
+                @click="rejectModal.show = false"
+                class="px-5 py-2.5 rounded-lg text-text-secondary font-bold hover:bg-sidebar-light transition-colors text-sm"
+              >
+                Batal
+              </button>
+              <button
+                @click="confirmRejectUjian"
+                :disabled="
+                  !rejectModal.alasan.trim() ||
+                  processingUjian === rejectModal.skripsiId
+                "
+                class="px-5 py-2.5 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-sm text-sm flex items-center gap-2 disabled:opacity-50"
+              >
+                <span class="material-symbols-outlined text-[18px]">block</span>
+                Tolak Pengajuan
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Ujian Toast -->
+      <Transition name="toast-slide">
+        <div
+          v-if="ujianToast.show"
+          class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg text-white text-sm font-bold"
+          :class="
+            ujianToast.type === 'success'
+              ? 'bg-green-600 shadow-green-600/30'
+              : 'bg-red-600 shadow-red-600/30'
+          "
+        >
+          <span class="material-symbols-outlined text-[20px]">{{
+            ujianToast.type === "success" ? "check_circle" : "error"
+          }}</span>
+          {{ ujianToast.message }}
+        </div>
+      </Transition>
+
       <!-- Content Split Layout -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
         <!-- Left: Recent Activity Table -->
@@ -414,6 +563,92 @@ const jadwalMingguIni = computed(
   () => dashboardData.value?.jadwal_minggu_ini || [],
 );
 
+// Ujian request state
+const ujianRequests = ref([]);
+const processingUjian = ref(null);
+const ujianToast = ref({ show: false, message: "", type: "success" });
+const rejectModal = ref({
+  show: false,
+  skripsiId: null,
+  mahasiswaNama: "",
+  alasan: "",
+});
+
+const fetchUjianRequests = async () => {
+  try {
+    const res = await dosenService.getUjianRequests();
+    if (res.success) {
+      ujianRequests.value = res.data || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch ujian requests:", err);
+  }
+};
+
+const approveUjian = async (skripsiId) => {
+  processingUjian.value = skripsiId;
+  try {
+    const res = await dosenService.respondUjianRequest(skripsiId, "approve");
+    if (res.success) {
+      ujianRequests.value = ujianRequests.value.filter(
+        (r) => r.id !== skripsiId,
+      );
+      showToast("Pengajuan ujian berhasil disetujui!", "success");
+    }
+  } catch (err) {
+    console.error("Failed to approve ujian:", err);
+    showToast(
+      err.response?.data?.message || "Gagal menyetujui pengajuan.",
+      "error",
+    );
+  } finally {
+    processingUjian.value = null;
+  }
+};
+
+const openRejectModal = (req) => {
+  rejectModal.value = {
+    show: true,
+    skripsiId: req.id,
+    mahasiswaNama: req.mahasiswa?.nama || "-",
+    alasan: "",
+  };
+};
+
+const confirmRejectUjian = async () => {
+  const { skripsiId, alasan } = rejectModal.value;
+  processingUjian.value = skripsiId;
+  try {
+    const res = await dosenService.respondUjianRequest(
+      skripsiId,
+      "reject",
+      alasan,
+    );
+    if (res.success) {
+      ujianRequests.value = ujianRequests.value.filter(
+        (r) => r.id !== skripsiId,
+      );
+      rejectModal.value.show = false;
+      showToast("Pengajuan ujian ditolak.", "success");
+    }
+  } catch (err) {
+    console.error("Failed to reject ujian:", err);
+    showToast(
+      err.response?.data?.message || "Gagal menolak pengajuan.",
+      "error",
+    );
+  } finally {
+    processingUjian.value = null;
+  }
+};
+
+const showToast = (message, type = "success") => {
+  ujianToast.value = { show: true, message, type };
+  setTimeout(() => {
+    ujianToast.value.show = false;
+  }, 3000);
+};
+
 const dosenGreeting = computed(() => {
   const dosen = dashboardData.value?.dosen;
   if (!dosen) return "";
@@ -578,6 +813,7 @@ const formatTimeAgo = (dateStr) => {
 
 onMounted(() => {
   fetchDashboard();
+  fetchUjianRequests();
 });
 </script>
 
@@ -594,5 +830,24 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.toast-slide-enter-active {
+  transition: all 0.3s ease-out;
+}
+.toast-slide-leave-active {
+  transition: all 0.2s ease-in;
+}
+.toast-slide-enter-from,
+.toast-slide-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
 }
 </style>

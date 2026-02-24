@@ -21,7 +21,7 @@ class SeminarController extends Controller
             $q->where('jenis', 'sempro')->latest('tanggal');
         }])
             ->where('is_active', true)
-            ->whereIn('status', ['pengajuan', 'proposal', 'sempro', 'bimbingan']);
+            ->whereIn('status', ['pengajuan', 'proposal', 'sempro', 'bimbingan', 'penentuan_dospem', 'dospem']);
 
         // Search filter
         if ($request->filled('search')) {
@@ -88,7 +88,7 @@ class SeminarController extends Controller
 
         // Update skripsi status to 'proposal'
         $skripsi = Skripsi::findOrFail($request->skripsi_id);
-        if (in_array($skripsi->status, ['pengajuan', 'draft', 'ditolak'])) {
+        if (in_array($skripsi->status, ['pengajuan', 'draft', 'ditolak', 'proposal'])) {
             $skripsi->status = 'sempro';
             $skripsi->save();
         }
@@ -259,10 +259,28 @@ class SeminarController extends Controller
         $request->validate([
             'peran' => 'sometimes|in:ketua,penguji_1,penguji_2',
             'nilai' => 'nullable|numeric|min:0|max:100',
+            'nilai_mt' => 'nullable|numeric|min:0|max:100',
+            'nilai_ms' => 'nullable|numeric|min:0|max:100',
+            'nilai_pm' => 'nullable|numeric|min:0|max:100',
+            'nilai_pi' => 'nullable|numeric|min:0|max:100',
             'catatan' => 'nullable|string',
         ]);
 
-        $penguji->fill($request->only(['peran', 'nilai', 'catatan']));
+        $penguji->fill($request->only(['peran', 'nilai', 'nilai_mt', 'nilai_ms', 'nilai_pm', 'nilai_pi', 'catatan']));
+
+        // Auto-calculate average if all 4 components are provided
+        if (
+            $penguji->nilai_mt !== null &&
+            $penguji->nilai_ms !== null &&
+            $penguji->nilai_pm !== null &&
+            $penguji->nilai_pi !== null
+        ) {
+            $penguji->nilai = round(
+                ($penguji->nilai_mt + $penguji->nilai_ms + $penguji->nilai_pm + $penguji->nilai_pi) / 4,
+                2
+            );
+        }
+
         $penguji->save();
 
         return response()->json([

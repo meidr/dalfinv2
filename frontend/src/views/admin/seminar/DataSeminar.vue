@@ -137,6 +137,7 @@
             <option value="proposal">Proposal</option>
             <option value="sempro">Seminar Proposal</option>
             <option value="bimbingan">Bimbingan</option>
+            <option value="penentuan_dospem">Penentuan Dospem</option>
           </select>
           <select
             v-model="filterJadwal"
@@ -582,6 +583,8 @@ const getStatusClass = (status) => {
     pengajuan: "bg-gray-50 text-gray-600 border border-gray-100",
     proposal: "bg-yellow-50 text-yellow-600 border border-yellow-100",
     sempro: "bg-blue-50 text-blue-600 border border-blue-100",
+    bimbingan: "bg-indigo-50 text-indigo-600 border border-indigo-100",
+    penentuan_dospem: "bg-green-50 text-green-600 border border-green-100",
   };
   return classes[status] || "bg-gray-50 text-gray-600 border border-gray-100";
 };
@@ -591,6 +594,8 @@ const getStatusDot = (status) => {
     pengajuan: "bg-gray-600",
     proposal: "bg-yellow-600",
     sempro: "bg-blue-600",
+    bimbingan: "bg-indigo-600",
+    penentuan_dospem: "bg-green-600",
   };
   return dots[status] || "bg-gray-600";
 };
@@ -600,6 +605,8 @@ const getStatusLabel = (status) => {
     pengajuan: "Pengajuan",
     proposal: "Proposal",
     sempro: "Sem. Proposal",
+    bimbingan: "Bimbingan",
+    penentuan_dospem: "Selesai Sempro",
   };
   return labels[status] || status;
 };

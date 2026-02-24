@@ -480,6 +480,32 @@ export const adminService = {
     return response.data;
   },
 
+  async getSyaratBimbingan() {
+    const response = await api.get("/admin/configuration/syarat-bimbingan");
+    return response.data;
+  },
+
+  async saveSyaratBimbingan(data) {
+    const response = await api.post(
+      "/admin/configuration/syarat-bimbingan",
+      data,
+    );
+    return response.data;
+  },
+
+  async getKuotaBimbingan() {
+    const response = await api.get("/admin/configuration/kuota-bimbingan");
+    return response.data;
+  },
+
+  async saveKuotaBimbingan(data) {
+    const response = await api.post(
+      "/admin/configuration/kuota-bimbingan",
+      data,
+    );
+    return response.data;
+  },
+
   // Notifications
   async getNotifications() {
     const response = await api.get("/admin/notifications");

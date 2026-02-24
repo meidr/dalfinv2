@@ -301,6 +301,14 @@ class SkripsiController extends Controller
             ], 404);
         }
 
+        // Restrict proposal upload: only allowed when status is pengajuan or proposal
+        if ($request->jenis === 'proposal' && !in_array($skripsi->status, ['pengajuan', 'proposal'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload dokumen proposal hanya diperbolehkan saat status Pengajuan atau Proposal'
+            ], 422);
+        }
+
         $file = $request->file('file');
         $path = $file->store('dokumen/' . $skripsi->id, 'public');
 
@@ -343,6 +351,13 @@ class SkripsiController extends Controller
             ['skripsi_id' => $skripsi->id, 'mahasiswa_id' => $mahasiswa->id, 'dokumen_id' => $dokumen->id]
         );
 
+        // Auto-advance skripsi status when proposal is uploaded
+        if ($request->jenis === 'proposal' && $skripsi->status === 'pengajuan') {
+            $skripsi->status = 'proposal';
+            $skripsi->progress_percentage = 15;
+            $skripsi->save();
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Dokumen berhasil diunggah',
@@ -377,11 +392,200 @@ class SkripsiController extends Controller
             Storage::disk('public')->delete($dokumen->path);
         }
 
+        $jenisDeleted = $dokumen->jenis;
         $dokumen->delete();
+
+        // Auto-revert: if proposal was deleted and status is 'proposal', revert to 'pengajuan'
+        if ($jenisDeleted === 'proposal' && $skripsi->status === 'proposal') {
+            // Check if there are still other proposal documents
+            $remainingProposal = Dokumen::where('skripsi_id', $skripsi->id)
+                ->where('jenis', 'proposal')
+                ->exists();
+            if (!$remainingProposal) {
+                $skripsi->status = 'pengajuan';
+                $skripsi->progress_percentage = 5;
+                $skripsi->save();
+            }
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Dokumen berhasil dihapus'
+        ]);
+    }
+
+    /**
+     * Check if mahasiswa is eligible to request ujian skripsi
+     */
+    public function checkUjianEligibility(Request $request)
+    {
+        $mahasiswa = $request->user()->mahasiswa;
+        $skripsi = $mahasiswa->activeSkripsi;
+
+        if (!$skripsi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skripsi tidak ditemukan'
+            ], 404);
+        }
+
+        $skripsi->load(['pembimbing.dosen', 'dokumen']);
+
+        // Get bimbingan requirements from config
+        $config = Configuration::where('key', 'syarat_bimbingan_ujian')->first();
+        $requirements = $config ? $config->value : ['pembimbing_1' => 8, 'pembimbing_2' => 4];
+
+        // Get pembimbing
+        $pembimbing1 = $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first();
+        $pembimbing2 = $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first();
+
+        // Count approved bimbingan per pembimbing
+        $countPembimbing1 = 0;
+        $countPembimbing2 = 0;
+
+        if ($pembimbing1) {
+            $countPembimbing1 = Bimbingan::where('skripsi_id', $skripsi->id)
+                ->where('dosen_id', $pembimbing1->dosen_id)
+                ->where('status', 'approved')
+                ->count();
+        }
+
+        if ($pembimbing2) {
+            $countPembimbing2 = Bimbingan::where('skripsi_id', $skripsi->id)
+                ->where('dosen_id', $pembimbing2->dosen_id)
+                ->where('status', 'approved')
+                ->count();
+        }
+
+        // Check naskah final - any uploaded naskah final counts (no approval needed)
+        $naskahFinalDoc = $skripsi->dokumen
+            ->where('jenis', 'final')
+            ->first();
+        $hasNaskahFinal = (bool) $naskahFinalDoc;
+
+        // Check status
+        $isCorrectStatus = $skripsi->status === 'bimbingan';
+
+        // Already requested?
+        $alreadyRequested = $skripsi->status === 'pengajuan_sidang';
+
+        $bimbinganMet = $countPembimbing1 >= $requirements['pembimbing_1']
+            && $countPembimbing2 >= $requirements['pembimbing_2'];
+
+        $eligible = $bimbinganMet && $hasNaskahFinal && $isCorrectStatus;
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'eligible' => $eligible,
+                'already_requested' => $alreadyRequested,
+                'is_correct_status' => $isCorrectStatus,
+                'bimbingan' => [
+                    'pembimbing_1' => [
+                        'dosen' => $pembimbing1 ? $pembimbing1->dosen->nama : null,
+                        'count' => $countPembimbing1,
+                        'required' => (int) $requirements['pembimbing_1'],
+                        'met' => $countPembimbing1 >= $requirements['pembimbing_1'],
+                    ],
+                    'pembimbing_2' => [
+                        'dosen' => $pembimbing2 ? $pembimbing2->dosen->nama : null,
+                        'count' => $countPembimbing2,
+                        'required' => (int) $requirements['pembimbing_2'],
+                        'met' => $countPembimbing2 >= $requirements['pembimbing_2'],
+                    ],
+                ],
+                'naskah_final' => [
+                    'uploaded' => $hasNaskahFinal,
+                    'status' => $naskahFinalDoc ? $naskahFinalDoc->status : null,
+                    'id' => $naskahFinalDoc ? $naskahFinalDoc->id : null,
+                ],
+            ]
+        ]);
+    }
+
+    /**
+     * Request ujian skripsi (submit pengajuan)
+     */
+    public function requestUjian(Request $request)
+    {
+        $mahasiswa = $request->user()->mahasiswa;
+        $skripsi = $mahasiswa->activeSkripsi;
+
+        if (!$skripsi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skripsi tidak ditemukan'
+            ], 404);
+        }
+
+        if ($skripsi->status !== 'bimbingan') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengajuan ujian hanya bisa dilakukan pada status bimbingan'
+            ], 422);
+        }
+
+        $skripsi->load(['pembimbing.dosen', 'dokumen']);
+
+        // Re-validate eligibility
+        $config = Configuration::where('key', 'syarat_bimbingan_ujian')->first();
+        $requirements = $config ? $config->value : ['pembimbing_1' => 8, 'pembimbing_2' => 4];
+
+        $pembimbing1 = $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first();
+        $pembimbing2 = $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first();
+
+        if (!$pembimbing1 || !$pembimbing2) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dosen pembimbing belum lengkap'
+            ], 422);
+        }
+
+        $countP1 = Bimbingan::where('skripsi_id', $skripsi->id)
+            ->where('dosen_id', $pembimbing1->dosen_id)
+            ->where('status', 'approved')
+            ->count();
+
+        $countP2 = Bimbingan::where('skripsi_id', $skripsi->id)
+            ->where('dosen_id', $pembimbing2->dosen_id)
+            ->where('status', 'approved')
+            ->count();
+
+        if ($countP1 < $requirements['pembimbing_1'] || $countP2 < $requirements['pembimbing_2']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jumlah bimbingan belum memenuhi syarat'
+            ], 422);
+        }
+
+        $hasNaskahFinal = $skripsi->dokumen
+            ->where('jenis', 'final')
+            ->isNotEmpty();
+
+        if (!$hasNaskahFinal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Naskah final belum diunggah'
+            ], 422);
+        }
+
+        // Update status
+        $skripsi->status = 'pengajuan_sidang';
+        $skripsi->save();
+
+        // Notify dosen pembimbing utama
+        $dosenUtama = $pembimbing1->dosen;
+        Notification::create([
+            'type' => 'pengajuan_ujian',
+            'title' => 'Pengajuan Ujian Skripsi',
+            'message' => $mahasiswa->nama . ' mengajukan ujian skripsi dan menunggu persetujuan Anda.',
+            'data' => ['skripsi_id' => $skripsi->id, 'mahasiswa_id' => $mahasiswa->id],
+            'user_id' => $dosenUtama->user_id ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan ujian skripsi berhasil dikirim. Menunggu persetujuan dosen pembimbing utama.',
         ]);
     }
 
@@ -438,7 +642,7 @@ class SkripsiController extends Controller
 
     private function downloadSkTugas(Skripsi $skripsi)
     {
-        $skripsi->load(['mahasiswa.prodi', 'pembimbing.dosen']);
+        $skripsi->load(['mahasiswa.prodi.fakultas', 'pembimbing.dosen']);
 
         $skTugas = $skripsi->skTugas;
         if (!$skTugas) {
@@ -448,11 +652,18 @@ class SkripsiController extends Controller
             ], 404);
         }
 
+        // Auto-resolve KAPRODI for this mahasiswa's prodi
+        $prodi = $skripsi->mahasiswa->prodi;
+        $signer = $this->resolveKaprodi($prodi);
+
         $data = [
             'skripsi' => $skripsi,
             'skTugas' => $skTugas,
             'tanggal' => now()->translatedFormat('d F Y'),
             'tahun_ajaran' => $this->getTahunAjaran(),
+            'prodi_kode' => $prodi->kode ?? '',
+            'prodi_nama' => $prodi->nama ?? '',
+            'signer' => $signer,
         ];
 
         $pdf = Pdf::loadView('pdf.sk-tugas', $data);
@@ -509,35 +720,25 @@ class SkripsiController extends Controller
         }
 
         $seminar->load([
-            'skripsi.mahasiswa.prodi',
+            'skripsi.mahasiswa.prodi.fakultas',
             'skripsi.pembimbing.dosen',
             'penguji.dosen'
         ]);
 
-        $config = Configuration::where('key', 'sk_tugas_signer')->first();
-        $signerData = $config ? (is_array($config->value) ? $config->value : json_decode($config->value, true)) : [];
+        $prodi = $seminar->skripsi->mahasiswa->prodi;
+        $fakultas = $prodi->fakultas ?? null;
 
         $data = [
             'seminar' => $seminar,
             'skripsi' => $seminar->skripsi,
             'tanggal' => now()->translatedFormat('d F Y'),
             'tahun_ajaran' => $this->getTahunAjaran(),
-            'prodi_lengkap' => $seminar->skripsi->mahasiswa->prodi->nama ?? '',
-            'fakultas' => $seminar->skripsi->mahasiswa->prodi->fakultas ?? '',
+            'prodi_lengkap' => $prodi->nama ?? '',
+            'fakultas' => $fakultas->nama_fakultas ?? '-',
             'institution' => "Universitas Islam Internasional Darullughah Wadda'wah",
-            'city' => $signerData['city'] ?? 'Bangil',
-            'kaprodi' => [
-                'name' => $signerData['name'] ?? 'Nama Kaprodi',
-                'nip' => $signerData['nip'] ?? '-',
-                'position' => 'Kepala Program Studi',
-                'signature' => $signerData['signature'] ?? null,
-            ],
-            'dekan' => [
-                'name' => $signerData['dekan_name'] ?? 'Nama Dekan',
-                'nip' => $signerData['dekan_nip'] ?? '-',
-                'position' => 'Dekan Fakultas',
-                'signature' => $signerData['dekan_signature'] ?? null,
-            ],
+            'city' => 'Bangil',
+            'kaprodi' => $this->resolveKaprodi($prodi),
+            'dekan' => $this->resolveDekan($fakultas),
         ];
 
         $pdf = Pdf::loadView('pdf.sk-penguji', $data);
@@ -561,10 +762,11 @@ class SkripsiController extends Controller
         }
 
         $seminar->load([
-            'skripsi.mahasiswa.prodi',
+            'skripsi.mahasiswa.prodi.fakultas',
             'skripsi.pembimbing.dosen',
             'penguji.dosen',
-            'beritaAcara'
+            'beritaAcara',
+            'perbaikanProposal',
         ]);
 
         $beritaAcara = $seminar->beritaAcara;
@@ -575,11 +777,16 @@ class SkripsiController extends Controller
             ], 404);
         }
 
+        // Find ketua penguji for perbaikan signature
+        $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
+
         $data = [
             'seminar' => $seminar,
             'beritaAcara' => $beritaAcara,
             'jenisLabel' => $label,
             'tanggal' => now()->translatedFormat('d F Y'),
+            'perbaikan' => $seminar->perbaikanProposal,
+            'ketuaPenguji' => $ketuaPenguji,
         ];
 
         $pdf = Pdf::loadView('pdf.berita-acara-seminar', $data);
@@ -671,5 +878,106 @@ class SkripsiController extends Controller
         if ($nilai >= 65) return 'C+';
         if ($nilai >= 55) return 'C';
         return 'D';
+    }
+
+    /**
+     * Resolve the active KAPRODI for a given prodi
+     */
+    private function resolveKaprodi($prodi)
+    {
+        $jabatan = \App\Models\MasterJabatan::where('kode', 'KAPRODI')->first();
+
+        $signer = [
+            'name' => '-',
+            'nip' => '-',
+            'position' => 'Kepala Program Studi ' . ($prodi->nama ?? ''),
+            'signature' => null,
+        ];
+
+        if (!$jabatan || !$prodi) return $signer;
+
+        $periode = \App\Models\PeriodeJabatan::where('is_active', true)->first();
+        if (!$periode) return $signer;
+
+        $today = now()->toDateString();
+        $pejabat = \App\Models\JabatanPejabat::with('dosen')
+            ->where('periode_id', $periode->id)
+            ->where('jabatan_id', $jabatan->id)
+            ->where('prodi_id', $prodi->id)
+            ->where(function ($q) use ($today) {
+                $q->whereNull('tgl_selesai')
+                    ->orWhere('tgl_selesai', '>=', $today);
+            })
+            ->first();
+
+        if (!$pejabat || !$pejabat->dosen) return $signer;
+
+        $dosen = $pejabat->dosen;
+        $parts = array_filter([$dosen->gelar_depan, $dosen->nama, $dosen->gelar_belakang]);
+        $signer['name'] = implode(' ', $parts) ?: $dosen->nama;
+        $signer['nip'] = $dosen->nip ?? '-';
+
+        $ttd = \App\Models\TandaTangan::where('dosen_id', $dosen->id)->first();
+        if ($ttd && $ttd->ttd) {
+            $path = storage_path('app/public/' . $ttd->ttd);
+            if (file_exists($path)) {
+                $signer['signature'] = $path;
+            }
+        }
+
+        return $signer;
+    }
+
+    /**
+     * Resolve the active DEKAN for a given fakultas
+     */
+    private function resolveDekan($fakultas)
+    {
+        $signer = [
+            'name' => '-',
+            'nip' => '-',
+            'position' => 'Dekan ' . ($fakultas->nama_fakultas ?? 'Fakultas'),
+            'signature' => null,
+        ];
+
+        if (!$fakultas) return $signer;
+
+        $dosen = $fakultas->dekan;
+
+        if (!$dosen) {
+            $jabatan = \App\Models\MasterJabatan::where('kode', 'DEKAN')->first();
+            if ($jabatan) {
+                $periode = \App\Models\PeriodeJabatan::where('is_active', true)->first();
+                if ($periode) {
+                    $today = now()->toDateString();
+                    $pejabat = \App\Models\JabatanPejabat::with('dosen')
+                        ->where('periode_id', $periode->id)
+                        ->where('jabatan_id', $jabatan->id)
+                        ->where('fakultas_id', $fakultas->id)
+                        ->where(function ($q) use ($today) {
+                            $q->whereNull('tgl_selesai')
+                                ->orWhere('tgl_selesai', '>=', $today);
+                        })
+                        ->first();
+                    $dosen = $pejabat?->dosen;
+                }
+            }
+        }
+
+        if (!$dosen) return $signer;
+
+        $parts = array_filter([$dosen->gelar_depan, $dosen->nama, $dosen->gelar_belakang]);
+        $signer['name'] = implode(' ', $parts) ?: $dosen->nama;
+        $signer['nip'] = $dosen->nip ?? '-';
+
+        $ttd = \App\Models\TandaTangan::where('dosen_id', $dosen->id)->first();
+        if ($ttd && $ttd->ttd) {
+            $path = storage_path('app/public/' . $ttd->ttd);
+            if (file_exists($path)) {
+                $signer['signature'] = $path;
+            }
+        }
+
+        return $signer;
     }
 }

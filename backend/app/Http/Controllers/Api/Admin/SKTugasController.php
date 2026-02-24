@@ -22,7 +22,7 @@ class SKTugasController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('mahasiswa', function ($mq) use ($search) {
                     $mq->where('nama', 'like', "%{$search}%")
-                       ->orWhere('nim', 'like', "%{$search}%");
+                        ->orWhere('nim', 'like', "%{$search}%");
                 })->orWhere('judul', 'like', "%{$search}%");
             });
         }
@@ -77,6 +77,14 @@ class SKTugasController extends Controller
                 'status' => $request->status ?? 'selesai',
             ]
         );
+
+        // Auto-update skripsi status to bimbingan when SK Tugas is approved
+        $status = $request->status ?? 'selesai';
+        if (in_array($status, ['approved', 'selesai'])) {
+            \App\Models\Skripsi::where('id', $skripsi->id)
+                ->whereIn('status', ['pengajuan', 'disetujui', 'penentuan_dospem', 'dospem'])
+                ->update(['status' => 'bimbingan', 'progress_percentage' => 50]);
+        }
 
         return response()->json([
             'success' => true,

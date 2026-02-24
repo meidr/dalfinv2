@@ -130,7 +130,12 @@ const statusMap = {
       "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
   },
   penentuan_dospem: {
-    label: "Dospem",
+    label: "Penentuan Dospem",
+    class:
+      "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800",
+  },
+  dospem: {
+    label: "Dospem Ditentukan",
     class:
       "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800",
   },
@@ -138,6 +143,11 @@ const statusMap = {
     label: "Proses Bimbingan",
     class:
       "bg-blue-50 text-primary border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+  },
+  pengajuan_sidang: {
+    label: "Pengajuan Sidang",
+    class:
+      "bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
   },
   semhas: {
     label: "Seminar Hasil",

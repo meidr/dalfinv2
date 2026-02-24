@@ -72,4 +72,12 @@ class Seminar extends Model
     {
         return $this->hasOne(BeritaAcara::class);
     }
+
+    /**
+     * Get perbaikan proposal items
+     */
+    public function perbaikanProposal()
+    {
+        return $this->hasMany(PerbaikanProposal::class)->orderBy('no');
+    }
 }

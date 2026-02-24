@@ -185,8 +185,8 @@
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button
-                    v-if="item.sk_dokumen"
-                    @click="viewFile(item.sk_dokumen)"
+                    v-if="item.sk_status === 'approved'"
+                    @click="viewFile(item)"
                     class="p-2 text-text-secondary hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                     title="Lihat File"
                   >
@@ -448,6 +448,8 @@ const generateSK = async (item) => {
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     window.open(url, "_blank");
+    // Refresh list to update status to "Sudah TTD"
+    await fetchSKTugas();
   } catch (error) {
     console.error("Failed to generate SK:", error);
     alert(
@@ -458,10 +460,9 @@ const generateSK = async (item) => {
   }
 };
 
-const viewFile = async (dokumen) => {
-  if (!dokumen) return;
+const viewFile = async (item) => {
   try {
-    const response = await adminService.downloadDokumen(dokumen.id);
+    const response = await adminService.getSkTugasPdf(item.id);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     window.open(url, "_blank");

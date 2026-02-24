@@ -83,7 +83,7 @@ class DashboardController extends Controller
                 'mahasiswa' => $mahasiswa->load(['prodi', 'tahun']),
                 'skripsi' => $skripsi,
                 'stats' => [
-                    'progress' => $skripsi->progress_percentage,
+                    'progress' => $this->calculateProgress($skripsi->status),
                     'total_bimbingan' => $totalBimbingan,
                     'approved_bimbingan' => $approvedBimbingan,
                     'total_dokumen' => $totalDokumen,
@@ -96,5 +96,28 @@ class DashboardController extends Controller
                 'sk_yudisium' => $skYudisium,
             ]
         ]);
+    }
+
+    private function calculateProgress(string $status): int
+    {
+        $progressMap = [
+            'draft' => 0,
+            'pengajuan' => 5,
+            'disetujui' => 10,
+            'ditolak' => 0,
+            'proposal' => 15,
+            'sempro' => 25,
+            'penentuan_dospem' => 30,
+            'dospem' => 40,
+            'bimbingan' => 50,
+            'pengajuan_sidang' => 60,
+            'semhas' => 70,
+            'ujian' => 80,
+            'sidang' => 85,
+            'revisi' => 90,
+            'lulus' => 100,
+        ];
+
+        return $progressMap[$status] ?? 0;
     }
 }

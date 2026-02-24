@@ -101,7 +101,8 @@ class BeritaAcaraController extends Controller
             'skripsi.mahasiswa.prodi',
             'skripsi.pembimbing.dosen',
             'penguji.dosen',
-            'beritaAcara'
+            'beritaAcara',
+            'perbaikanProposal',
         ]);
 
         $beritaAcara = $seminar->beritaAcara;
@@ -114,12 +115,15 @@ class BeritaAcaraController extends Controller
         }
 
         $jenisLabel = 'Sidang Skripsi';
+        $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
 
         $data = [
             'seminar' => $seminar,
             'beritaAcara' => $beritaAcara,
             'jenisLabel' => $jenisLabel,
             'tanggal' => now()->translatedFormat('d F Y'),
+            'perbaikan' => $seminar->perbaikanProposal,
+            'ketuaPenguji' => $ketuaPenguji,
         ];
 
         $pdf = Pdf::loadView('pdf.berita-acara-seminar', $data);

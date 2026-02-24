@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dokumen;
 use App\Models\Skripsi;
 use App\Models\SkripsiHistory;
 use Illuminate\Http\Request;
@@ -107,7 +108,10 @@ class SkripsiVerificationController extends Controller
             'ditolak' => 0,
             'proposal' => 15,
             'sempro' => 25,
+            'penentuan_dospem' => 30,
+            'dospem' => 40,
             'bimbingan' => 50,
+            'pengajuan_sidang' => 60,
             'semhas' => 70,
             'ujian' => 80,
             'sidang' => 85,

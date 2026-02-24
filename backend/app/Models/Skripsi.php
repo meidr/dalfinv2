@@ -54,7 +54,9 @@ class Skripsi extends Model
     const STATUS_PROPOSAL = 'proposal';
     const STATUS_SEMPRO = 'sempro';
     const STATUS_PENENTUAN_DOSPEM = 'penentuan_dospem';
+    const STATUS_DOSPEM = 'dospem';
     const STATUS_BIMBINGAN = 'bimbingan';
+    const STATUS_PENGAJUAN_SIDANG = 'pengajuan_sidang';
     const STATUS_SEMHAS = 'semhas';
     const STATUS_SIDANG = 'sidang';
     const STATUS_REVISI = 'revisi';

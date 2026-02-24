@@ -77,6 +77,17 @@ export const mahasiswaService = {
     });
     return response;
   },
+
+  // Ujian Skripsi
+  async checkUjianEligibility() {
+    const response = await api.get("/mahasiswa/skripsi/ujian-eligibility");
+    return response.data;
+  },
+
+  async requestUjian() {
+    const response = await api.post("/mahasiswa/skripsi/request-ujian");
+    return response.data;
+  },
 };
 
 export default mahasiswaService;

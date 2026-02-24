@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Configuration;
 use App\Models\Dosen;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -16,6 +17,10 @@ class MasterDosenController extends Controller
      */
     public function index(Request $request)
     {
+        // Get global kuota default
+        $globalConfig = Configuration::where('key', 'kuota_bimbingan_default')->first();
+        $globalKuota = $globalConfig ? ($globalConfig->value['kuota'] ?? 10) : 10;
+
         $query = Dosen::with(['prodi', 'user'])
             ->withCount(['pembimbing as current_bimbingan' => function ($q) {
                 $q->where('is_active', true);
@@ -29,16 +34,34 @@ class MasterDosenController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                    ->orWhere('nip', 'like', "%{$search}%");
+                    ->orWhere('nip', 'like', "%{$search}%")
+                    ->orWhere('nidn', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $isActive = $request->status === 'aktif';
+            $query->whereHas('user', function ($q) use ($isActive) {
+                $q->where('is_active', $isActive);
             });
         }
 
         $perPage = $request->get('per_page', 15);
         $dosen = $query->orderBy('nama', 'asc')->paginate($perPage);
 
+        // Add jumlah_bimbingan and apply global kuota default
+        $dosen->getCollection()->transform(function ($item) use ($globalKuota) {
+            $item->jumlah_bimbingan = $item->current_bimbingan;
+            if (!$item->kuota_bimbingan) {
+                $item->kuota_bimbingan = $globalKuota;
+            }
+            return $item;
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $dosen
+            'data' => $dosen,
+            'global_kuota' => $globalKuota,
         ]);
     }
 

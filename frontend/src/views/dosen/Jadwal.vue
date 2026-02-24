@@ -492,11 +492,11 @@
               ></textarea>
             </div>
 
-            <!-- Hasil Sidang (ketua penguji only) -->
+            <!-- Hasil Sidang/Seminar (ketua penguji only) -->
             <div
               v-if="
                 nilaiSeminar?.own_penguji?.peran === 'ketua' &&
-                nilaiSeminar?.jenis === 'sidang'
+                ['sempro', 'semhas', 'sidang'].includes(nilaiSeminar?.jenis)
               "
               class="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800"
             >
@@ -505,7 +505,8 @@
                   >gavel</span
                 >
                 <p class="text-sm font-bold text-amber-800 dark:text-amber-300">
-                  Keputusan Sidang (Ketua Penguji)
+                  Keputusan {{ getJenisLabel(nilaiSeminar?.jenis) }} (Ketua
+                  Penguji)
                 </p>
               </div>
               <select
@@ -517,6 +518,103 @@
                 <option value="lulus_revisi">📝 Lulus dengan Revisi</option>
                 <option value="tidak_lulus">❌ Tidak Lulus</option>
               </select>
+            </div>
+
+            <!-- Perbaikan Proposal (ketua + sempro only) -->
+            <div
+              v-if="
+                nilaiSeminar?.own_penguji?.peran === 'ketua' &&
+                nilaiSeminar?.jenis === 'sempro'
+              "
+              class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800"
+            >
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="material-symbols-outlined text-blue-600 text-base"
+                    >edit_note</span
+                  >
+                  <p class="text-sm font-bold text-blue-800 dark:text-blue-300">
+                    Lembar Perbaikan Proposal
+                  </p>
+                </div>
+                <button
+                  @click="addPerbaikanRow"
+                  type="button"
+                  class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[14px]">add</span>
+                  Tambah
+                </button>
+              </div>
+
+              <div
+                v-if="nilaiForm.perbaikan.length === 0"
+                class="text-center py-4"
+              >
+                <p class="text-xs text-blue-600/70">
+                  Belum ada item perbaikan. Klik "Tambah" untuk menambahkan.
+                </p>
+              </div>
+
+              <div
+                v-for="(item, idx) in nilaiForm.perbaikan"
+                :key="idx"
+                class="bg-white dark:bg-surface-dark rounded-lg p-3 border border-blue-100 dark:border-blue-800 mb-2"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-blue-700"
+                    >Perbaikan #{{ idx + 1 }}</span
+                  >
+                  <button
+                    @click="nilaiForm.perbaikan.splice(idx, 1)"
+                    type="button"
+                    class="text-red-400 hover:text-red-600 transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >delete</span
+                    >
+                  </button>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="col-span-2">
+                    <label
+                      class="block text-[10px] font-medium text-text-secondary mb-0.5"
+                      >Topik *</label
+                    >
+                    <input
+                      v-model="item.topik"
+                      type="text"
+                      placeholder="Topik perbaikan"
+                      class="w-full px-2.5 py-1.5 border border-border-light rounded-lg text-xs focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[10px] font-medium text-text-secondary mb-0.5"
+                      >Halaman</label
+                    >
+                    <input
+                      v-model="item.halaman"
+                      type="text"
+                      placeholder="cth: 12-15"
+                      class="w-full px-2.5 py-1.5 border border-border-light rounded-lg text-xs focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                    />
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <label
+                    class="block text-[10px] font-medium text-text-secondary mb-0.5"
+                    >Uraian Perbaikan</label
+                  >
+                  <textarea
+                    v-model="item.uraian"
+                    rows="2"
+                    placeholder="Uraikan perbaikan yang diperlukan..."
+                    class="w-full px-2.5 py-1.5 border border-border-light rounded-lg text-xs focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                  ></textarea>
+                </div>
+              </div>
             </div>
 
             <!-- Buttons -->
@@ -775,6 +873,7 @@ const nilaiForm = reactive({
   nilai_pi: null,
   catatan: "",
   hasil: "",
+  perbaikan: [],
 });
 
 // Detail modal
@@ -919,7 +1018,17 @@ const openNilaiModal = (seminar) => {
       : null;
   nilaiForm.catatan = own?.catatan || "";
   nilaiForm.hasil = seminar.hasil || "";
+  // Load existing perbaikan items
+  nilaiForm.perbaikan = (seminar.perbaikan_proposal || []).map((p) => ({
+    topik: p.topik || "",
+    halaman: p.halaman || "",
+    uraian: p.uraian || "",
+  }));
   showNilaiModal.value = true;
+};
+
+const addPerbaikanRow = () => {
+  nilaiForm.perbaikan.push({ topik: "", halaman: "", uraian: "" });
 };
 
 const saveNilai = async () => {
@@ -936,6 +1045,14 @@ const saveNilai = async () => {
     // Only ketua penguji can send hasil
     if (nilaiSeminar.value?.own_penguji?.peran === "ketua" && nilaiForm.hasil) {
       payload.hasil = nilaiForm.hasil;
+    }
+    // Send perbaikan items (ketua + sempro)
+    if (
+      nilaiSeminar.value?.own_penguji?.peran === "ketua" &&
+      nilaiSeminar.value?.jenis === "sempro" &&
+      nilaiForm.perbaikan.length > 0
+    ) {
+      payload.perbaikan = nilaiForm.perbaikan.filter((p) => p.topik?.trim());
     }
     await dosenService.submitNilai(nilaiSeminar.value.id, payload);
     showNilaiModal.value = false;

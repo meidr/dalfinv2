@@ -400,7 +400,7 @@
           </div>
           <form @submit.prevent="saveSkripsi" class="p-6 space-y-4">
             <!-- Mahasiswa Selector (only for add) -->
-            <div v-if="!isEditing">
+            <div v-if="!isEditing" class="relative">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Mahasiswa <span class="text-red-500">*</span></label
               >
@@ -1002,9 +1002,13 @@ const getAvatarColor = (name) => {
 const getPembimbing = (pembimbingList) => {
   if (!pembimbingList || pembimbingList.length === 0) return "-";
   const p1 = pembimbingList.find((p) => p.jenis === "pembimbing_1");
-  return (
-    p1?.dosen?.nama_lengkap || pembimbingList[0]?.dosen?.nama_lengkap || "-"
-  );
+  const p2 = pembimbingList.find((p) => p.jenis === "pembimbing_2");
+  const name1 = p1?.dosen?.full_name || p1?.dosen?.nama;
+  const name2 = p2?.dosen?.full_name || p2?.dosen?.nama;
+  if (name1 && name2) return `${name1}, ${name2}`;
+  if (name1) return name1;
+  if (name2) return name2;
+  return "-";
 };
 
 const getStatusClass = (status) => {

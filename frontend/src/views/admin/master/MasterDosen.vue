@@ -532,6 +532,7 @@ const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
 const dosenList = ref([]);
+const globalKuota = ref(10);
 
 const searchQuery = ref("");
 const filterStatus = ref("");
@@ -578,6 +579,9 @@ const fetchDosen = async () => {
     const response = await adminService.getDosen(params);
     if (response.success) {
       dosenList.value = response.data.data;
+      if (response.global_kuota) {
+        globalKuota.value = response.global_kuota;
+      }
       Object.assign(pagination, {
         current_page: response.data.current_page,
         last_page: response.data.last_page,
@@ -618,7 +622,7 @@ const openAddModal = () => {
   form.email = "";
   form.password = "";
   form.jabatan_fungsional = "";
-  form.kuota_bimbingan = 10;
+  form.kuota_bimbingan = globalKuota.value;
   showModal.value = true;
 };
 

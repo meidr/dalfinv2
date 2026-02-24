@@ -204,7 +204,7 @@
         <tr>
             <td>Fakultas</td>
             <td>:</td>
-            <td>{{ $seminar->skripsi->mahasiswa->prodi->fakultas ?? '-' }}</td>
+            <td>{{ $seminar->skripsi->mahasiswa->prodi->fakultas->nama_fakultas ?? '-' }}</td>
         </tr>
         <tr>
             <td>Judul Skripsi</td>
@@ -340,6 +340,91 @@
         <p>Berita Acara ini dibuat sebagai bukti pelaksanaan {{ $jenisLabel }}</p>
         <p>Dicetak pada: {{ $tanggal }}</p>
     </div>
+
+    {{-- ========== PAGE 2: LEMBAR PERBAIKAN PROPOSAL (only for sempro) ========== --}}
+    @if ($seminar->jenis === 'sempro' && isset($perbaikan) && $perbaikan->count() > 0)
+        <div style="page-break-before: always;"></div>
+
+        {{-- Kop Surat --}}
+        <div class="kop">
+            <img src="{{ public_path('images/kop surat.jpg') }}" alt="Kop Surat">
+        </div>
+
+        {{-- Title --}}
+        <div class="judul">
+            <h3>LEMBAR PERBAIKAN PROPOSAL</h3>
+        </div>
+
+        {{-- Mahasiswa Info --}}
+        <table class="info">
+            <tr>
+                <td>Nama</td>
+                <td>:</td>
+                <td>{{ $seminar->skripsi->mahasiswa->nama }}</td>
+            </tr>
+            <tr>
+                <td>NIM</td>
+                <td>:</td>
+                <td>{{ $seminar->skripsi->mahasiswa->nim }}</td>
+            </tr>
+            <tr>
+                <td>Fakultas/Prodi</td>
+                <td>:</td>
+                <td>{{ $seminar->skripsi->mahasiswa->prodi->fakultas->nama_fakultas ?? '-' }} / {{ $seminar->skripsi->mahasiswa->prodi->nama ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td>Semester</td>
+                <td>:</td>
+                <td>{{ $seminar->skripsi->semester_daftar ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td>Judul Skripsi</td>
+                <td>:</td>
+                <td>{{ $seminar->skripsi->judul }}</td>
+            </tr>
+        </table>
+
+        <p style="margin: 15px 0 10px 0; text-indent: 30px;">
+            Setelah diadakan seminar atas proposal saudara tersebut di atas, maka kami menyarankan diadakan
+            perbaikan proposal tersebut sebagaimana di bawah ini :
+        </p>
+
+        {{-- Perbaikan Table --}}
+        <table class="penguji" style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">No.</th>
+                    <th style="width: 140px;">TOPIK</th>
+                    <th style="width: 80px;">HALAMAN</th>
+                    <th>URAIAN PERBAIKAN</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($perbaikan as $item)
+                    <tr>
+                        <td style="text-align: center; vertical-align: top;">{{ $item->no }}</td>
+                        <td style="vertical-align: top;">{{ $item->topik }}</td>
+                        <td style="text-align: center; vertical-align: top;">{{ $item->halaman ?? '-' }}</td>
+                        <td style="vertical-align: top;">{{ $item->uraian ?? '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        {{-- Signature: Ketua Penguji --}}
+        @if (isset($ketuaPenguji))
+            <div style="margin-top: 40px; text-align: right; padding-right: 40px;">
+                <p>Pasuruan, {{ \Carbon\Carbon::parse($seminar->tanggal)->translatedFormat('d F Y') }}</p>
+                <p style="margin-top: 5px;">Ketua Penguji Seminar Proposal</p>
+                <div class="ttd-cap" style="display: inline-block; position: relative; width: 150px; height: 80px; margin-top: 5px;">
+                    <img class="cap" src="{{ public_path('images/capori.png') }}" style="position: absolute; left: 50%; transform: translateX(-50%); top: -10px; width: 110px; opacity: 0.85;">
+                </div>
+                <p class="name" style="margin-top: 0;">{{ $ketuaPenguji->dosen->full_name ?? ($ketuaPenguji->dosen->nama ?? '-') }}</p>
+                <p class="nip">NIP/NIY. {{ $ketuaPenguji->dosen->nip ?? '-' }}</p>
+            </div>
+        @endif
+    @endif
+
 </body>
 
 </html>

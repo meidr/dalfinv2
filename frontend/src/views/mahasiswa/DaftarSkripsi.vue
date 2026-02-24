@@ -445,6 +445,7 @@ const statusMap = {
   proposal: "Tahap Proposal",
   sempro: "Sudah Sempro",
   bimbingan: "Proses Bimbingan",
+  pengajuan_sidang: "Pengajuan Sidang",
   semhas: "Seminar Hasil",
   sidang: "Sidang",
   revisi: "Revisi",
@@ -477,6 +478,8 @@ const getStatusBadgeClass = (status) => {
       "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-100 dark:border-green-800",
     bimbingan:
       "bg-blue-50 text-primary dark:bg-blue-900/30 dark:text-blue-300 border-blue-100 dark:border-blue-800",
+    pengajuan_sidang:
+      "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-100 dark:border-yellow-800",
     semhas:
       "bg-blue-50 text-primary dark:bg-blue-900/30 dark:text-blue-300 border-blue-100 dark:border-blue-800",
     sidang:

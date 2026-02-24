@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Dosen;
 use App\Http\Controllers\Controller;
 use App\Models\Seminar;
 use App\Models\Penguji;
+use App\Models\BeritaAcara;
+use App\Models\PerbaikanProposal;
 use Illuminate\Http\Request;
 
 class SeminarNilaiController extends Controller
@@ -20,6 +22,7 @@ class SeminarNilaiController extends Controller
             'skripsi.mahasiswa.prodi',
             'skripsi.pembimbing.dosen',
             'penguji.dosen',
+            'perbaikanProposal',
         ])->findOrFail($seminarId);
 
         // Verify dosen is penguji or pembimbing
@@ -80,6 +83,13 @@ class SeminarNilaiController extends Controller
         // Only ketua penguji can set hasil
         if ($penguji->peran === 'ketua') {
             $rules['hasil'] = 'nullable|in:lulus,lulus_revisi,tidak_lulus';
+            // Perbaikan proposal items (only for sempro)
+            if ($seminar->jenis === 'sempro') {
+                $rules['perbaikan'] = 'nullable|array';
+                $rules['perbaikan.*.topik'] = 'required|string|max:255';
+                $rules['perbaikan.*.halaman'] = 'nullable|string|max:50';
+                $rules['perbaikan.*.uraian'] = 'nullable|string';
+            }
         }
 
         $validated = $request->validate($rules);
@@ -104,6 +114,20 @@ class SeminarNilaiController extends Controller
         $ketuaHasil = null;
         if ($penguji->peran === 'ketua' && isset($validated['hasil'])) {
             $ketuaHasil = $validated['hasil'];
+        }
+
+        // Save perbaikan proposal items (ketua + sempro only)
+        if ($penguji->peran === 'ketua' && $seminar->jenis === 'sempro' && isset($validated['perbaikan'])) {
+            // Delete existing and re-create
+            $seminar->perbaikanProposal()->delete();
+            foreach ($validated['perbaikan'] as $index => $item) {
+                $seminar->perbaikanProposal()->create([
+                    'no' => $index + 1,
+                    'topik' => $item['topik'],
+                    'halaman' => $item['halaman'] ?? null,
+                    'uraian' => $item['uraian'] ?? null,
+                ]);
+            }
         }
 
         // Recalculate seminar average if all penguji scored
@@ -148,9 +172,26 @@ class SeminarNilaiController extends Controller
                 }
                 $updateData['status'] = 'selesai';
 
-                // Update skripsi status to penentuan_dospem
+                // Auto-create BeritaAcara if not exists
+                if (!$seminar->beritaAcara) {
+                    BeritaAcara::create([
+                        'jenis' => 'seminar',
+                        'seminar_id' => $seminar->id,
+                        'nomor' => 'BA-' . strtoupper($seminar->jenis) . '-' . $seminar->id . '-' . now()->format('Ymd'),
+                        'tanggal' => now(),
+                        'hasil' => $updateData['hasil'] ?? ($ketuaHasil ?? 'lulus'),
+                        'catatan' => null,
+                    ]);
+                }
+
+                // Update skripsi status to penentuan_dospem only if sempro and lulus/lulus_revisi
                 $skripsi = $seminar->skripsi;
-                if ($skripsi && in_array($skripsi->status, ['proposal', 'sempro'])) {
+                $finalHasil = $updateData['hasil'] ?? $seminar->hasil;
+                if (
+                    $skripsi && in_array($skripsi->status, ['proposal', 'sempro'])
+                    && $seminar->jenis === 'sempro'
+                    && in_array($finalHasil, ['lulus', 'lulus_revisi'])
+                ) {
                     $skripsi->update(['status' => 'penentuan_dospem']);
                 }
             }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dokumen;
 use App\Models\Skripsi;
 use App\Models\SkripsiHistory;
 use Illuminate\Http\Request;
@@ -176,8 +177,12 @@ class SkripsiController extends Controller
         $newStatus = $request->input('status', $skripsi->status);
 
         if (in_array($newStatus, $requiredFileStatuses)) {
-            // Check if file already exists OR new file is uploaded
-            if (!$skripsi->file_skripsi && !$request->hasFile('file_skripsi')) {
+            // Check if file already exists on skripsi OR new file is uploaded OR dokumen of matching type exists
+            $hasDokumen = Dokumen::where('skripsi_id', $skripsi->id)
+                ->where('jenis', $newStatus)
+                ->exists();
+
+            if (!$skripsi->file_skripsi && !$request->hasFile('file_skripsi') && !$hasDokumen) {
                 return response()->json([
                     'success' => false,
                     'message' => 'File skripsi wajib diupload untuk status ' . $newStatus
@@ -221,23 +226,42 @@ class SkripsiController extends Controller
 
         // Check for sensitive changes (Status or Title)
         $needsVerification = false;
-        if ($oldTitle !== $request->judul || $oldStatus !== $newStatus) {
-            $needsVerification = true;
+        $judulChanged = $request->has('judul') && $oldTitle !== $request->judul;
+        $statusChanged = $oldStatus !== $newStatus;
 
-            // Create pending history record
-            $skripsi->history()->create([
-                'judul_lama' => $oldTitle,
-                'judul_baru' => $request->judul,
-                'status_lama' => $oldStatus,
-                'status_baru' => $newStatus,
-                'alasan' => $request->alasan, // Ensure 'alasan' is sent from frontend
-                'verification_status' => 'pending',
-                'updated_by' => $request->user()->id,
-            ]);
+        if ($judulChanged || $statusChanged) {
+            $user = $request->user();
+            $isStaff = $user->role === 'staff';
 
-            // Remove sensitive fields from direct update
-            unset($fillData['judul']);
-            unset($fillData['status']);
+            if ($isStaff) {
+                // Staff: needs admin verification
+                $needsVerification = true;
+
+                $skripsi->history()->create([
+                    'judul_lama' => $oldTitle,
+                    'judul_baru' => $request->judul ?? $oldTitle,
+                    'status_lama' => $oldStatus,
+                    'status_baru' => $newStatus,
+                    'alasan' => $request->alasan,
+                    'verification_status' => 'pending',
+                    'updated_by' => $user->id,
+                ]);
+
+                // Remove sensitive fields from direct update
+                unset($fillData['judul']);
+                unset($fillData['status']);
+            } else {
+                // Admin/Super Admin: apply directly, log as approved
+                $skripsi->history()->create([
+                    'judul_lama' => $oldTitle,
+                    'judul_baru' => $request->judul ?? $oldTitle,
+                    'status_lama' => $oldStatus,
+                    'status_baru' => $newStatus,
+                    'alasan' => $request->alasan,
+                    'verification_status' => 'approved',
+                    'updated_by' => $user->id,
+                ]);
+            }
         }
 
         $skripsi->fill($fillData);
@@ -249,11 +273,8 @@ class SkripsiController extends Controller
 
         $skripsi->save();
 
-        // Log history if title or status changed (This original log logic is now handled by verification logic above,
-        // but we might want to keep it for non-sensitive changes if any?
-        // Actually, the requirement status/title change needs verification.
-        // If we want to log other things, we might need another mechanism,
-        // but for now I will assume this replaces the immediate log)
+
+
 
         $message = $needsVerification
             ? 'Perubahan status/judul berhasil diajukan dan menunggu verifikasi admin.'
@@ -312,7 +333,10 @@ class SkripsiController extends Controller
             'ditolak' => 0,
             'proposal' => 15,
             'sempro' => 25,
+            'penentuan_dospem' => 30,
+            'dospem' => 40,
             'bimbingan' => 50,
+            'pengajuan_sidang' => 60,
             'semhas' => 70,
             'ujian' => 80,
             'sidang' => 85,

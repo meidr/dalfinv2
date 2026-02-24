@@ -186,16 +186,68 @@
                 class="p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light"
               >
                 <div class="flex justify-between items-start mb-2">
-                  <p class="font-bold text-text-main text-sm">
-                    {{ bimbingan.dosen?.nama || "-" }}
-                  </p>
-                  <span class="text-xs text-text-secondary">{{
-                    formatDate(bimbingan.tanggal)
-                  }}</span>
+                  <div>
+                    <p class="font-bold text-text-main text-sm">
+                      {{
+                        bimbingan.dosen?.full_name ||
+                        bimbingan.dosen?.nama ||
+                        "-"
+                      }}
+                    </p>
+                    <p
+                      v-if="bimbingan.topik"
+                      class="text-xs text-primary font-medium mt-0.5"
+                    >
+                      {{ bimbingan.topik }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span
+                      v-if="bimbingan.status"
+                      class="px-2 py-0.5 rounded-full text-[11px] font-bold"
+                      :class="{
+                        'bg-green-50 text-green-600 border border-green-200':
+                          bimbingan.status === 'approved',
+                        'bg-yellow-50 text-yellow-600 border border-yellow-200':
+                          bimbingan.status === 'pending',
+                        'bg-orange-50 text-orange-600 border border-orange-200':
+                          bimbingan.status === 'revision',
+                        'bg-red-50 text-red-600 border border-red-200':
+                          bimbingan.status === 'rejected',
+                      }"
+                    >
+                      {{
+                        bimbingan.status === "approved"
+                          ? "Disetujui"
+                          : bimbingan.status === "pending"
+                            ? "Menunggu"
+                            : bimbingan.status === "revision"
+                              ? "Revisi"
+                              : "Ditolak"
+                      }}
+                    </span>
+                    <span class="text-xs text-text-secondary">{{
+                      formatDate(bimbingan.tanggal)
+                    }}</span>
+                  </div>
                 </div>
-                <p class="text-sm text-text-secondary">
-                  {{ bimbingan.catatan || "-" }}
+                <p
+                  v-if="bimbingan.deskripsi"
+                  class="text-sm text-text-main mt-1"
+                >
+                  {{ bimbingan.deskripsi }}
                 </p>
+                <div
+                  v-if="bimbingan.catatan_dosen"
+                  class="mt-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border-l-3 border-blue-400"
+                >
+                  <p class="text-xs font-bold text-blue-600 mb-0.5">
+                    Catatan Dosen:
+                  </p>
+                  <p class="text-sm text-blue-800 dark:text-blue-300">
+                    {{ bimbingan.catatan_dosen }}
+                  </p>
+                </div>
               </div>
             </div>
             <div v-else class="text-center py-8 text-text-secondary">
@@ -328,10 +380,10 @@
                 <div
                   v-for="doc in skripsi.dokumen"
                   :key="doc.id"
-                  class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light"
+                  class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light hover:border-primary/30 transition-colors"
                 >
                   <div
-                    class="size-10 rounded-lg bg-red-100 text-red-500 flex items-center justify-center"
+                    class="size-10 rounded-lg bg-red-100 text-red-500 flex items-center justify-center shrink-0"
                   >
                     <span class="material-symbols-outlined"
                       >picture_as_pdf</span
@@ -339,19 +391,37 @@
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="font-bold text-text-main text-sm truncate">
-                      {{ doc.nama || doc.jenis }}
+                      {{ doc.nama_file || doc.jenis }}
                     </p>
                     <p class="text-xs text-text-secondary">
                       {{ formatDate(doc.created_at) }}
+                      <span v-if="doc.ukuran">
+                        • {{ formatFileSize(doc.ukuran) }}</span
+                      >
                     </p>
                   </div>
-                  <a
-                    :href="doc.file_url"
-                    target="_blank"
-                    class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                  >
-                    <span class="material-symbols-outlined">download</span>
-                  </a>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <a
+                      :href="getFileUrl(doc.path)"
+                      target="_blank"
+                      class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-primary hover:border-primary transition-all"
+                      title="Lihat"
+                    >
+                      <span class="material-symbols-outlined text-[16px]"
+                        >visibility</span
+                      >
+                    </a>
+                    <a
+                      :href="getFileUrl(doc.path)"
+                      :download="doc.nama_file || doc.jenis"
+                      class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-green-600 hover:border-green-400 transition-all"
+                      title="Unduh"
+                    >
+                      <span class="material-symbols-outlined text-[16px]"
+                        >download</span
+                      >
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -684,6 +754,22 @@ const getStatusLabel = (status) => {
     lulus: "Lulus",
   };
   return labels[status] || status;
+};
+
+const getFileUrl = (path) => {
+  if (!path) return "#";
+  if (path.startsWith("http")) return path;
+  const baseUrl =
+    import.meta.env.VITE_API_URL?.replace("/api", "") ||
+    "http://localhost:8000";
+  return `${baseUrl}/storage/${path}`;
+};
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return "";
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1048576).toFixed(1) + " MB";
 };
 
 onMounted(() => {

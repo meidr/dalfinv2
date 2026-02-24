@@ -163,7 +163,7 @@
             <td class="c2">Lembaga yang memberi tugas</td>
             <td class="c3">:</td>
             <td class="c4">
-                Kepala Program Studi {{ $prodi_kode ?? '' }}
+                Kepala Program Studi {{ $prodi_nama ?? '' }}
                 Universitas Islam Internasional Darullughah Wadda'wah,
                 Bangil.
             </td>
@@ -256,7 +256,7 @@
 
     <div class="ttd">
         <div class="ttd-date">Bangil, {{ $tanggal }}</div>
-        <div class="ttd-title">Kepala Program Studi {{ $prodi_kode ?? '' }}</div>
+        <div class="ttd-title">Kepala Program Studi {{ $prodi_nama ?? '' }}</div>
 
         <div class="ttd-space">
             @if (!empty($signer['signature']))

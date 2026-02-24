@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Seminar;
+use App\Models\Skripsi;
 use App\Models\Penguji;
 use App\Models\Pembimbing;
 
@@ -155,6 +156,12 @@ class UjianController extends Controller
 
         $ujian->load('penguji.dosen');
 
+        // Auto-update skripsi status to 'sidang' if currently 'pengajuan_sidang'
+        $skripsi = Skripsi::find($validated['skripsi_id']);
+        if ($skripsi && $skripsi->status === 'pengajuan_sidang') {
+            $skripsi->update(['status' => 'sidang', 'progress_percentage' => 85]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Ujian berhasil dijadwalkan',
@@ -210,6 +217,24 @@ class UjianController extends Controller
 
         if (!empty($ujianFields)) {
             $ujian->update($ujianFields);
+        }
+
+        // Auto-update skripsi status when admin manually sets hasil (without penguji recalc)
+        if (isset($validated['hasil']) && !isset($validated['penguji'])) {
+            $skripsi = $ujian->skripsi;
+            if ($skripsi && in_array($skripsi->status, ['sidang', 'pengajuan_sidang', 'bimbingan'])) {
+                if ($validated['hasil'] === 'lulus') {
+                    $skripsi->update([
+                        'status' => 'lulus',
+                        'progress_percentage' => 100,
+                    ]);
+                } elseif ($validated['hasil'] === 'lulus_revisi') {
+                    $skripsi->update([
+                        'status' => 'revisi',
+                        'progress_percentage' => 90,
+                    ]);
+                }
+            }
         }
 
         // Sync penguji if provided (with component scores)
@@ -277,6 +302,23 @@ class UjianController extends Controller
                     $updateData['hasil'] = 'tidak_lulus';
                 }
                 $updateData['status'] = 'selesai';
+
+                // Auto-update skripsi status based on hasil
+                $finalHasil = $updateData['hasil'];
+                $skripsi = $ujian->skripsi;
+                if ($skripsi && in_array($skripsi->status, ['sidang', 'pengajuan_sidang', 'bimbingan'])) {
+                    if ($finalHasil === 'lulus') {
+                        $skripsi->update([
+                            'status' => 'lulus',
+                            'progress_percentage' => 100,
+                        ]);
+                    } elseif ($finalHasil === 'lulus_revisi') {
+                        $skripsi->update([
+                            'status' => 'revisi',
+                            'progress_percentage' => 90,
+                        ]);
+                    }
+                }
             }
 
             $ujian->update($updateData);

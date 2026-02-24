@@ -66,4 +66,73 @@ class ConfigurationController extends Controller
             'data' => $config->value
         ]);
     }
+
+    /**
+     * Get Syarat Bimbingan Ujian Configuration
+     */
+    public function getSyaratBimbingan()
+    {
+        $config = Configuration::where('key', 'syarat_bimbingan_ujian')->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => $config ? $config->value : ['pembimbing_1' => 8, 'pembimbing_2' => 4]
+        ]);
+    }
+
+    /**
+     * Save Syarat Bimbingan Ujian Configuration
+     */
+    public function saveSyaratBimbingan(Request $request)
+    {
+        $request->validate([
+            'pembimbing_1' => 'required|integer|min:1',
+            'pembimbing_2' => 'required|integer|min:1',
+        ]);
+
+        $config = Configuration::updateOrCreate(
+            ['key' => 'syarat_bimbingan_ujian'],
+            ['value' => $request->only(['pembimbing_1', 'pembimbing_2'])]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Syarat bimbingan berhasil disimpan',
+            'data' => $config->value
+        ]);
+    }
+
+    /**
+     * Get Kuota Bimbingan Default Configuration
+     */
+    public function getKuotaBimbingan()
+    {
+        $config = Configuration::where('key', 'kuota_bimbingan_default')->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => $config ? $config->value : ['kuota' => 10]
+        ]);
+    }
+
+    /**
+     * Save Kuota Bimbingan Default Configuration
+     */
+    public function saveKuotaBimbingan(Request $request)
+    {
+        $request->validate([
+            'kuota' => 'required|integer|min:1|max:50',
+        ]);
+
+        $config = Configuration::updateOrCreate(
+            ['key' => 'kuota_bimbingan_default'],
+            ['value' => ['kuota' => (int) $request->kuota]]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kuota bimbingan default berhasil disimpan',
+            'data' => $config->value
+        ]);
+    }
 }

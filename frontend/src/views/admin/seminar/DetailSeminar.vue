@@ -318,55 +318,118 @@
             <div
               v-for="penguji in seminar.penguji"
               :key="penguji.id"
-              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-background rounded-xl border border-border-light"
+              class="p-4 bg-gray-50 dark:bg-background rounded-xl border border-border-light"
             >
-              <div class="flex items-center gap-3">
-                <div
-                  class="size-10 rounded-full flex items-center justify-center text-xs font-bold"
-                  :class="getAvatarColor(penguji.dosen?.nama)"
-                >
-                  {{ getInitials(penguji.dosen?.nama) }}
-                </div>
-                <div>
-                  <p class="font-bold text-text-main text-sm">
-                    {{
-                      penguji.dosen?.nama_lengkap || penguji.dosen?.nama || "-"
-                    }}
-                  </p>
-                  <span
-                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mt-0.5"
-                    :class="getPeranClass(penguji.peran)"
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="size-10 rounded-full flex items-center justify-center text-xs font-bold"
+                    :class="getAvatarColor(penguji.dosen?.nama)"
                   >
-                    {{ getPeranLabel(penguji.peran) }}
+                    {{ getInitials(penguji.dosen?.nama) }}
+                  </div>
+                  <div>
+                    <p class="font-bold text-text-main text-sm">
+                      {{
+                        penguji.dosen?.nama_lengkap ||
+                        penguji.dosen?.nama ||
+                        "-"
+                      }}
+                    </p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                        :class="getPeranClass(penguji.peran)"
+                      >
+                        {{ getPeranLabel(penguji.peran) }}
+                      </span>
+                      <span
+                        v-if="
+                          penguji.nilai_mt !== null &&
+                          penguji.nilai_mt !== undefined
+                        "
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700"
+                      >
+                        <span class="material-symbols-outlined text-[12px]"
+                          >check_circle</span
+                        >
+                        Sudah dinilai dosen
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div
+                    v-if="penguji.nilai !== null && penguji.nilai !== undefined"
+                    class="text-right"
+                  >
+                    <p class="text-lg font-bold text-primary">
+                      {{ penguji.nilai }}
+                    </p>
+                    <p class="text-xs text-text-secondary">Rata-rata</p>
+                  </div>
+                  <span
+                    v-else
+                    class="text-xs text-text-secondary italic bg-gray-100 px-2 py-1 rounded"
+                  >
+                    Belum dinilai
                   </span>
+                  <button
+                    v-if="seminar.status === 'terjadwal' || !isLocked"
+                    @click="removePenguji(penguji)"
+                    class="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Hapus Penguji"
+                  >
+                    <span class="material-symbols-outlined text-[18px]"
+                      >close</span
+                    >
+                  </button>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <div
-                  v-if="penguji.nilai !== null && penguji.nilai !== undefined"
-                  class="text-right"
-                >
-                  <p class="text-lg font-bold text-primary">
-                    {{ penguji.nilai }}
-                  </p>
-                  <p class="text-xs text-text-secondary">Nilai</p>
-                </div>
-                <span
-                  v-else
-                  class="text-xs text-text-secondary italic bg-gray-100 px-2 py-1 rounded"
-                >
-                  Belum dinilai
-                </span>
-                <button
-                  v-if="seminar.status === 'terjadwal' || !isLocked"
-                  @click="removePenguji(penguji)"
-                  class="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Hapus Penguji"
-                >
-                  <span class="material-symbols-outlined text-[18px]"
-                    >close</span
+              <!-- 4-component scores display -->
+              <div
+                v-if="
+                  penguji.nilai_mt !== null ||
+                  penguji.nilai_ms !== null ||
+                  penguji.nilai_pm !== null ||
+                  penguji.nilai_pi !== null
+                "
+                class="mt-3 pt-3 border-t border-border-light"
+              >
+                <div class="grid grid-cols-4 gap-2">
+                  <div
+                    class="text-center p-2 bg-white dark:bg-surface-light rounded-lg border border-border-light"
                   >
-                </button>
+                    <p class="text-xs text-text-secondary mb-1">Metodologi</p>
+                    <p class="text-sm font-bold text-text-main">
+                      {{ penguji.nilai_mt ?? "-" }}
+                    </p>
+                  </div>
+                  <div
+                    class="text-center p-2 bg-white dark:bg-surface-light rounded-lg border border-border-light"
+                  >
+                    <p class="text-xs text-text-secondary mb-1">Materi</p>
+                    <p class="text-sm font-bold text-text-main">
+                      {{ penguji.nilai_ms ?? "-" }}
+                    </p>
+                  </div>
+                  <div
+                    class="text-center p-2 bg-white dark:bg-surface-light rounded-lg border border-border-light"
+                  >
+                    <p class="text-xs text-text-secondary mb-1">Penyajian</p>
+                    <p class="text-sm font-bold text-text-main">
+                      {{ penguji.nilai_pm ?? "-" }}
+                    </p>
+                  </div>
+                  <div
+                    class="text-center p-2 bg-white dark:bg-surface-light rounded-lg border border-border-light"
+                  >
+                    <p class="text-xs text-text-secondary mb-1">Penguasaan</p>
+                    <p class="text-sm font-bold text-text-main">
+                      {{ penguji.nilai_pi ?? "-" }}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -404,31 +467,55 @@
             <div
               v-for="(penguji, index) in nilaiForm.pengujiNilai"
               :key="penguji.penguji_id"
-              class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-background rounded-xl border border-border-light"
+              class="p-4 bg-gray-50 dark:bg-background rounded-xl border border-border-light"
             >
-              <div class="flex items-center gap-3 flex-1">
-                <div
-                  class="size-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                  :class="getAvatarColor(penguji.nama)"
-                >
-                  {{ getInitials(penguji.nama) }}
-                </div>
-                <div class="min-w-0">
-                  <p class="font-medium text-text-main text-sm truncate">
-                    {{ penguji.nama }}
-                  </p>
-                  <span
-                    class="text-xs font-medium capitalize"
-                    :class="getPeranClass(penguji.peran)"
+              <!-- Penguji header -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="size-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                    :class="getAvatarColor(penguji.nama)"
                   >
-                    {{ getPeranLabel(penguji.peran) }}
-                  </span>
+                    {{ getInitials(penguji.nama) }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="font-medium text-text-main text-sm truncate">
+                      {{ penguji.nama }}
+                    </p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span
+                        class="text-xs font-medium capitalize px-2 py-0.5 rounded"
+                        :class="getPeranClass(penguji.peran)"
+                      >
+                        {{ getPeranLabel(penguji.peran) }}
+                      </span>
+                      <span
+                        v-if="penguji.dosenScored"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700"
+                      >
+                        <span class="material-symbols-outlined text-[12px]"
+                          >check_circle</span
+                        >
+                        Sudah dinilai dosen
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-bold text-primary">
+                    {{ getPengujiAverage(penguji) }}
+                  </p>
+                  <p class="text-xs text-text-secondary">Rata-rata</p>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <div class="w-24">
+              <!-- 4-component score inputs -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <label class="block text-xs text-text-secondary mb-1"
+                    >Metodologi (MT)</label
+                  >
                   <input
-                    v-model.number="penguji.nilai"
+                    v-model.number="penguji.nilai_mt"
                     type="number"
                     min="0"
                     max="100"
@@ -438,15 +525,61 @@
                     :disabled="isLocked"
                   />
                 </div>
-                <div class="w-48">
+                <div>
+                  <label class="block text-xs text-text-secondary mb-1"
+                    >Materi (MS)</label
+                  >
                   <input
-                    v-model="penguji.catatan"
-                    type="text"
-                    placeholder="Catatan (opsional)"
-                    class="w-full px-3 py-2 border border-border-light rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    v-model.number="penguji.nilai_ms"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="0-100"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     :disabled="isLocked"
                   />
                 </div>
+                <div>
+                  <label class="block text-xs text-text-secondary mb-1"
+                    >Penyajian (PM)</label
+                  >
+                  <input
+                    v-model.number="penguji.nilai_pm"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="0-100"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    :disabled="isLocked"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs text-text-secondary mb-1"
+                    >Penguasaan (PI)</label
+                  >
+                  <input
+                    v-model.number="penguji.nilai_pi"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="0-100"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    :disabled="isLocked"
+                  />
+                </div>
+              </div>
+              <!-- Catatan -->
+              <div class="mt-3">
+                <input
+                  v-model="penguji.catatan"
+                  type="text"
+                  placeholder="Catatan (opsional)"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  :disabled="isLocked"
+                />
               </div>
             </div>
 
@@ -455,15 +588,17 @@
               class="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/20"
             >
               <div>
-                <p class="text-sm font-bold text-text-main">Rata-rata Nilai</p>
+                <p class="text-sm font-bold text-text-main">
+                  Rata-rata Nilai Seminar
+                </p>
                 <p class="text-xs text-text-secondary">
                   Dari
                   {{
                     nilaiForm.pengujiNilai.filter(
-                      (p) => p.nilai !== null && p.nilai !== "",
+                      (p) => getPengujiAverage(p) !== "-",
                     ).length
                   }}
-                  penguji
+                  penguji yang sudah dinilai
                 </p>
               </div>
               <p class="text-3xl font-bold text-primary">
@@ -950,13 +1085,37 @@ const nilaiForm = reactive({
   catatan: "",
 });
 
+const getPengujiAverage = (penguji) => {
+  const mt = penguji.nilai_mt;
+  const ms = penguji.nilai_ms;
+  const pm = penguji.nilai_pm;
+  const pi = penguji.nilai_pi;
+  if (
+    mt !== null &&
+    mt !== "" &&
+    !isNaN(mt) &&
+    ms !== null &&
+    ms !== "" &&
+    !isNaN(ms) &&
+    pm !== null &&
+    pm !== "" &&
+    !isNaN(pm) &&
+    pi !== null &&
+    pi !== "" &&
+    !isNaN(pi)
+  ) {
+    return ((Number(mt) + Number(ms) + Number(pm) + Number(pi)) / 4).toFixed(2);
+  }
+  return "-";
+};
+
 const averageNilai = computed(() => {
-  const validNilai = nilaiForm.pengujiNilai.filter(
-    (p) => p.nilai !== null && p.nilai !== "" && !isNaN(p.nilai),
+  const scored = nilaiForm.pengujiNilai.filter(
+    (p) => getPengujiAverage(p) !== "-",
   );
-  if (validNilai.length === 0) return "-";
-  const sum = validNilai.reduce((acc, p) => acc + Number(p.nilai), 0);
-  return (sum / validNilai.length).toFixed(2);
+  if (scored.length === 0) return "-";
+  const sum = scored.reduce((acc, p) => acc + Number(getPengujiAverage(p)), 0);
+  return (sum / scored.length).toFixed(2);
 });
 
 const fetchSeminarDetail = async () => {
@@ -982,8 +1141,12 @@ const initNilaiForm = () => {
       dosen_id: p.dosen_id,
       nama: p.dosen?.nama_lengkap || p.dosen?.nama || "-",
       peran: p.peran,
-      nilai: p.nilai,
+      nilai_mt: p.nilai_mt,
+      nilai_ms: p.nilai_ms,
+      nilai_pm: p.nilai_pm,
+      nilai_pi: p.nilai_pi,
       catatan: p.catatan || "",
+      dosenScored: p.nilai_mt !== null && p.nilai_mt !== undefined,
     }));
   }
   if (seminar.value?.berita_acara) {
@@ -1177,13 +1340,19 @@ const submitNilai = async () => {
     savingNilai.value = true;
     const api = (await import("../../../services/api")).default;
 
-    // Update nilai per penguji
+    // Update nilai per penguji (send all 4 components)
     for (const p of nilaiForm.pengujiNilai) {
-      if (p.nilai !== null && p.nilai !== "") {
+      const hasAnyNilai = [p.nilai_mt, p.nilai_ms, p.nilai_pm, p.nilai_pi].some(
+        (v) => v !== null && v !== "" && !isNaN(v),
+      );
+      if (hasAnyNilai) {
         await api.put(
           `/admin/seminar/${seminar.value.id}/penguji/${p.penguji_id}`,
           {
-            nilai: Number(p.nilai),
+            nilai_mt: p.nilai_mt !== "" ? Number(p.nilai_mt) : null,
+            nilai_ms: p.nilai_ms !== "" ? Number(p.nilai_ms) : null,
+            nilai_pm: p.nilai_pm !== "" ? Number(p.nilai_pm) : null,
+            nilai_pi: p.nilai_pi !== "" ? Number(p.nilai_pi) : null,
             catatan: p.catatan,
           },
         );

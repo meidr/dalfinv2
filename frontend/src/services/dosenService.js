@@ -68,6 +68,23 @@ export const dosenService = {
     const response = await api.put(`/dosen/seminar/${seminarId}/nilai`, data);
     return response.data;
   },
+
+  // Ujian Skripsi Requests
+  async getUjianRequests() {
+    const response = await api.get("/dosen/ujian-requests");
+    return response.data;
+  },
+
+  async respondUjianRequest(skripsiId, action, alasan = null) {
+    const response = await api.post(
+      `/dosen/ujian-requests/${skripsiId}/respond`,
+      {
+        action,
+        alasan,
+      },
+    );
+    return response.data;
+  },
 };
 
 export default dosenService;

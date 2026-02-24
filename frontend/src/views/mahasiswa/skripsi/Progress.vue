@@ -214,7 +214,9 @@ const statusMap = {
   proposal: "Tahap Proposal",
   sempro: "Sudah Sempro",
   penentuan_dospem: "Penentuan Dospem",
+  dospem: "Dospem Ditentukan",
   bimbingan: "Proses Bimbingan",
+  pengajuan_sidang: "Pengajuan Sidang",
   semhas: "Seminar Hasil",
   sidang: "Sidang Skripsi",
   revisi: "Revisi",
@@ -232,7 +234,9 @@ const statusOrder = [
   "proposal",
   "sempro",
   "penentuan_dospem",
+  "dospem",
   "bimbingan",
+  "pengajuan_sidang",
   "semhas",
   "sidang",
   "revisi",
@@ -248,9 +252,13 @@ const stepDefs = computed(() => {
       key: "penentuan_dospem",
       label: "Dospem",
       tooltip: "Penentuan Dosen Pembimbing",
-      after: ["penentuan_dospem"],
+      after: ["penentuan_dospem", "dospem"],
     },
-    { key: "bimbingan", label: "Bimbingan", after: ["bimbingan"] },
+    {
+      key: "bimbingan",
+      label: "Bimbingan",
+      after: ["bimbingan", "pengajuan_sidang"],
+    },
     { key: "semhas", label: "Semhas", after: ["semhas"] },
     { key: "sidang", label: "Sidang", after: ["sidang"] },
     { key: "revisi", label: "Revisi", after: ["revisi"] },
@@ -267,10 +275,12 @@ const steps = computed(() => {
   const currentIdx = statusOrder.indexOf(status);
 
   return stepDefs.value.map((step) => {
-    const stepIdx = statusOrder.indexOf(step.after[step.after.length - 1]);
+    const indices = step.after.map((s) => statusOrder.indexOf(s));
+    const minIdx = Math.min(...indices);
+    const maxIdx = Math.max(...indices);
     let state = "pending";
-    if (stepIdx < currentIdx) state = "done";
-    else if (stepIdx === currentIdx) state = "active";
+    if (currentIdx > maxIdx) state = "done";
+    else if (currentIdx >= minIdx && currentIdx <= maxIdx) state = "active";
     return { ...step, state };
   });
 });

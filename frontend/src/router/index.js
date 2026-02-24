@@ -178,6 +178,11 @@ const routes = [
         component: () =>
           import("../views/admin/superadmin/PengaturanModul.vue"),
       },
+      {
+        path: "konfigurasi",
+        name: "AdminKonfigurasi",
+        component: () => import("../views/admin/Konfigurasi.vue"),
+      },
     ],
   },
   {

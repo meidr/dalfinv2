@@ -779,6 +779,7 @@ const getStatusClass = (status) => {
     proposal: "bg-yellow-50 text-yellow-600 border border-yellow-100",
     bimbingan: "bg-purple-50 text-purple-600 border border-purple-100",
     sempro: "bg-blue-50 text-blue-600 border border-blue-100",
+    penentuan_dospem: "bg-green-50 text-green-600 border border-green-100",
   };
   return classes[status] || "bg-gray-50 text-gray-600 border border-gray-100";
 };
@@ -788,6 +789,7 @@ const getStatusLabel = (status) => {
     proposal: "Baru Isi Judul",
     bimbingan: "Bimbingan",
     sempro: "Seminar Proposal",
+    penentuan_dospem: "Selesai Sempro",
   };
   return labels[status] || status;
 };

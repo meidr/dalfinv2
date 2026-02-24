@@ -58,13 +58,14 @@ class MasterMahasiswaController extends Controller
             'jenis_kelamin' => 'nullable|in:L,P',
             'no_hp' => 'nullable|string',
             'alamat' => 'nullable|string',
+            'password' => 'nullable|string|min:6',
         ]);
 
         // Create user account
         $user = User::create([
             'name' => $request->nama,
             'email' => $request->email,
-            'password' => Hash::make('password'), // Default password = NIM
+            'password' => Hash::make($request->password ?? $request->nim), // Default password = NIM
             'role' => 'mahasiswa',
             'is_active' => true,
         ]);

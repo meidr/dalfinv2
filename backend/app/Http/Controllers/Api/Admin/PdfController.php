@@ -52,6 +52,24 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.sk-tugas', $data);
         $pdf->setPaper('a4', 'portrait');
 
+        // Mark SK Tugas document as approved (Sudah TTD)
+        \App\Models\Dokumen::updateOrCreate(
+            [
+                'skripsi_id' => $skripsi->id,
+                'jenis' => 'sk_tugas',
+            ],
+            [
+                'nama_file' => "SK_Tugas_{$skripsi->mahasiswa->nim}.pdf",
+                'path' => '',
+                'status' => 'approved',
+            ]
+        );
+
+        // Auto-update skripsi status to bimbingan
+        \App\Models\Skripsi::where('id', $skripsi->id)
+            ->whereIn('status', ['pengajuan', 'disetujui', 'penentuan_dospem', 'dospem'])
+            ->update(['status' => 'bimbingan', 'progress_percentage' => 50]);
+
         return $pdf->download("SK_Tugas_{$skripsi->mahasiswa->nim}.pdf");
     }
 
@@ -65,7 +83,7 @@ class PdfController extends Controller
         $signer = [
             'name' => '-',
             'nip' => '-',
-            'position' => 'Kepala Program Studi ' . ($prodi->kode ?? ''),
+            'position' => 'Kepala Program Studi ' . ($prodi->nama ?? ''),
             'signature' => null,
         ];
 
@@ -80,7 +98,6 @@ class PdfController extends Controller
             ->where('periode_id', $periode->id)
             ->where('jabatan_id', $jabatan->id)
             ->where('prodi_id', $prodi->id)
-            ->where('tgl_mulai', '<=', $today)
             ->where(function ($q) use ($today) {
                 $q->whereNull('tgl_selesai')
                     ->orWhere('tgl_selesai', '>=', $today);
@@ -90,6 +107,67 @@ class PdfController extends Controller
         if (!$pejabat || !$pejabat->dosen) return $signer;
 
         $dosen = $pejabat->dosen;
+
+        // Build full name
+        $parts = array_filter([
+            $dosen->gelar_depan,
+            $dosen->nama,
+            $dosen->gelar_belakang,
+        ]);
+        $signer['name'] = implode(' ', $parts) ?: $dosen->nama;
+        $signer['nip'] = $dosen->nip ?? '-';
+
+        // Get tanda tangan
+        $ttd = \App\Models\TandaTangan::where('dosen_id', $dosen->id)->first();
+        if ($ttd && $ttd->ttd) {
+            $path = storage_path('app/public/' . $ttd->ttd);
+            if (file_exists($path)) {
+                $signer['signature'] = $path;
+            }
+        }
+
+        return $signer;
+    }
+
+    /**
+     * Resolve the active DEKAN for a given fakultas
+     */
+    private function resolveDekan($fakultas)
+    {
+        $signer = [
+            'name' => '-',
+            'nip' => '-',
+            'position' => 'Dekan ' . ($fakultas->nama_fakultas ?? 'Fakultas'),
+            'signature' => null,
+        ];
+
+        if (!$fakultas) return $signer;
+
+        // Try getting dekan from fakultas relation
+        $dosen = $fakultas->dekan;
+
+        // Fallback: try JabatanPejabat with kode DEKAN
+        if (!$dosen) {
+            $jabatan = \App\Models\MasterJabatan::where('kode', 'DEKAN')->first();
+            if ($jabatan) {
+                $periode = \App\Models\PeriodeJabatan::where('is_active', true)->first();
+                if ($periode) {
+                    $today = now()->toDateString();
+                    $pejabat = \App\Models\JabatanPejabat::with('dosen')
+                        ->where('periode_id', $periode->id)
+                        ->where('jabatan_id', $jabatan->id)
+                        ->where('fakultas_id', $fakultas->id)
+                        ->where(function ($q) use ($today) {
+                            $q->whereNull('tgl_selesai')
+                                ->orWhere('tgl_selesai', '>=', $today);
+                        })
+                        ->first();
+                    $dosen = $pejabat?->dosen;
+                }
+            }
+        }
+
+        if (!$dosen) return $signer;
 
         // Build full name
         $parts = array_filter([
@@ -156,10 +234,11 @@ class PdfController extends Controller
     public function beritaAcaraSeminar(Request $request, Seminar $seminar)
     {
         $seminar->load([
-            'skripsi.mahasiswa.prodi',
+            'skripsi.mahasiswa.prodi.fakultas',
             'skripsi.pembimbing.dosen',
             'penguji.dosen',
-            'beritaAcara'
+            'beritaAcara',
+            'perbaikanProposal',
         ]);
 
         $beritaAcara = $seminar->beritaAcara;
@@ -171,12 +250,15 @@ class PdfController extends Controller
         }
 
         $jenisLabel = $seminar->jenis === 'sempro' ? 'Seminar Proposal' : ($seminar->jenis === 'semhas' ? 'Seminar Hasil' : 'Sidang Skripsi');
+        $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
 
         $data = [
             'seminar' => $seminar,
             'beritaAcara' => $beritaAcara,
             'jenisLabel' => $jenisLabel,
             'tanggal' => now()->translatedFormat('d F Y'),
+            'perbaikan' => $seminar->perbaikanProposal,
+            'ketuaPenguji' => $ketuaPenguji,
         ];
 
         $pdf = Pdf::loadView('pdf.berita-acara-seminar', $data);
@@ -212,32 +294,25 @@ class PdfController extends Controller
     public function skPenguji(Request $request, Seminar $seminar)
     {
         $seminar->load([
-            'skripsi.mahasiswa.prodi',
+            'skripsi.mahasiswa.prodi.fakultas',
             'skripsi.pembimbing.dosen',
             'penguji.dosen'
         ]);
+
+        $prodi = $seminar->skripsi->mahasiswa->prodi;
+        $fakultas = $prodi->fakultas ?? null;
 
         $data = [
             'seminar' => $seminar,
             'skripsi' => $seminar->skripsi,
             'tanggal' => now()->translatedFormat('d F Y'),
             'tahun_ajaran' => $this->getTahunAjaran(),
-            'prodi_lengkap' => $seminar->skripsi->mahasiswa->prodi->nama ?? '',
-            'fakultas' => $seminar->skripsi->mahasiswa->prodi->fakultas ?? '',
-            'kaprodi' => [
-                'name'      => $request->input('kaprodi_name', 'Nama Kaprodi'),
-                'nip'       => $request->input('kaprodi_nip', '-'),
-                'position'  => $request->input('kaprodi_position', 'Kepala Program Studi'),
-                'signature' => $request->input('kaprodi_signature'),
-            ],
-            'dekan' => [
-                'name'      => $request->input('dekan_name', 'Nama Dekan'),
-                'nip'       => $request->input('dekan_nip', '-'),
-                'position'  => $request->input('dekan_position', 'Dekan Fakultas'),
-                'signature' => $request->input('dekan_signature'),
-            ],
-            'city' => $request->input('city', 'Bangil'),
-            'institution' => $request->input('institution', "Universitas Islam Internasional Darullughah Wadda'wah"),
+            'prodi_lengkap' => $prodi->nama ?? '',
+            'fakultas' => $fakultas->nama_fakultas ?? '-',
+            'kaprodi' => $this->resolveKaprodi($prodi),
+            'dekan' => $this->resolveDekan($fakultas),
+            'city' => 'Bangil',
+            'institution' => "Universitas Islam Internasional Darullughah Wadda'wah",
         ];
 
         $pdf = Pdf::loadView('pdf.sk-penguji', $data);

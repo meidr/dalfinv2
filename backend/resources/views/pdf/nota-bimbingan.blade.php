@@ -174,7 +174,7 @@
         <tr>
             <td class="label">Fakultas</td>
             <td class="sep">:</td>
-            <td>{{ $skripsi->mahasiswa->prodi->fakultas ?? '-' }}</td>
+            <td>{{ $skripsi->mahasiswa->prodi->fakultas->nama_fakultas ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label">Judul Skripsi</td>
