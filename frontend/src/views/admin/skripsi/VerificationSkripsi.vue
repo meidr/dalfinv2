@@ -44,13 +44,44 @@
           />
         </div>
 
-        <button
-          @click="fetchPending"
-          class="p-2 text-text-secondary hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-          title="Refresh"
-        >
-          <span class="material-symbols-outlined text-[24px]">refresh</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <!-- Bulk action buttons -->
+          <Transition name="fade">
+            <div v-if="selectedIds.length > 0" class="flex items-center gap-2">
+              <span
+                class="text-sm text-text-secondary font-medium whitespace-nowrap"
+              >
+                {{ selectedIds.length }} dipilih
+              </span>
+              <button
+                @click="confirmBulkAction('approve')"
+                class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+              >
+                <span class="material-symbols-outlined text-[18px]"
+                  >check_circle</span
+                >
+                Setujui Semua
+              </button>
+              <button
+                @click="confirmBulkAction('reject')"
+                class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                <span class="material-symbols-outlined text-[18px]"
+                  >cancel</span
+                >
+                Tolak Semua
+              </button>
+            </div>
+          </Transition>
+
+          <button
+            @click="fetchPending"
+            class="p-2 text-text-secondary hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+            title="Refresh"
+          >
+            <span class="material-symbols-outlined text-[24px]">refresh</span>
+          </button>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -68,6 +99,15 @@
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
           >
             <tr>
+              <th class="px-4 py-4 w-10">
+                <input
+                  type="checkbox"
+                  :checked="isAllSelected"
+                  :indeterminate="isIndeterminate"
+                  @change="toggleSelectAll"
+                  class="size-4 rounded border-border-light text-primary focus:ring-primary cursor-pointer accent-primary"
+                />
+              </th>
               <th class="px-6 py-4">Mahasiswa</th>
               <th class="px-6 py-4">Perubahan Judul</th>
               <th class="px-6 py-4">Perubahan Status</th>
@@ -80,7 +120,7 @@
           <tbody class="divide-y divide-border-light">
             <tr v-if="filteredList.length === 0">
               <td
-                colspan="7"
+                colspan="8"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data verifikasi pending
@@ -90,7 +130,16 @@
               v-for="item in filteredList"
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
+              :class="{ 'bg-primary/5': selectedIds.includes(item.id) }"
             >
+              <td class="px-4 py-4">
+                <input
+                  type="checkbox"
+                  :checked="selectedIds.includes(item.id)"
+                  @change="toggleSelect(item.id)"
+                  class="size-4 rounded border-border-light text-primary focus:ring-primary cursor-pointer accent-primary"
+                />
+              </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div
@@ -128,16 +177,16 @@
               <td class="px-6 py-4">
                 <div
                   v-if="item.status_lama !== item.status_baru"
-                  class="flex flex-col gap-1"
+                  class="flex flex-col items-start gap-1"
                 >
                   <span
-                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 line-through w-fit"
+                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 line-through"
                   >
                     {{ getStatusLabel(item.status_lama) }}
                   </span>
                   <span
-                    class="material-symbols-outlined text-xs text-text-secondary rotate-90 ml-1"
-                    >arrow_right_alt</span
+                    class="material-symbols-outlined text-[16px] text-text-secondary ml-2"
+                    >arrow_downward</span
                   >
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
@@ -241,11 +290,19 @@
               }}
             </h3>
             <p class="text-text-secondary text-sm mb-6">
-              Apakah Anda yakin ingin
-              {{
-                actionType === "approve" ? "menyetujui" : "menolak"
-              }}
-              perubahan ini?
+              <template v-if="isBulkAction">
+                Apakah Anda yakin ingin
+                {{ actionType === "approve" ? "menyetujui" : "menolak" }}
+                <span class="font-semibold text-text-main">{{
+                  selectedIds.length
+                }}</span>
+                perubahan yang dipilih?
+              </template>
+              <template v-else>
+                Apakah Anda yakin ingin
+                {{ actionType === "approve" ? "menyetujui" : "menolak" }}
+                perubahan ini?
+              </template>
             </p>
             <div class="flex gap-3">
               <button
@@ -293,6 +350,8 @@ const searchQuery = ref("");
 const showConfirmModal = ref(false);
 const selectedItem = ref(null);
 const actionType = ref(""); // 'approve' | 'reject'
+const isBulkAction = ref(false);
+const selectedIds = ref([]);
 
 const pagination = reactive({
   current_page: 1,
@@ -303,9 +362,39 @@ const pagination = reactive({
   to: 0,
 });
 
+// Selection logic
+const isAllSelected = computed(() => {
+  return (
+    filteredList.value.length > 0 &&
+    filteredList.value.every((item) => selectedIds.value.includes(item.id))
+  );
+});
+
+const isIndeterminate = computed(() => {
+  return selectedIds.value.length > 0 && !isAllSelected.value;
+});
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedIds.value = [];
+  } else {
+    selectedIds.value = filteredList.value.map((item) => item.id);
+  }
+};
+
+const toggleSelect = (id) => {
+  const idx = selectedIds.value.indexOf(id);
+  if (idx >= 0) {
+    selectedIds.value.splice(idx, 1);
+  } else {
+    selectedIds.value.push(id);
+  }
+};
+
 const fetchPending = async () => {
   try {
     loading.value = true;
+    selectedIds.value = [];
     const params = {
       page: pagination.current_page,
       per_page: pagination.per_page,
@@ -342,29 +431,49 @@ const filteredList = computed(() => {
 const confirmAction = (item, type) => {
   selectedItem.value = item;
   actionType.value = type;
+  isBulkAction.value = false;
+  showConfirmModal.value = true;
+};
+
+const confirmBulkAction = (type) => {
+  actionType.value = type;
+  isBulkAction.value = true;
   showConfirmModal.value = true;
 };
 
 const processAction = async () => {
-  if (!selectedItem.value) return;
-
   try {
     processing.value = true;
     let response;
-    if (actionType.value === "approve") {
-      response = await adminService.approveSkripsiVerification(
-        selectedItem.value.id,
-      );
+
+    if (isBulkAction.value) {
+      // Bulk action
+      if (actionType.value === "approve") {
+        response = await adminService.bulkApproveSkripsiVerification(
+          selectedIds.value,
+        );
+      } else {
+        response = await adminService.bulkRejectSkripsiVerification(
+          selectedIds.value,
+        );
+      }
     } else {
-      response = await adminService.rejectSkripsiVerification(
-        selectedItem.value.id,
-      );
+      // Single action
+      if (actionType.value === "approve") {
+        response = await adminService.approveSkripsiVerification(
+          selectedItem.value.id,
+        );
+      } else {
+        response = await adminService.rejectSkripsiVerification(
+          selectedItem.value.id,
+        );
+      }
     }
 
     if (response.success) {
       showConfirmModal.value = false;
+      selectedIds.value = [];
       fetchPending();
-      // Optional: Show toast success
     }
   } catch (error) {
     console.error("Failed to process verification", error);
@@ -435,3 +544,14 @@ onMounted(() => {
   fetchPending();
 });
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

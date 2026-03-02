@@ -30,7 +30,7 @@
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex items-center gap-3">
               <div
-                class="bg-white dark:bg-surface-dark p-2 rounded-lg text-primary shadow-sm border border-primary/10"
+                class="bg-white dark:bg-white/5 p-2 rounded-lg text-primary shadow-sm border border-primary/10"
               >
                 <span class="material-symbols-outlined">school</span>
               </div>
@@ -46,7 +46,7 @@
             <div class="flex items-center gap-2">
               <span
                 v-if="ujian.all_scored"
-                class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200"
+                class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
               >
                 <span class="material-symbols-outlined text-sm"
                   >check_circle</span
@@ -55,7 +55,7 @@
               </span>
               <span
                 v-else
-                class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200"
+                class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
               >
                 <span class="material-symbols-outlined text-sm"
                   >hourglass_top</span
@@ -148,11 +148,11 @@
               >
                 <!-- Penguji Header -->
                 <div
-                  class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-surface-dark"
+                  class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-white/5"
                 >
                   <div class="flex items-center gap-2">
                     <div
-                      class="bg-orange-100 size-7 rounded-full flex items-center justify-center text-orange-600 border border-orange-200"
+                      class="bg-orange-100 dark:bg-orange-900/30 size-7 rounded-full flex items-center justify-center text-orange-600 border border-orange-200 dark:border-orange-800"
                     >
                       <span class="material-symbols-outlined text-[14px]"
                         >school</span
@@ -182,7 +182,7 @@
                 <div v-if="p.nilai !== null" class="px-4 py-3">
                   <div class="grid grid-cols-4 gap-2 text-center">
                     <div
-                      class="bg-gray-50 dark:bg-surface-dark rounded-lg px-2 py-2"
+                      class="bg-gray-50 dark:bg-white/5 rounded-lg px-2 py-2"
                     >
                       <p class="text-[10px] text-text-secondary font-medium">
                         Metodologi & Teknik
@@ -192,7 +192,7 @@
                       </p>
                     </div>
                     <div
-                      class="bg-gray-50 dark:bg-surface-dark rounded-lg px-2 py-2"
+                      class="bg-gray-50 dark:bg-white/5 rounded-lg px-2 py-2"
                     >
                       <p class="text-[10px] text-text-secondary font-medium">
                         Materi Skripsi
@@ -202,7 +202,7 @@
                       </p>
                     </div>
                     <div
-                      class="bg-gray-50 dark:bg-surface-dark rounded-lg px-2 py-2"
+                      class="bg-gray-50 dark:bg-white/5 rounded-lg px-2 py-2"
                     >
                       <p class="text-[10px] text-text-secondary font-medium">
                         Penampilan Mhs
@@ -212,7 +212,7 @@
                       </p>
                     </div>
                     <div
-                      class="bg-gray-50 dark:bg-surface-dark rounded-lg px-2 py-2"
+                      class="bg-gray-50 dark:bg-white/5 rounded-lg px-2 py-2"
                     >
                       <p class="text-[10px] text-text-secondary font-medium">
                         Penguasaan Isi
@@ -251,7 +251,7 @@
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex items-center gap-3">
               <div
-                class="bg-white dark:bg-surface-dark p-2 rounded-lg text-primary shadow-sm border border-primary/10"
+                class="bg-white dark:bg-white/5 p-2 rounded-lg text-primary shadow-sm border border-primary/10"
               >
                 <span class="material-symbols-outlined">description</span>
               </div>
@@ -266,7 +266,7 @@
             </div>
             <span
               v-if="seminar.all_scored"
-              class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200"
+              class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
             >
               <span class="material-symbols-outlined text-sm"
                 >check_circle</span
@@ -275,7 +275,7 @@
             </span>
             <span
               v-else
-              class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200"
+              class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
             >
               <span class="material-symbols-outlined text-sm"
                 >hourglass_top</span
@@ -330,11 +330,11 @@
             <div
               v-for="p in seminar.penguji"
               :key="p.id"
-              class="flex items-center justify-between bg-gray-50 dark:bg-surface-dark rounded-lg px-4 py-2.5 border border-border-light"
+              class="flex items-center justify-between bg-gray-50 dark:bg-white/5 rounded-lg px-4 py-2.5 border border-border-light"
             >
               <div class="flex items-center gap-2">
                 <div
-                  class="bg-orange-100 size-6 rounded-full flex items-center justify-center text-orange-600"
+                  class="bg-orange-100 dark:bg-orange-900/30 size-6 rounded-full flex items-center justify-center text-orange-600"
                 >
                   <span class="material-symbols-outlined text-[12px]"
                     >school</span
@@ -412,23 +412,31 @@ const getSeminarLabel = (jenis) => {
 
 const getGradeClass = (grade) => {
   const classes = {
-    A: "bg-green-100 text-green-700 border border-green-200",
-    "B+": "bg-emerald-100 text-emerald-700 border border-emerald-200",
-    B: "bg-blue-100 text-blue-700 border border-blue-200",
-    "C+": "bg-yellow-100 text-yellow-700 border border-yellow-200",
-    C: "bg-orange-100 text-orange-700 border border-orange-200",
-    D: "bg-red-100 text-red-700 border border-red-200",
+    A: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800",
+    "B+": "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800",
+    B: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800",
+    "C+": "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800",
+    C: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800",
+    D: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800",
   };
-  return classes[grade] || "bg-gray-100 text-gray-600";
+  return (
+    classes[grade] ||
+    "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+  );
 };
 
 const getHasilClass = (hasil) => {
   const map = {
-    lulus: "bg-green-100 text-green-700",
-    lulus_revisi: "bg-yellow-100 text-yellow-700",
-    tidak_lulus: "bg-red-100 text-red-700",
+    lulus:
+      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+    lulus_revisi:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400",
+    tidak_lulus: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
   };
-  return map[hasil] || "bg-gray-100 text-gray-600";
+  return (
+    map[hasil] ||
+    "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+  );
 };
 
 const getHasilLabel = (hasil) => {

@@ -123,7 +123,7 @@
         .signatures .name {
             font-weight: bold;
             text-decoration: underline;
-            margin-top: 70px;
+            margin-top: 10px;
             display: inline-block;
         }
 
@@ -240,7 +240,11 @@
                     </td>
                     <td class="center">
                         @if ($b->status === 'approved')
-                            ✓
+                            @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                                <img src="{{ $qrData['qr_base64'] }}" style="width: 35px; height: 35px;" alt="QR">
+                            @else
+                                <img src="{{ public_path('images/cap.jpg') }}" style="width: 40px; opacity: 0.8;">
+                            @endif
                         @else
                             &nbsp;
                         @endif
@@ -266,12 +270,30 @@
             <tr>
                 <td>
                     <p>Pembimbing I,</p>
+                    @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                        <div style="height: 130px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ $qrData['qr_base64'] }}" style="width: 120px; height: 120px;" alt="QR">
+                        </div>
+                    @else
+                        <div style="position: relative; height: 80px; margin-top: 5px;">
+                            <img src="{{ public_path('images/cap.jpg') }}" style="position: absolute; left: 50%; transform: translateX(-50%); margin-left: -40px; top: -15px; width: 100px; opacity: 0.8;">
+                        </div>
+                    @endif
                     <p class="name">{{ $pembimbing1?->dosen->full_name ?? '________________' }}</p>
                     <p class="nip">NIP/NIY. {{ $pembimbing1?->dosen->nip ?? '-' }}</p>
                 </td>
                 @if ($pembimbing2)
                     <td>
                         <p>Pembimbing II,</p>
+                        @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                            <div style="height: 130px; display: flex; align-items: center; justify-content: center;">
+                                <img src="{{ $qrData['qr_base64'] }}" style="width: 120px; height: 120px;" alt="QR">
+                            </div>
+                        @else
+                            <div style="position: relative; height: 80px; margin-top: 5px;">
+                                <img src="{{ public_path('images/cap.jpg') }}" style="position: absolute; left: 50%; transform: translateX(-50%); margin-left: -40px; top: -15px; width: 100px; opacity: 0.8;">
+                            </div>
+                        @endif
                         <p class="name">{{ $pembimbing2->dosen->full_name ?? '________________' }}</p>
                         <p class="nip">NIP/NIY. {{ $pembimbing2->dosen->nip ?? '-' }}</p>
                     </td>

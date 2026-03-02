@@ -28,6 +28,19 @@ class Dokumen extends Model
         'versi' => 'integer',
     ];
 
+    protected $appends = ['file_url'];
+
+    /**
+     * Get the full URL for the document file
+     */
+    public function getFileUrlAttribute()
+    {
+        if (!$this->path) {
+            return null;
+        }
+        return asset('storage/' . $this->path);
+    }
+
     const JENIS_PROPOSAL = 'proposal';
     const JENIS_BAB1 = 'bab1';
     const JENIS_BAB2 = 'bab2';
@@ -37,6 +50,7 @@ class Dokumen extends Model
     const JENIS_FULL_DRAFT = 'full_draft';
     const JENIS_FINAL = 'final';
     const JENIS_REVISI = 'revisi';
+    const JENIS_REVISI_PROPOSAL = 'revisi_proposal';
     const JENIS_LAINNYA = 'lainnya';
 
     const STATUS_PENDING = 'pending';

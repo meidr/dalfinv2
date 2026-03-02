@@ -180,20 +180,23 @@ class SeminarHasilController extends Controller
      */
     public function createBeritaAcara(Request $request, Seminar $seminar)
     {
+        $existing = $seminar->beritaAcara;
         $request->validate([
-            'nomor' => 'required|string|unique:berita_acara,nomor',
+            'nomor' => 'required|string|unique:berita_acara,nomor' . ($existing ? ',' . $existing->id : ''),
             'hasil' => 'required|in:lulus,lulus_bersyarat,tidak_lulus,mengulang',
             'catatan' => 'nullable|string',
         ]);
 
-        $beritaAcara = BeritaAcara::create([
-            'jenis' => 'seminar',
-            'seminar_id' => $seminar->id,
-            'nomor' => $request->nomor,
-            'tanggal' => now(),
-            'hasil' => $request->hasil,
-            'catatan' => $request->catatan,
-        ]);
+        $beritaAcara = BeritaAcara::updateOrCreate(
+            ['seminar_id' => $seminar->id],
+            [
+                'jenis' => 'seminar',
+                'nomor' => $request->nomor,
+                'tanggal' => now(),
+                'hasil' => $request->hasil,
+                'catatan' => $request->catatan,
+            ]
+        );
 
         $seminar->status = 'selesai';
         $seminar->save();

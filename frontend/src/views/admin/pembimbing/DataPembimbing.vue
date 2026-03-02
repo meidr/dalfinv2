@@ -20,7 +20,9 @@
           >
             Total Mahasiswa
           </p>
-          <div class="bg-blue-100 p-2 rounded-lg text-blue-600">
+          <div
+            class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-blue-600"
+          >
             <span class="material-symbols-outlined">people</span>
           </div>
         </div>
@@ -48,7 +50,9 @@
           >
             Sudah Ditetapkan
           </p>
-          <div class="bg-green-100 p-2 rounded-lg text-green-600">
+          <div
+            class="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-600"
+          >
             <span class="material-symbols-outlined">how_to_reg</span>
           </div>
         </div>
@@ -74,7 +78,9 @@
           >
             Belum Ditetapkan
           </p>
-          <div class="bg-orange-100 p-2 rounded-lg text-orange-600">
+          <div
+            class="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg text-orange-600"
+          >
             <span class="material-symbols-outlined">person_off</span>
           </div>
         </div>
@@ -121,19 +127,54 @@
               @input="debounceFetch"
               type="text"
               placeholder="Cari nama, NIM, judul..."
-              class="pl-10 pr-4 py-2 border border-border-light rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary w-56"
+              class="pl-10 pr-4 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary w-56"
             />
           </div>
           <!-- Filter Pembimbing -->
-          <select
-            v-model="filterPembimbing"
-            @change="fetchPembimbing"
-            class="px-3 py-2 border border-border-light rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          >
-            <option value="">Semua</option>
-            <option value="sudah">Sudah Ada Pembimbing</option>
-            <option value="belum">Belum Ada Pembimbing</option>
-          </select>
+          <div class="relative" ref="filterDropdownRef">
+            <button
+              type="button"
+              @click="filterDropdownOpen = !filterDropdownOpen"
+              class="px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main flex items-center gap-2 transition-colors min-w-[140px] justify-between"
+            >
+              <span>{{ filterPembimbingLabel }}</span>
+              <span
+                class="material-symbols-outlined text-[16px] text-text-secondary transition-transform"
+                :class="{ 'rotate-180': filterDropdownOpen }"
+                >expand_more</span
+              >
+            </button>
+            <Transition name="dropdown-fade">
+              <div
+                v-if="filterDropdownOpen"
+                class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-xl z-30 py-1 min-w-[180px]"
+              >
+                <button
+                  v-for="opt in filterOptions"
+                  :key="opt.value"
+                  type="button"
+                  @click="
+                    filterPembimbing = opt.value;
+                    filterDropdownOpen = false;
+                    fetchPembimbing();
+                  "
+                  class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                  :class="
+                    filterPembimbing === opt.value
+                      ? 'bg-primary/10 text-primary font-bold'
+                      : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                  "
+                >
+                  {{ opt.label }}
+                  <span
+                    v-if="filterPembimbing === opt.value"
+                    class="material-symbols-outlined text-[16px] text-primary"
+                    >check</span
+                  >
+                </button>
+              </div>
+            </Transition>
+          </div>
           <button
             @click="fetchPembimbing"
             class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg text-xs font-bold hover:bg-primary/20 transition-colors"
@@ -237,7 +278,7 @@
                 </div>
                 <span
                   v-else
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-50 text-yellow-700 border border-yellow-200"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"
                 >
                   <span class="material-symbols-outlined text-[12px]"
                     >hourglass_empty</span
@@ -250,7 +291,7 @@
                   <button
                     v-if="item.pembimbing && item.pembimbing.length > 0"
                     @click="openAssignModal(item)"
-                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 border border-orange-200 transition-all"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 border border-orange-200 dark:border-orange-800 transition-all"
                   >
                     <span class="material-symbols-outlined text-[14px]"
                       >edit</span
@@ -270,7 +311,7 @@
                   <button
                     v-if="item.pembimbing && item.pembimbing.length > 0"
                     @click="deleteAllPembimbing(item)"
-                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 border border-red-200 transition-all"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 transition-all"
                   >
                     <span class="material-symbols-outlined text-[14px]"
                       >delete</span
@@ -301,7 +342,7 @@
           <button
             @click="goToPage(pagination.current_page - 1)"
             :disabled="pagination.current_page <= 1"
-            class="size-8 flex items-center justify-center rounded-md border border-border-light bg-white text-text-secondary hover:bg-gray-50 transition-colors disabled:opacity-50"
+            class="size-8 flex items-center justify-center rounded-md border border-border-light bg-white dark:bg-white/5 text-text-secondary hover:bg-gray-50 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
           >
             <span class="material-symbols-outlined text-[16px]"
               >chevron_left</span
@@ -310,7 +351,7 @@
           <button
             @click="goToPage(pagination.current_page + 1)"
             :disabled="pagination.current_page >= pagination.last_page"
-            class="size-8 flex items-center justify-center rounded-md border border-border-light bg-white text-text-secondary hover:bg-gray-50 transition-colors"
+            class="size-8 flex items-center justify-center rounded-md border border-border-light bg-white dark:bg-white/5 text-text-secondary hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
           >
             <span class="material-symbols-outlined text-[16px]"
               >chevron_right</span
@@ -339,27 +380,73 @@
             </p>
           </div>
           <form @submit.prevent="assignPembimbing" class="p-6 space-y-5">
-            <!-- Bidang Keahlian Filter -->
-            <div>
+            <div class="relative" ref="bidangDropdownRef">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Filter Bidang Keahlian</label
               >
-              <select
-                v-model="selectedBidang"
-                @change="filterDosenByBidang"
-                class="w-full px-3 py-2 border border-border-light rounded-lg bg-white text-sm"
-                style="color: #000"
+              <button
+                type="button"
+                @click="bidangDropdownOpen = !bidangDropdownOpen"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main text-left flex items-center justify-between transition-colors text-sm"
               >
-                <option value="">Semua Bidang</option>
-                <option
-                  v-for="bidang in bidangList"
-                  :key="bidang"
-                  :value="bidang"
-                  style="color: #000"
+                <span>{{ selectedBidang || "Semua Bidang" }}</span>
+                <span
+                  class="material-symbols-outlined text-[18px] text-text-secondary transition-transform"
+                  :class="{ 'rotate-180': bidangDropdownOpen }"
+                  >expand_more</span
                 >
-                  {{ bidang }}
-                </option>
-              </select>
+              </button>
+              <Transition name="dropdown-fade">
+                <div
+                  v-if="bidangDropdownOpen"
+                  class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-xl z-30 py-1 max-h-60 overflow-y-auto"
+                >
+                  <button
+                    type="button"
+                    @click="
+                      selectedBidang = '';
+                      bidangDropdownOpen = false;
+                      filterDosenByBidang();
+                    "
+                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                    :class="
+                      !selectedBidang
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                    "
+                  >
+                    Semua Bidang
+                    <span
+                      v-if="!selectedBidang"
+                      class="material-symbols-outlined text-[16px] text-primary"
+                      >check</span
+                    >
+                  </button>
+                  <button
+                    v-for="bidang in bidangList"
+                    :key="bidang"
+                    type="button"
+                    @click="
+                      selectedBidang = bidang;
+                      bidangDropdownOpen = false;
+                      filterDosenByBidang();
+                    "
+                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                    :class="
+                      selectedBidang === bidang
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                    "
+                  >
+                    {{ bidang }}
+                    <span
+                      v-if="selectedBidang === bidang"
+                      class="material-symbols-outlined text-[16px] text-primary"
+                      >check</span
+                    >
+                  </button>
+                </div>
+              </Transition>
             </div>
 
             <!-- Pembimbing 1 -->
@@ -488,7 +575,7 @@
               <button
                 type="button"
                 @click="showAssignModal = false"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
               >
                 Batal
               </button>
@@ -514,7 +601,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, reactive, computed } from "vue";
 import Multiselect from "vue-multiselect";
 import "vue-multiselect/dist/vue-multiselect.css";
 import adminService from "../../../services/adminService";
@@ -530,6 +617,30 @@ const selectedBidang = ref("");
 const isEditMode = ref(false);
 const selectedPembimbing1 = ref(null);
 const selectedPembimbing2 = ref(null);
+const bidangDropdownOpen = ref(false);
+const bidangDropdownRef = ref(null);
+const filterDropdownOpen = ref(false);
+const filterDropdownRef = ref(null);
+
+const filterOptions = [
+  { value: "", label: "Semua" },
+  { value: "sudah", label: "Sudah Ada Pembimbing" },
+  { value: "belum", label: "Belum Ada Pembimbing" },
+];
+
+const filterPembimbingLabel = computed(() => {
+  const found = filterOptions.find((o) => o.value === filterPembimbing.value);
+  return found ? found.label : "Semua";
+});
+
+const handleDropdownClickOutside = (e) => {
+  if (bidangDropdownRef.value && !bidangDropdownRef.value.contains(e.target)) {
+    bidangDropdownOpen.value = false;
+  }
+  if (filterDropdownRef.value && !filterDropdownRef.value.contains(e.target)) {
+    filterDropdownOpen.value = false;
+  }
+};
 
 const pagination = reactive({
   current_page: 1,
@@ -797,6 +908,11 @@ const getStatusLabel = (status) => {
 onMounted(() => {
   fetchPembimbing();
   fetchStats();
+  document.addEventListener("click", handleDropdownClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleDropdownClickOutside);
 });
 </script>
 
@@ -807,7 +923,7 @@ onMounted(() => {
   border: 1px solid var(--border) !important;
   border-radius: 0.5rem !important;
   font-size: 0.875rem;
-  color: #000 !important;
+  color: var(--text-main) !important;
 }
 
 .multiselect__tags {
@@ -818,11 +934,16 @@ onMounted(() => {
   background: #fff !important;
 }
 
+.dark .multiselect__tags {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
 .multiselect__single {
-  color: #000 !important;
+  color: var(--text-main) !important;
   font-size: 0.875rem;
   margin-bottom: 0;
   padding: 2px 0;
+  background: transparent !important;
 }
 
 .multiselect__placeholder {
@@ -832,7 +953,7 @@ onMounted(() => {
 }
 
 .multiselect__input {
-  color: #000 !important;
+  color: var(--text-main) !important;
   font-size: 0.875rem;
   background: transparent !important;
 }
@@ -842,17 +963,29 @@ onMounted(() => {
   border-radius: 0 0 0.5rem 0.5rem !important;
   max-height: 250px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  background: #fff;
+}
+
+.dark .multiselect__content-wrapper {
+  background: var(--sidebar-light, #1e293b) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
 .multiselect__option {
   padding: 8px 12px !important;
   min-height: auto !important;
   font-size: 0.875rem;
+  color: var(--text-main);
 }
 
 .multiselect__option--highlight {
   background: #eff6ff !important;
   color: #000 !important;
+}
+
+.dark .multiselect__option--highlight {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-main) !important;
 }
 
 .multiselect__option--selected {
@@ -861,9 +994,19 @@ onMounted(() => {
   font-weight: 600;
 }
 
+.dark .multiselect__option--selected {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+}
+
 .multiselect__option--selected.multiselect__option--highlight {
   background: #bfdbfe !important;
   color: #1d4ed8 !important;
+}
+
+.dark .multiselect__option--selected.multiselect__option--highlight {
+  background: rgba(59, 130, 246, 0.3) !important;
+  color: #60a5fa !important;
 }
 
 .multiselect--active {
@@ -891,7 +1034,7 @@ onMounted(() => {
 
 .dosen-option-name {
   font-weight: 600;
-  color: #111827;
+  color: var(--text-main);
   font-size: 0.875rem;
   line-height: 1.25;
 }
@@ -905,7 +1048,7 @@ onMounted(() => {
 
 .dosen-bidang {
   font-size: 0.7rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -924,9 +1067,17 @@ onMounted(() => {
   color: #059669;
 }
 
+.dark .kuota-ok {
+  background: rgba(5, 150, 105, 0.2);
+}
+
 .kuota-full {
   background: #fef2f2;
   color: #dc2626;
+}
+
+.dark .kuota-full {
+  background: rgba(220, 38, 38, 0.2);
 }
 
 .kuota-badge {
@@ -939,6 +1090,11 @@ onMounted(() => {
   border: 1px solid #fecaca;
 }
 
+.dark .kuota-badge {
+  background: rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
 /* Selected dosen display */
 .selected-dosen {
   display: flex;
@@ -947,7 +1103,7 @@ onMounted(() => {
 }
 
 .selected-name {
-  color: #000;
+  color: var(--text-main);
   font-weight: 500;
   font-size: 0.875rem;
 }
@@ -959,5 +1115,32 @@ onMounted(() => {
   background: #ecfdf5;
   padding: 1px 6px;
   border-radius: 4px;
+}
+
+.dark .selected-slot {
+  background: rgba(5, 150, 105, 0.2);
+}
+
+/* Dropdown fade transition */
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: all 0.15s ease;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* Modal fade transition */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
 }
 </style>

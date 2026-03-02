@@ -33,6 +33,31 @@ class SKYudisiumController extends Controller
             });
         }
 
+        // Filter by tahun akademik (e.g. "2024/2025")
+        if ($request->filled('tahun_akademik')) {
+            $tahun = $request->tahun_akademik;
+            if (str_contains($tahun, '/')) {
+                $parts = explode('/', $tahun);
+                $startYear = (int) $parts[0];
+                $endYear = (int) $parts[1];
+                $query->whereBetween('tanggal', ["{$startYear}-08-01", "{$endYear}-07-31"]);
+            }
+        }
+
+        // Filter by fakultas
+        if ($request->filled('fakultas_id')) {
+            $query->whereHas('skripsi.mahasiswa.prodi', function ($q) use ($request) {
+                $q->where('fakultas_id', $request->fakultas_id);
+            });
+        }
+
+        // Filter by prodi
+        if ($request->filled('prodi_id')) {
+            $query->whereHas('skripsi.mahasiswa', function ($q) use ($request) {
+                $q->where('prodi_id', $request->prodi_id);
+            });
+        }
+
         $seminars = $query->orderBy('tanggal', 'desc')->paginate(10);
 
         // Transform data - set status based on SKYudisium existence

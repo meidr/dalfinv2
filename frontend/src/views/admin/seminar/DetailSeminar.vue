@@ -57,7 +57,7 @@
           </span>
           <button
             @click="deleteSeminar"
-            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 border border-red-200 transition-colors"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 transition-colors"
           >
             <span class="material-symbols-outlined text-[16px]">delete</span>
             Hapus
@@ -153,7 +153,7 @@
                 <div
                   v-for="p in seminar.skripsi.pembimbing"
                   :key="p.id"
-                  class="flex items-center gap-3 p-2 bg-gray-50 dark:bg-background rounded-lg"
+                  class="flex items-center gap-3 p-2 bg-gray-50 dark:bg-white/5 rounded-lg"
                 >
                   <div
                     class="size-8 rounded-full flex items-center justify-center text-xs font-bold"
@@ -196,25 +196,29 @@
         <div class="p-5">
           <!-- File exists -->
           <div
-            v-if="seminar.skripsi?.file_skripsi_url"
-            class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl"
+            v-if="proposalUrl"
+            class="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl"
           >
             <div class="flex items-center gap-4">
               <div
-                class="size-12 rounded-xl flex items-center justify-center bg-green-100 text-green-600"
+                class="size-12 rounded-xl flex items-center justify-center bg-green-100 dark:bg-green-900/30 text-green-600"
               >
                 <span class="material-symbols-outlined">description</span>
               </div>
               <div>
-                <h4 class="text-sm font-bold text-green-800">
+                <h4
+                  class="text-sm font-bold text-green-800 dark:text-green-400"
+                >
                   Dokumen Proposal
                 </h4>
-                <p class="text-xs text-green-600">File sudah diupload</p>
+                <p class="text-xs text-green-600 dark:text-green-500">
+                  File sudah diupload
+                </p>
               </div>
             </div>
             <div class="flex items-center gap-2">
               <a
-                :href="seminar.skripsi.file_skripsi_url"
+                :href="proposalUrl"
                 target="_blank"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors"
               >
@@ -224,7 +228,7 @@
                 Lihat
               </a>
               <a
-                :href="seminar.skripsi.file_skripsi_url"
+                :href="proposalUrl"
                 download
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shadow-sm"
               >
@@ -318,7 +322,7 @@
             <div
               v-for="penguji in seminar.penguji"
               :key="penguji.id"
-              class="p-4 bg-gray-50 dark:bg-background rounded-xl border border-border-light"
+              class="p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-border-light"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -348,7 +352,7 @@
                           penguji.nilai_mt !== null &&
                           penguji.nilai_mt !== undefined
                         "
-                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
                       >
                         <span class="material-symbols-outlined text-[12px]"
                           >check_circle</span
@@ -370,14 +374,14 @@
                   </div>
                   <span
                     v-else
-                    class="text-xs text-text-secondary italic bg-gray-100 px-2 py-1 rounded"
+                    class="text-xs text-text-secondary italic bg-gray-100 dark:bg-white/10 px-2 py-1 rounded"
                   >
                     Belum dinilai
                   </span>
                   <button
                     v-if="seminar.status === 'terjadwal' || !isLocked"
                     @click="removePenguji(penguji)"
-                    class="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    class="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     title="Hapus Penguji"
                   >
                     <span class="material-symbols-outlined text-[18px]"
@@ -398,7 +402,7 @@
               >
                 <div class="grid grid-cols-4 gap-2">
                   <div
-                    class="text-center p-2 bg-white dark:bg-surface-light rounded-lg border border-border-light"
+                    class="text-center p-2 bg-white dark:bg-white/5 rounded-lg border border-border-light"
                   >
                     <p class="text-xs text-text-secondary mb-1">Metodologi</p>
                     <p class="text-sm font-bold text-text-main">
@@ -406,7 +410,7 @@
                     </p>
                   </div>
                   <div
-                    class="text-center p-2 bg-white dark:bg-surface-light rounded-lg border border-border-light"
+                    class="text-center p-2 bg-white dark:bg-white/5 rounded-lg border border-border-light"
                   >
                     <p class="text-xs text-text-secondary mb-1">Materi</p>
                     <p class="text-sm font-bold text-text-main">
@@ -414,7 +418,7 @@
                     </p>
                   </div>
                   <div
-                    class="text-center p-2 bg-white dark:bg-surface-light rounded-lg border border-border-light"
+                    class="text-center p-2 bg-white dark:bg-white/5 rounded-lg border border-border-light"
                   >
                     <p class="text-xs text-text-secondary mb-1">Penyajian</p>
                     <p class="text-sm font-bold text-text-main">
@@ -422,7 +426,7 @@
                     </p>
                   </div>
                   <div
-                    class="text-center p-2 bg-white dark:bg-surface-light rounded-lg border border-border-light"
+                    class="text-center p-2 bg-white dark:bg-white/5 rounded-lg border border-border-light"
                   >
                     <p class="text-xs text-text-secondary mb-1">Penguasaan</p>
                     <p class="text-sm font-bold text-text-main">
@@ -467,7 +471,7 @@
             <div
               v-for="(penguji, index) in nilaiForm.pengujiNilai"
               :key="penguji.penguji_id"
-              class="p-4 bg-gray-50 dark:bg-background rounded-xl border border-border-light"
+              class="p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-border-light"
             >
               <!-- Penguji header -->
               <div class="flex items-center justify-between mb-3">
@@ -491,7 +495,7 @@
                       </span>
                       <span
                         v-if="penguji.dosenScored"
-                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
                       >
                         <span class="material-symbols-outlined text-[12px]"
                           >check_circle</span
@@ -521,7 +525,7 @@
                     max="100"
                     step="0.01"
                     placeholder="0-100"
-                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     :disabled="isLocked"
                   />
                 </div>
@@ -536,7 +540,7 @@
                     max="100"
                     step="0.01"
                     placeholder="0-100"
-                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     :disabled="isLocked"
                   />
                 </div>
@@ -551,7 +555,7 @@
                     max="100"
                     step="0.01"
                     placeholder="0-100"
-                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     :disabled="isLocked"
                   />
                 </div>
@@ -566,7 +570,7 @@
                     max="100"
                     step="0.01"
                     placeholder="0-100"
-                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-center text-sm font-bold bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     :disabled="isLocked"
                   />
                 </div>
@@ -577,7 +581,7 @@
                   v-model="penguji.catatan"
                   type="text"
                   placeholder="Catatan (opsional)"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   :disabled="isLocked"
                 />
               </div>
@@ -614,14 +618,13 @@
                 >
                 <select
                   v-model="nilaiForm.hasil"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   :disabled="isLocked"
                 >
                   <option value="">Pilih Hasil</option>
                   <option value="lulus">Lulus</option>
                   <option value="lulus_bersyarat">Lulus Bersyarat</option>
                   <option value="tidak_lulus">Tidak Lulus</option>
-                  <option value="mengulang">Mengulang</option>
                 </select>
               </div>
               <div>
@@ -643,7 +646,7 @@
               <button
                 v-if="seminar.status === 'selesai' && isLocked"
                 @click="toggleLock"
-                class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 border border-orange-200 transition-colors"
+                class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-600 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 border border-orange-200 dark:border-orange-800 transition-colors"
               >
                 <span class="material-symbols-outlined text-[18px]"
                   >lock_open</span
@@ -667,7 +670,7 @@
               </button>
               <div
                 v-if="isLocked && seminar.status === 'selesai'"
-                class="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-lg border border-green-200"
+                class="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-lg border border-green-200 dark:border-green-800"
               >
                 <span class="material-symbols-outlined text-[18px]"
                   >verified</span
@@ -728,6 +731,127 @@
         </div>
       </div>
 
+      <!-- Revisi Proposal Section (for lulus_bersyarat) -->
+      <div
+        v-if="
+          seminar.berita_acara?.hasil === 'lulus_bersyarat' ||
+          seminar.hasil === 'lulus_bersyarat'
+        "
+        class="bg-surface-light border border-border-light rounded-xl shadow-sm"
+      >
+        <div
+          class="p-5 border-b border-border-light flex items-center justify-between"
+        >
+          <div>
+            <h3 class="text-lg font-bold text-text-main">Revisi Proposal</h3>
+            <p class="text-sm text-text-secondary">
+              Dokumen revisi proposal yang diunggah mahasiswa setelah lulus
+              bersyarat
+            </p>
+          </div>
+          <span
+            class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"
+          >
+            Lulus Bersyarat
+          </span>
+        </div>
+        <div class="p-5">
+          <div v-if="revisiProposalDocs.length > 0" class="space-y-3">
+            <div
+              v-for="doc in revisiProposalDocs"
+              :key="doc.id"
+              class="flex items-center justify-between p-4 rounded-xl border border-border-light hover:border-primary/30 transition-colors"
+            >
+              <div class="flex items-center gap-4 min-w-0">
+                <div
+                  class="size-10 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined">description</span>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-bold text-text-main text-sm truncate">
+                    {{ doc.nama_file || "Revisi Proposal" }}
+                  </p>
+                  <p class="text-xs text-text-secondary">
+                    {{ formatDate(doc.created_at) }}
+                    <span v-if="doc.ukuran">
+                      • {{ formatFileSize(doc.ukuran) }}</span
+                    >
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <!-- Status badge -->
+                <span
+                  class="px-2.5 py-1 rounded-full text-[10px] font-bold"
+                  :class="
+                    doc.status === 'approved'
+                      ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                      : doc.status === 'rejected'
+                        ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                        : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400'
+                  "
+                >
+                  {{
+                    doc.status === "approved"
+                      ? "Disetujui"
+                      : doc.status === "rejected"
+                        ? "Ditolak"
+                        : "Menunggu"
+                  }}
+                </span>
+                <!-- View button -->
+                <a
+                  :href="getFileUrl(doc.path)"
+                  target="_blank"
+                  class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-primary hover:border-primary transition-all"
+                  title="Lihat"
+                >
+                  <span class="material-symbols-outlined text-[16px]"
+                    >visibility</span
+                  >
+                </a>
+                <!-- Approve/Reject buttons (only for pending) -->
+                <template v-if="doc.status === 'pending'">
+                  <button
+                    @click="approveRevisiProposal(doc.id)"
+                    :disabled="approvingRevisiProposal === doc.id"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                    title="Setujui"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >check</span
+                    >
+                    {{
+                      approvingRevisiProposal === doc.id
+                        ? "Proses..."
+                        : "Setujui"
+                    }}
+                  </button>
+                  <button
+                    @click="rejectRevisiProposal(doc.id)"
+                    :disabled="approvingRevisiProposal === doc.id"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                    title="Tolak"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >close</span
+                    >
+                    Tolak
+                  </button>
+                </template>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center py-8 text-text-secondary">
+            <span class="material-symbols-outlined text-4xl mb-2 block"
+              >upload_file</span
+            >
+            <p>Mahasiswa belum mengunggah dokumen revisi proposal</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Dokumen Resmi Section -->
       <div
         class="bg-surface-light border border-border-light rounded-xl shadow-sm"
@@ -744,13 +868,13 @@
             class="flex items-center justify-between p-4 rounded-xl border border-border-light"
             :class="
               seminar.penguji?.length
-                ? 'bg-white dark:bg-background'
+                ? 'bg-white dark:bg-white/5'
                 : 'bg-gray-50 dark:bg-gray-900/20 opacity-60'
             "
           >
             <div class="flex items-center gap-4">
               <div
-                class="size-12 rounded-xl flex items-center justify-center bg-red-50 text-red-500"
+                class="size-12 rounded-xl flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-500"
               >
                 <span class="material-symbols-outlined">picture_as_pdf</span>
               </div>
@@ -798,13 +922,13 @@
             class="flex items-center justify-between p-4 rounded-xl border border-border-light"
             :class="
               seminar.berita_acara
-                ? 'bg-white dark:bg-background'
+                ? 'bg-white dark:bg-white/5'
                 : 'bg-gray-50 dark:bg-gray-900/20 opacity-60'
             "
           >
             <div class="flex items-center gap-4">
               <div
-                class="size-12 rounded-xl flex items-center justify-center bg-blue-50 text-blue-500"
+                class="size-12 rounded-xl flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 text-blue-500"
               >
                 <span class="material-symbols-outlined">description</span>
               </div>
@@ -893,7 +1017,7 @@
               <input
                 v-model="editJadwalForm.tanggal"
                 type="date"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               />
             </div>
@@ -905,7 +1029,7 @@
                 <input
                   v-model="editJadwalForm.waktu"
                   type="time"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   required
                 />
               </div>
@@ -916,7 +1040,7 @@
                 <input
                   v-model="editJadwalForm.ruangan"
                   type="text"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   required
                 />
               </div>
@@ -925,7 +1049,7 @@
               <button
                 type="button"
                 @click="showEditJadwalModal = false"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
               >
                 Batal
               </button>
@@ -964,7 +1088,7 @@
                 @input="filterDosen"
                 @focus="showDosenDropdown = true"
                 type="text"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Ketik nama atau NIP dosen..."
                 autocomplete="off"
               />
@@ -1011,7 +1135,7 @@
               >
               <select
                 v-model="pengujiForm.peran"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               >
                 <option value="">Pilih Peran</option>
@@ -1024,7 +1148,7 @@
               <button
                 type="button"
                 @click="showAddPengujiModal = false"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
               >
                 Batal
               </button>
@@ -1064,6 +1188,23 @@ const previewingPdf = ref(null);
 const filteredDosenList = ref([]);
 const uploadingProposal = ref(false);
 const proposalFileInput = ref(null);
+
+// Computed: check both file_skripsi_url and dokumen table for proposal
+const proposalUrl = computed(() => {
+  // Primary: check file_skripsi_url on skripsi
+  if (seminar.value?.skripsi?.file_skripsi_url) {
+    return seminar.value.skripsi.file_skripsi_url;
+  }
+  // Fallback: check dokumen table for jenis='proposal'
+  const docs = seminar.value?.skripsi?.dokumen;
+  if (docs && Array.isArray(docs)) {
+    const proposalDoc = docs.find((d) => d.jenis === "proposal");
+    if (proposalDoc?.file_url) {
+      return proposalDoc.file_url;
+    }
+  }
+  return null;
+});
 
 const showEditJadwalModal = ref(false);
 const showAddPengujiModal = ref(false);
@@ -1117,6 +1258,54 @@ const averageNilai = computed(() => {
   const sum = scored.reduce((acc, p) => acc + Number(getPengujiAverage(p)), 0);
   return (sum / scored.length).toFixed(2);
 });
+
+// ---- REVISI PROPOSAL (lulus bersyarat) ----
+const revisiProposalDocs = computed(() => {
+  const docs = seminar.value?.skripsi?.dokumen || [];
+  return docs.filter((d) => d.jenis === "revisi_proposal");
+});
+
+const approvingRevisiProposal = ref(null);
+
+const approveRevisiProposal = async (docId) => {
+  if (
+    !confirm(
+      "Apakah Anda yakin ingin menyetujui dokumen revisi proposal ini? Status skripsi akan berubah menjadi Penentuan Dospem.",
+    )
+  )
+    return;
+  try {
+    approvingRevisiProposal.value = docId;
+    await adminService.updateDokumen(docId, { status: "approved" });
+    alert(
+      "Dokumen revisi proposal disetujui. Status skripsi berubah menjadi Penentuan Dospem.",
+    );
+    fetchSeminarDetail();
+  } catch (error) {
+    console.error("Failed to approve revisi proposal:", error);
+    alert(
+      "Gagal menyetujui: " + (error.response?.data?.message || error.message),
+    );
+  } finally {
+    approvingRevisiProposal.value = null;
+  }
+};
+
+const rejectRevisiProposal = async (docId) => {
+  const catatan = prompt("Alasan penolakan (opsional):");
+  if (catatan === null) return; // cancelled
+  try {
+    approvingRevisiProposal.value = docId;
+    await adminService.updateDokumen(docId, { status: "rejected", catatan });
+    alert("Dokumen revisi proposal ditolak.");
+    fetchSeminarDetail();
+  } catch (error) {
+    console.error("Failed to reject revisi proposal:", error);
+    alert("Gagal menolak: " + (error.response?.data?.message || error.message));
+  } finally {
+    approvingRevisiProposal.value = null;
+  }
+};
 
 const fetchSeminarDetail = async () => {
   try {
@@ -1433,6 +1622,22 @@ const formatDate = (date) => {
     month: "long",
     year: "numeric",
   });
+};
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return "";
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1048576).toFixed(1) + " MB";
+};
+
+const getFileUrl = (path) => {
+  if (!path) return "#";
+  if (path.startsWith("http")) return path;
+  const baseUrl =
+    import.meta.env.VITE_API_URL?.replace("/api", "") ||
+    "http://localhost:8000";
+  return `${baseUrl}/storage/${path}`;
 };
 
 const formatPembimbingJenis = (jenis) => {

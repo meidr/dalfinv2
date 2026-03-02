@@ -105,37 +105,114 @@
       class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
     >
       <!-- Toolbar -->
-      <div
-        class="p-5 border-b border-border-light flex flex-col md:flex-row gap-4 items-center justify-between"
-      >
-        <!-- Search -->
-        <div class="relative w-full md:max-w-md">
-          <div
-            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-          >
-            <span class="material-symbols-outlined text-text-secondary"
-              >search</span
+      <div class="p-5 border-b border-border-light space-y-3">
+        <!-- Row 1: Search + Export -->
+        <div
+          class="flex flex-col md:flex-row gap-3 items-center justify-between"
+        >
+          <div class="relative w-full md:max-w-md">
+            <div
+              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
             >
+              <span class="material-symbols-outlined text-text-secondary"
+                >search</span
+              >
+            </div>
+            <input
+              v-model="searchQuery"
+              @input="debouncedSearch"
+              class="block w-full pl-10 pr-3 py-2.5 border border-border-light rounded-lg leading-5 bg-background-light text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-shadow dark:bg-background"
+              placeholder="Cari Mahasiswa, NIM, atau Judul..."
+              type="text"
+            />
           </div>
-          <input
-            v-model="searchQuery"
-            @input="debouncedSearch"
-            class="block w-full pl-10 pr-3 py-2.5 border border-border-light rounded-lg leading-5 bg-background-light text-text-main placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-shadow dark:bg-background"
-            placeholder="Cari Mahasiswa, NIM, atau Judul..."
-            type="text"
-          />
+          <button
+            @click="doExportPdf"
+            :disabled="exportingPdf"
+            class="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-bold whitespace-nowrap disabled:opacity-50"
+          >
+            <span class="material-symbols-outlined text-[18px]"
+              >picture_as_pdf</span
+            >
+            {{ exportingPdf ? "Mengunduh..." : "Export PDF" }}
+          </button>
         </div>
-        <!-- Filters -->
-        <div class="flex gap-3 w-full md:w-auto">
+        <!-- Row 2: Filter bar -->
+        <div class="flex flex-wrap gap-2 items-center">
           <select
             v-model="filterJadwal"
-            @change="fetchEligible"
-            class="px-4 py-2.5 bg-surface-light border border-border-light rounded-lg text-text-secondary text-sm focus:ring-1 focus:ring-primary"
+            @change="applyFilters"
+            class="px-3 py-2 bg-white dark:bg-surface-light border border-border-light dark:border-white/10 rounded-lg text-text-main text-xs focus:ring-1 focus:ring-primary transition-colors"
           >
             <option value="">Semua Jadwal</option>
             <option value="terjadwal">Sudah Dijadwalkan</option>
             <option value="belum">Belum Dijadwalkan</option>
           </select>
+          <select
+            v-model="filterTahunAkademik"
+            @change="applyFilters"
+            class="px-3 py-2 bg-white dark:bg-surface-light border border-border-light dark:border-white/10 rounded-lg text-text-main text-xs focus:ring-1 focus:ring-primary transition-colors"
+          >
+            <option value="">Semua Tahun</option>
+            <option v-for="t in tahunList" :key="t.id" :value="t.name">
+              {{ t.name }}
+            </option>
+          </select>
+          <select
+            v-model="filterSemester"
+            @change="applyFilters"
+            class="px-3 py-2 bg-white dark:bg-surface-light border border-border-light dark:border-white/10 rounded-lg text-text-main text-xs focus:ring-1 focus:ring-primary transition-colors"
+          >
+            <option value="">Semua Semester</option>
+            <option value="ganjil">Ganjil</option>
+            <option value="genap">Genap</option>
+          </select>
+          <select
+            v-model="filterFakultas"
+            @change="onFakultasChange"
+            class="px-3 py-2 bg-white dark:bg-surface-light border border-border-light dark:border-white/10 rounded-lg text-text-main text-xs focus:ring-1 focus:ring-primary transition-colors"
+          >
+            <option value="">Semua Fakultas</option>
+            <option v-for="f in fakultasList" :key="f.id" :value="f.id">
+              {{ f.nama_fakultas }}
+            </option>
+          </select>
+          <select
+            v-model="filterProdi"
+            @change="applyFilters"
+            class="px-3 py-2 bg-white dark:bg-surface-light border border-border-light dark:border-white/10 rounded-lg text-text-main text-xs focus:ring-1 focus:ring-primary transition-colors"
+          >
+            <option value="">Semua Prodi</option>
+            <option v-for="p in filteredProdiList" :key="p.id" :value="p.id">
+              {{ p.nama }}
+            </option>
+          </select>
+          <div class="relative">
+            <input
+              v-model="filterPembimbing"
+              @input="debouncedFilter"
+              type="text"
+              class="w-36 px-3 py-2 border border-border-light dark:border-white/10 rounded-lg text-xs bg-white dark:bg-surface-light text-text-main placeholder-gray-400 dark:placeholder-gray-500 focus:ring-1 focus:ring-primary transition-colors"
+              placeholder="Pembimbing..."
+            />
+          </div>
+          <div class="relative">
+            <input
+              v-model="filterPenguji"
+              @input="debouncedFilter"
+              type="text"
+              class="w-36 px-3 py-2 border border-border-light dark:border-white/10 rounded-lg text-xs bg-white dark:bg-surface-light text-text-main placeholder-gray-400 dark:placeholder-gray-500 focus:ring-1 focus:ring-primary transition-colors"
+              placeholder="Penguji..."
+            />
+          </div>
+          <button
+            v-if="hasActiveFilters"
+            @click="clearAllFilters"
+            class="flex items-center gap-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+          >
+            <span class="material-symbols-outlined text-[14px]">close</span>
+            Reset
+          </button>
         </div>
       </div>
 
@@ -399,7 +476,7 @@
               <input
                 v-model="scheduleForm.tanggal"
                 type="date"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-white/5 text-text-main"
                 required
               />
             </div>
@@ -411,7 +488,7 @@
                 <input
                   v-model="scheduleForm.waktu"
                   type="time"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-white/5 text-text-main"
                   required
                 />
               </div>
@@ -422,7 +499,7 @@
                 <input
                   v-model="scheduleForm.ruangan"
                   type="text"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-white/5 text-text-main"
                   placeholder="Ruang Sidang A"
                   required
                 />
@@ -433,7 +510,7 @@
               <button
                 type="button"
                 @click="showScheduleModal = false"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light dark:hover:bg-white/5 transition-colors"
               >
                 Batal
               </button>
@@ -461,7 +538,7 @@
           class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         >
           <div
-            class="p-6 border-b border-border-light flex items-center justify-between sticky top-0 bg-white z-10"
+            class="p-6 border-b border-border-light flex items-center justify-between sticky top-0 bg-white dark:bg-surface-light z-10"
           >
             <div>
               <h2 class="text-xl font-bold text-text-main">Edit Sidang</h2>
@@ -543,7 +620,7 @@
                 <input
                   v-model="editForm.tanggal"
                   type="date"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                 />
               </div>
               <div class="grid grid-cols-2 gap-3">
@@ -554,7 +631,7 @@
                   <input
                     v-model="editForm.waktu"
                     type="time"
-                    class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                   />
                 </div>
                 <div>
@@ -564,7 +641,7 @@
                   <input
                     v-model="editForm.ruangan"
                     type="text"
-                    class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                   />
                 </div>
               </div>
@@ -574,7 +651,7 @@
                 >
                 <select
                   v-model="editForm.status"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                 >
                   <option value="pending">Menunggu</option>
                   <option value="terjadwal">Terjadwal</option>
@@ -603,7 +680,7 @@
 
               <!-- Existing pembimbing notice -->
               <div
-                class="px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-700 flex items-center gap-2"
+                class="px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-xs text-yellow-700 dark:text-yellow-400 flex items-center gap-2"
               >
                 <span class="material-symbols-outlined text-[16px]">info</span>
                 Dosen pembimbing tidak bisa menjadi penguji.
@@ -640,7 +717,7 @@
                       @input="searchDosenPenguji(idx)"
                       @focus="pSlot.showDropdown = true"
                       type="text"
-                      class="w-full pl-9 pr-3 py-2 border border-border-light rounded-lg text-sm"
+                      class="w-full pl-9 pr-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                       placeholder="Cari dosen penguji..."
                       autocomplete="off"
                     />
@@ -648,7 +725,7 @@
                   <!-- Selected dosen -->
                   <div
                     v-if="pSlot.dosen_id"
-                    class="flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm"
+                    class="flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm"
                   >
                     <span
                       class="material-symbols-outlined text-primary text-[16px]"
@@ -670,14 +747,14 @@
                   <!-- Dropdown -->
                   <div
                     v-if="pSlot.showDropdown && pSlot.options.length > 0"
-                    class="absolute z-10 mt-1 w-full bg-white border border-border-light rounded-lg shadow-lg max-h-40 overflow-y-auto"
+                    class="absolute z-10 mt-1 w-full bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-lg max-h-40 overflow-y-auto"
                   >
                     <button
                       v-for="d in pSlot.options"
                       :key="d.id"
                       type="button"
                       @click="selectPengujiDosen(idx, d)"
-                      class="w-full text-left px-4 py-2.5 hover:bg-blue-50 transition-colors text-sm border-b border-border-light last:border-0"
+                      class="w-full text-left px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-white/10 transition-colors text-sm border-b border-border-light last:border-0"
                     >
                       <p class="font-medium text-text-main">
                         {{ d.full_name || d.nama }}
@@ -694,7 +771,7 @@
                       pSlot.options.length === 0 &&
                       !pSlot.loading
                     "
-                    class="absolute z-10 mt-1 w-full bg-white border border-border-light rounded-lg shadow-lg p-3 text-center text-xs text-text-secondary"
+                    class="absolute z-10 mt-1 w-full bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-lg p-3 text-center text-xs text-text-secondary"
                   >
                     Tidak ditemukan
                   </div>
@@ -707,7 +784,7 @@
                   >
                   <select
                     v-model="pSlot.peran"
-                    class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                    class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                   >
                     <option value="ketua">Ketua</option>
                     <option value="penguji_1">Penguji 1</option>
@@ -787,7 +864,7 @@
                         min="0"
                         max="100"
                         step="0.01"
-                        class="w-full px-3 py-2 border border-border-light rounded-lg text-sm font-bold text-center"
+                        class="w-full px-3 py-2 border border-border-light rounded-lg text-sm font-bold text-center bg-white dark:bg-white/5 text-text-main"
                         placeholder="-"
                       />
                     </div>
@@ -802,7 +879,7 @@
                         min="0"
                         max="100"
                         step="0.01"
-                        class="w-full px-3 py-2 border border-border-light rounded-lg text-sm font-bold text-center"
+                        class="w-full px-3 py-2 border border-border-light rounded-lg text-sm font-bold text-center bg-white dark:bg-white/5 text-text-main"
                         placeholder="-"
                       />
                     </div>
@@ -817,7 +894,7 @@
                         min="0"
                         max="100"
                         step="0.01"
-                        class="w-full px-3 py-2 border border-border-light rounded-lg text-sm font-bold text-center"
+                        class="w-full px-3 py-2 border border-border-light rounded-lg text-sm font-bold text-center bg-white dark:bg-white/5 text-text-main"
                         placeholder="-"
                       />
                     </div>
@@ -832,7 +909,7 @@
                         min="0"
                         max="100"
                         step="0.01"
-                        class="w-full px-3 py-2 border border-border-light rounded-lg text-sm font-bold text-center"
+                        class="w-full px-3 py-2 border border-border-light rounded-lg text-sm font-bold text-center bg-white dark:bg-white/5 text-text-main"
                         placeholder="-"
                       />
                     </div>
@@ -846,7 +923,7 @@
                     <input
                       v-model="pSlot.catatan"
                       type="text"
-                      class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                      class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                       placeholder="Catatan penguji (opsional)"
                     />
                   </div>
@@ -854,7 +931,7 @@
 
                 <!-- Average + Grade Summary -->
                 <div
-                  class="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl p-4 border border-indigo-100 mt-4"
+                  class="bg-gradient-to-r from-slate-50 to-indigo-50 dark:from-white/5 dark:to-indigo-900/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-900/30 mt-4"
                 >
                   <div class="flex items-center justify-between">
                     <div>
@@ -903,7 +980,7 @@
                 >
                 <select
                   v-model="editForm.hasil"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                 >
                   <option value="">-- Otomatis dari Nilai --</option>
                   <option value="lulus">Lulus</option>
@@ -924,7 +1001,7 @@
                 <textarea
                   v-model="editForm.catatan"
                   rows="3"
-                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm"
+                  class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main"
                   placeholder="Catatan tambahan (opsional)"
                 ></textarea>
               </div>
@@ -1067,7 +1144,7 @@
               <button
                 type="button"
                 @click="showEditModal = false"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors text-sm font-medium"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light dark:hover:bg-white/5 transition-colors text-sm font-medium"
               >
                 Batal
               </button>
@@ -1095,7 +1172,7 @@
           class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
         >
           <div
-            class="p-6 border-b border-border-light flex justify-between items-center sticky top-0 bg-white z-10"
+            class="p-6 border-b border-border-light flex justify-between items-center sticky top-0 bg-white dark:bg-surface-light z-10"
           >
             <h2 class="text-xl font-bold text-text-main">Detail Sidang</h2>
             <button
@@ -1241,7 +1318,7 @@
                 <div
                   v-for="p in detailUjian.penguji"
                   :key="p.id"
-                  class="bg-white rounded-lg px-3 py-3 border border-border-light"
+                  class="bg-white dark:bg-white/5 rounded-lg px-3 py-3 border border-border-light"
                 >
                   <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2">
@@ -1256,7 +1333,7 @@
                         p.dosen?.full_name || "-"
                       }}</span>
                       <span
-                        class="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-text-secondary"
+                        class="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-text-secondary"
                         >{{ getPeranLabel(p.peran) }}</span
                       >
                     </div>
@@ -1265,7 +1342,7 @@
                     }}</span>
                   </div>
                   <div class="grid grid-cols-4 gap-2 text-center">
-                    <div class="bg-gray-50 rounded px-2 py-1">
+                    <div class="bg-gray-50 dark:bg-white/5 rounded px-2 py-1">
                       <p class="text-[9px] text-text-secondary font-medium">
                         MT
                       </p>
@@ -1273,7 +1350,7 @@
                         {{ p.nilai_mt ?? "-" }}
                       </p>
                     </div>
-                    <div class="bg-gray-50 rounded px-2 py-1">
+                    <div class="bg-gray-50 dark:bg-white/5 rounded px-2 py-1">
                       <p class="text-[9px] text-text-secondary font-medium">
                         MS
                       </p>
@@ -1281,7 +1358,7 @@
                         {{ p.nilai_ms ?? "-" }}
                       </p>
                     </div>
-                    <div class="bg-gray-50 rounded px-2 py-1">
+                    <div class="bg-gray-50 dark:bg-white/5 rounded px-2 py-1">
                       <p class="text-[9px] text-text-secondary font-medium">
                         PM
                       </p>
@@ -1289,7 +1366,7 @@
                         {{ p.nilai_pm ?? "-" }}
                       </p>
                     </div>
-                    <div class="bg-gray-50 rounded px-2 py-1">
+                    <div class="bg-gray-50 dark:bg-white/5 rounded px-2 py-1">
                       <p class="text-[9px] text-text-secondary font-medium">
                         PI
                       </p>
@@ -1310,7 +1387,7 @@
             <!-- Hasil Akhir -->
             <div
               v-if="detailUjian.nilai || detailUjian.hasil"
-              class="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-lg p-4 border border-indigo-100"
+              class="bg-gradient-to-r from-slate-50 to-indigo-50 dark:from-white/5 dark:to-indigo-900/20 rounded-lg p-4 border border-indigo-100 dark:border-indigo-900/30"
             >
               <p
                 class="text-xs text-text-secondary font-bold uppercase tracking-wider mb-3"
@@ -1398,6 +1475,35 @@ const editingSkripsiStatus = ref("");
 const revisiDocs = ref([]);
 const revisiLoading = ref(false);
 
+// Inline filter state
+const filterTahunAkademik = ref("");
+const filterSemester = ref("");
+const filterFakultas = ref("");
+const filterProdi = ref("");
+const filterPembimbing = ref("");
+const filterPenguji = ref("");
+const exportingPdf = ref(false);
+const fakultasList = ref([]);
+const prodiList = ref([]);
+const tahunList = ref([]);
+
+const filteredProdiList = computed(() => {
+  if (!filterFakultas.value) return prodiList.value;
+  return prodiList.value.filter((p) => p.fakultas_id == filterFakultas.value);
+});
+
+const hasActiveFilters = computed(() => {
+  return (
+    filterJadwal.value ||
+    filterTahunAkademik.value ||
+    filterSemester.value ||
+    filterFakultas.value ||
+    filterProdi.value ||
+    filterPembimbing.value ||
+    filterPenguji.value
+  );
+});
+
 const pagination = reactive({
   current_page: 1,
   last_page: 1,
@@ -1459,8 +1565,7 @@ const computedGrade = computed(() => {
   return getGrade(computedAverage.value);
 });
 
-let searchTimeout = null;
-let mahasiswaSearchTimeout = null;
+let filterTimeout = null;
 
 // ---- DATA FETCH ----
 const fetchEligible = async () => {
@@ -1471,6 +1576,13 @@ const fetchEligible = async () => {
       search: searchQuery.value,
     };
     if (filterJadwal.value) params.jadwal = filterJadwal.value;
+    if (filterTahunAkademik.value)
+      params.tahun_akademik = filterTahunAkademik.value;
+    if (filterSemester.value) params.semester = filterSemester.value;
+    if (filterFakultas.value) params.fakultas_id = filterFakultas.value;
+    if (filterProdi.value) params.prodi_id = filterProdi.value;
+    if (filterPembimbing.value) params.pembimbing = filterPembimbing.value;
+    if (filterPenguji.value) params.penguji = filterPenguji.value;
     const response = await adminService.getEligibleSidang(params);
     if (response.success) {
       eligibleList.value = response.data.data || response.data;
@@ -1495,11 +1607,42 @@ const fetchEligible = async () => {
 };
 
 const debouncedSearch = () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
+  clearTimeout(filterTimeout);
+  filterTimeout = setTimeout(() => {
     pagination.current_page = 1;
     fetchEligible();
   }, 300);
+};
+
+const debouncedFilter = () => {
+  clearTimeout(filterTimeout);
+  filterTimeout = setTimeout(() => {
+    pagination.current_page = 1;
+    fetchEligible();
+  }, 400);
+};
+
+const applyFilters = () => {
+  pagination.current_page = 1;
+  fetchEligible();
+};
+
+const onFakultasChange = () => {
+  filterProdi.value = "";
+  applyFilters();
+};
+
+const clearAllFilters = () => {
+  filterJadwal.value = "";
+  filterTahunAkademik.value = "";
+  filterSemester.value = "";
+  filterFakultas.value = "";
+  filterProdi.value = "";
+  filterPembimbing.value = "";
+  filterPenguji.value = "";
+  searchQuery.value = "";
+  pagination.current_page = 1;
+  fetchEligible();
 };
 
 const goToPage = (page) => {
@@ -2013,8 +2156,56 @@ const getGradeClass = (grade) => {
   return classes[grade] || "bg-gray-100 text-gray-600";
 };
 
+// ---- FILTER DATA LOAD ----
+const loadFilterData = async () => {
+  try {
+    const [fakRes, prodiRes, tahunRes] = await Promise.all([
+      adminService.getFakultas(),
+      adminService.getProdi(),
+      adminService.getTahun(),
+    ]);
+    fakultasList.value = fakRes.data || fakRes || [];
+    prodiList.value = prodiRes.data || prodiRes || [];
+    tahunList.value = tahunRes.data || tahunRes || [];
+  } catch (e) {
+    console.error("Failed to load filter data:", e);
+  }
+};
+
+const doExportPdf = async () => {
+  try {
+    exportingPdf.value = true;
+    const params = {};
+    if (searchQuery.value) params.search = searchQuery.value;
+    if (filterTahunAkademik.value)
+      params.tahun_akademik = filterTahunAkademik.value;
+    if (filterSemester.value) params.semester = filterSemester.value;
+    if (filterFakultas.value) params.fakultas_id = filterFakultas.value;
+    if (filterProdi.value) params.prodi_id = filterProdi.value;
+    if (filterPembimbing.value) params.pembimbing = filterPembimbing.value;
+    if (filterPenguji.value) params.penguji = filterPenguji.value;
+
+    const response = await adminService.getJadwalUjianPdf(params);
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Jadwal_Ujian_Skripsi.pdf");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to export PDF:", error);
+    alert("Gagal mengunduh PDF. Pastikan ada data ujian yang sesuai filter.");
+  } finally {
+    exportingPdf.value = false;
+  }
+};
+
 onMounted(() => {
   fetchEligible();
+  loadFilterData();
 });
 </script>
 
@@ -2026,5 +2217,16 @@ onMounted(() => {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+/* Dark mode: native select/option styling */
+:root.dark select,
+.dark select {
+  color-scheme: dark;
+}
+:root.dark select option,
+.dark select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
 }
 </style>

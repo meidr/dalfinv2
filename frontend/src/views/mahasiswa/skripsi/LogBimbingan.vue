@@ -153,7 +153,7 @@
               <td class="px-6 py-5">
                 <div class="flex items-center gap-3">
                   <div
-                    class="size-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-blue-100 text-primary border border-blue-200"
+                    class="size-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-blue-100 dark:bg-blue-900/30 text-primary border border-blue-200 dark:border-blue-800"
                   >
                     {{ getInitials(item.dosen?.nama || item.dosen?.full_name) }}
                   </div>
@@ -167,25 +167,25 @@
               <td class="px-6 py-5 text-center">
                 <span
                   v-if="item.status === 'approved'"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-600 border border-green-100"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800"
                 >
                   Disetujui
                 </span>
                 <span
                   v-else-if="item.status === 'rejected'"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800"
                 >
                   Ditolak
                 </span>
                 <span
                   v-else-if="item.status === 'revision'"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-600 border border-orange-100"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800"
                 >
                   Revisi
                 </span>
                 <span
                   v-else
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800"
                 >
                   Menunggu
                 </span>
@@ -222,7 +222,7 @@
                   >
                     <button
                       @click="openDosenAction(item, 'approved')"
-                      class="size-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 border border-green-100 hover:bg-green-100 transition-all"
+                      class="size-8 flex items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 border border-green-100 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/40 transition-all"
                       title="Setujui"
                     >
                       <span class="material-symbols-outlined text-[18px]"
@@ -231,7 +231,7 @@
                     </button>
                     <button
                       @click="openDosenAction(item, 'revision')"
-                      class="size-8 flex items-center justify-center rounded-lg bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100 transition-all"
+                      class="size-8 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 border border-orange-100 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-all"
                       title="Revisi"
                     >
                       <span class="material-symbols-outlined text-[18px]"
@@ -240,7 +240,7 @@
                     </button>
                     <button
                       @click="openDosenAction(item, 'rejected')"
-                      class="size-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-all"
+                      class="size-8 flex items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-100 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all"
                       title="Tolak"
                     >
                       <span class="material-symbols-outlined text-[18px]"
@@ -358,7 +358,7 @@
             <p class="text-xs text-text-secondary font-medium">Pembimbing</p>
             <div class="flex items-center gap-2 mt-1">
               <div
-                class="size-8 rounded-full flex items-center justify-center text-xs font-bold bg-blue-100 text-primary border border-blue-200"
+                class="size-8 rounded-full flex items-center justify-center text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-primary border border-blue-200 dark:border-blue-800"
               >
                 {{ getInitials(detailItem.dosen?.nama) }}
               </div>
@@ -784,11 +784,13 @@ const dosenActionIcon = computed(() => {
 });
 const dosenActionIconClass = computed(() => {
   const map = {
-    approved: "bg-green-100 text-green-600",
-    revision: "bg-orange-100 text-orange-600",
-    rejected: "bg-red-100 text-red-600",
+    approved: "bg-green-100 dark:bg-green-900/30 text-green-600",
+    revision: "bg-orange-100 dark:bg-orange-900/30 text-orange-600",
+    rejected: "bg-red-100 dark:bg-red-900/30 text-red-600",
   };
-  return map[dosenActionType.value] || "bg-gray-100 text-gray-600";
+  return (
+    map[dosenActionType.value] || "bg-gray-100 dark:bg-gray-800 text-gray-600"
+  );
 });
 const dosenActionBtnClass = computed(() => {
   const map = {
@@ -848,10 +850,14 @@ const formatDate = (dateStr) => {
 
 const getDetailStatusClass = (status) => {
   const map = {
-    approved: "bg-green-50 text-green-600 border border-green-100",
-    rejected: "bg-red-50 text-red-600 border border-red-100",
-    revision: "bg-orange-50 text-orange-600 border border-orange-100",
-    pending: "bg-blue-50 text-blue-600 border border-blue-100",
+    approved:
+      "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800",
+    rejected:
+      "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800",
+    revision:
+      "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800",
+    pending:
+      "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800",
   };
   return map[status] || map.pending;
 };

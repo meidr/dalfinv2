@@ -77,6 +77,12 @@ class DashboardController extends Controller
         // Get SK Yudisium
         $skYudisium = $skripsi->skYudisium;
 
+        // Get SK Tugas
+        $skTugas = $skripsi->skTugas;
+
+        // Check if has bimbingan (for Nota Bimbingan availability)
+        $hasBimbingan = $skripsi->bimbingan()->where('status', 'approved')->exists();
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -94,6 +100,8 @@ class DashboardController extends Controller
                 'semhas_seminar' => $semhasSeminar,
                 'sidang_seminar' => $sidangSeminar,
                 'sk_yudisium' => $skYudisium,
+                'sk_tugas' => $skTugas,
+                'has_bimbingan' => $hasBimbingan,
             ]
         ]);
     }

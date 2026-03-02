@@ -42,6 +42,70 @@
         </span>
       </button>
 
+      <!-- Panduan Staff -->
+      <div class="relative" ref="panduanRef">
+        <button
+          @click="togglePanduan"
+          class="flex items-center justify-center size-10 rounded-full hover:bg-sidebar-light text-text-secondary transition-colors group"
+          title="Panduan Staff"
+        >
+          <span
+            class="material-symbols-outlined transition-transform group-hover:text-primary"
+          >
+            menu_book
+          </span>
+        </button>
+
+        <!-- Panduan Dropdown -->
+        <Transition name="dropdown">
+          <div
+            v-if="showPanduan"
+            class="absolute right-0 top-12 w-72 bg-white dark:bg-surface-light rounded-xl border border-border-light shadow-xl overflow-hidden"
+          >
+            <div class="p-4 border-b border-border-light">
+              <h3 class="text-sm font-bold text-text-main">Panduan Staff</h3>
+            </div>
+            <div class="max-h-60 overflow-y-auto">
+              <div v-if="staffPanduan.length === 0" class="p-6 text-center">
+                <span
+                  class="material-symbols-outlined text-3xl text-text-secondary mb-2 block"
+                  >folder_open</span
+                >
+                <p class="text-sm text-text-secondary">
+                  Belum ada panduan staff
+                </p>
+              </div>
+              <button
+                v-for="p in staffPanduan"
+                :key="p.id"
+                @click="downloadStaffPanduan(p)"
+                class="flex items-center gap-3 px-4 py-3 hover:bg-sidebar-light/50 transition-colors w-full text-left border-b border-border-light last:border-b-0"
+              >
+                <div
+                  class="size-8 rounded-lg flex items-center justify-center bg-red-50 text-red-500 shrink-0"
+                >
+                  <span class="material-symbols-outlined text-[16px]"
+                    >description</span
+                  >
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-text-main truncate">
+                    {{ p.nama_file }}
+                  </p>
+                  <p class="text-xs text-text-secondary">
+                    {{ formatPanduanSize(p.ukuran) }}
+                  </p>
+                </div>
+                <span
+                  class="material-symbols-outlined text-primary text-[16px] shrink-0"
+                  >download</span
+                >
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+
       <!-- Notification Bell -->
       <div class="relative" ref="notifRef">
         <button
@@ -212,10 +276,15 @@ const showNotifications = ref(false);
 const showUserMenu = ref(false);
 const notifRef = ref(null);
 const userMenuRef = ref(null);
+const panduanRef = ref(null);
 
 const notifications = ref([]);
 const unreadCount = ref(0);
 let pollInterval = null;
+
+// Staff panduan state
+const showPanduan = ref(false);
+const staffPanduan = ref([]);
 
 const displayName = computed(() => {
   const user = authStore.user;
@@ -328,6 +397,44 @@ const toggleUserMenu = () => {
   showNotifications.value = false;
 };
 
+// --- Panduan helpers ---
+const togglePanduan = async () => {
+  showPanduan.value = !showPanduan.value;
+  showNotifications.value = false;
+  showUserMenu.value = false;
+  if (showPanduan.value && staffPanduan.value.length === 0) {
+    try {
+      const res = await adminService.getStaffPanduan();
+      if (res.success) staffPanduan.value = res.data || [];
+    } catch (err) {
+      console.error("Failed to fetch staff panduan:", err);
+    }
+  }
+};
+
+const formatPanduanSize = (bytes) => {
+  if (!bytes) return "0 B";
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
+};
+
+const downloadStaffPanduan = async (p) => {
+  showPanduan.value = false;
+  try {
+    const response = await adminService.downloadStaffPanduan(p.id);
+    const blob = new Blob([response.data]);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = p.nama_file;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Failed to download staff panduan:", err);
+  }
+};
+
 const handleNotifClick = async (notif) => {
   if (!notif.is_read) {
     try {
@@ -374,6 +481,9 @@ const handleClickOutside = (event) => {
   }
   if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
     showUserMenu.value = false;
+  }
+  if (panduanRef.value && !panduanRef.value.contains(event.target)) {
+    showPanduan.value = false;
   }
 };
 

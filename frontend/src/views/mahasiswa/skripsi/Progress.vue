@@ -126,10 +126,12 @@
     <!-- Upload Proposal Instructions (only when status is proposal) -->
     <div
       v-if="skripsi?.status === 'proposal'"
-      class="bg-surface-light rounded-xl shadow-sm border border-blue-200 p-6"
+      class="bg-surface-light rounded-xl shadow-sm border border-blue-200 dark:border-blue-800 p-6"
     >
       <div class="flex items-center gap-3 mb-4">
-        <div class="p-2 bg-blue-100 rounded-lg text-primary">
+        <div
+          class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-primary"
+        >
           <span class="material-symbols-outlined">upload_file</span>
         </div>
         <div>
@@ -141,7 +143,9 @@
           </p>
         </div>
       </div>
-      <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4 mb-4">
+      <div
+        class="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded-xl p-4 mb-4"
+      >
         <p class="text-sm font-bold text-text-main mb-3">
           <span
             class="material-symbols-outlined text-[16px] align-text-bottom mr-1 text-primary"

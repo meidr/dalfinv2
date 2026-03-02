@@ -128,6 +128,7 @@ class SeminarController extends Controller
         $seminar->load([
             'skripsi.mahasiswa.prodi',
             'skripsi.pembimbing.dosen',
+            'skripsi.dokumen',
             'penguji.dosen',
             'beritaAcara'
         ]);
@@ -150,7 +151,7 @@ class SeminarController extends Controller
             'status' => 'sometimes|in:terjadwal,berlangsung,selesai,batal',
             'nilai' => 'nullable|numeric|min:0|max:100',
             'catatan' => 'nullable|string',
-            'hasil' => 'sometimes|in:lulus,lulus_bersyarat,tidak_lulus,mengulang',
+            'hasil' => 'sometimes|in:lulus,lulus_bersyarat,tidak_lulus',
         ]);
 
         $seminar->fill($request->only([
@@ -169,18 +170,25 @@ class SeminarController extends Controller
 
         $seminar->save();
 
-        // Auto-update skripsi status when seminar is completed with lulus result
-        // This bypasses admin verification — status changes directly
-        if (
-            $seminar->status === 'selesai'
-            && $seminar->jenis === 'sempro'
-            && in_array($seminar->hasil, ['lulus', 'lulus_bersyarat'])
-        ) {
+        // Auto-update skripsi status when seminar proposal is completed
+        if ($seminar->status === 'selesai' && $seminar->jenis === 'sempro') {
             $skripsi = $seminar->skripsi;
             if ($skripsi && in_array($skripsi->status, ['pengajuan', 'proposal', 'sempro'])) {
-                $skripsi->status = 'penentuan_dospem';
-                $skripsi->progress_percentage = 30;
-                $skripsi->save();
+                if ($seminar->hasil === 'lulus') {
+                    // Lulus: langsung ke penentuan_dospem
+                    $skripsi->status = 'penentuan_dospem';
+                    $skripsi->progress_percentage = 30;
+                    $skripsi->save();
+                } elseif ($seminar->hasil === 'lulus_bersyarat') {
+                    // Lulus bersyarat: tetap di sempro, menunggu upload revisi proposal
+                    // Status tidak berubah, mahasiswa harus upload revisi_proposal dulu
+                    // Setelah diapprove oleh admin, baru pindah ke penentuan_dospem
+                } elseif ($seminar->hasil === 'tidak_lulus') {
+                    // Tidak lulus: deaktivasi skripsi
+                    $skripsi->status = 'ditolak';
+                    $skripsi->is_active = false;
+                    $skripsi->save();
+                }
             }
         }
 
@@ -222,20 +230,23 @@ class SeminarController extends Controller
      */
     public function createBeritaAcara(Request $request, Seminar $seminar)
     {
+        $existing = $seminar->beritaAcara;
         $request->validate([
-            'nomor' => 'required|string|unique:berita_acara,nomor',
-            'hasil' => 'required|in:lulus,lulus_bersyarat,tidak_lulus,mengulang',
+            'nomor' => 'required|string|unique:berita_acara,nomor' . ($existing ? ',' . $existing->id : ''),
+            'hasil' => 'required|in:lulus,lulus_bersyarat,tidak_lulus',
             'catatan' => 'nullable|string',
         ]);
 
-        $beritaAcara = BeritaAcara::create([
-            'jenis' => 'seminar',
-            'seminar_id' => $seminar->id,
-            'nomor' => $request->nomor,
-            'tanggal' => now(),
-            'hasil' => $request->hasil,
-            'catatan' => $request->catatan,
-        ]);
+        $beritaAcara = BeritaAcara::updateOrCreate(
+            ['seminar_id' => $seminar->id],
+            [
+                'jenis' => 'seminar',
+                'nomor' => $request->nomor,
+                'tanggal' => now(),
+                'hasil' => $request->hasil,
+                'catatan' => $request->catatan,
+            ]
+        );
 
         // Update seminar status
         $seminar->status = 'selesai';

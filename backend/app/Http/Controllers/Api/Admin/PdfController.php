@@ -10,9 +10,13 @@ use App\Models\NotaBimbingan;
 use App\Models\BeritaAcara;
 use App\Models\Seminar;
 use App\Models\Prodi;
+use App\Models\Configuration;
+use App\Models\DocumentToken;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 
 class PdfController extends Controller
 {
@@ -39,6 +43,21 @@ class PdfController extends Controller
         $prodi = $skripsi->mahasiswa->prodi;
         $signer = $this->resolveKaprodi($prodi);
 
+        // QR Signature
+        $signatureMode = $this->getSignatureMode($request);
+        $qrData = null;
+        if ($signatureMode === 'qr') {
+            $qrData = $this->generateQrToken(
+                $request,
+                'sk_tugas',
+                $skripsi->id,
+                $skTugas->nomor_sk ?? $skTugas->nomor ?? '-',
+                $signer['name'],
+                $signer['position'],
+                "SK_Tugas_{$skripsi->mahasiswa->nim}.pdf"
+            );
+        }
+
         $data = [
             'skripsi' => $skripsi,
             'skTugas' => $skTugas,
@@ -47,6 +66,8 @@ class PdfController extends Controller
             'prodi_kode' => $prodi->kode ?? '',
             'prodi_nama' => $prodi->nama ?? '',
             'signer' => $signer,
+            'signatureMode' => $signatureMode,
+            'qrData' => $qrData,
         ];
 
         $pdf = Pdf::loadView('pdf.sk-tugas', $data);
@@ -215,11 +236,28 @@ class PdfController extends Controller
             ]);
         }
 
+        // QR Signature
+        $signatureMode = $this->getSignatureMode($request);
+        $qrData = null;
+        if ($signatureMode === 'qr') {
+            $qrData = $this->generateQrToken(
+                $request,
+                'nota_bimbingan',
+                $skripsi->id,
+                $nota->nomor ?? '-',
+                'Pembimbing',
+                'Dosen Pembimbing',
+                "Nota_Bimbingan_{$skripsi->mahasiswa->nim}.pdf"
+            );
+        }
+
         $data = [
             'skripsi' => $skripsi,
             'nota' => $nota,
             'bimbingan' => $skripsi->bimbingan,
             'tanggal' => now()->translatedFormat('d F Y'),
+            'signatureMode' => $signatureMode,
+            'qrData' => $qrData,
         ];
 
         $pdf = Pdf::loadView('pdf.nota-bimbingan', $data);
@@ -252,6 +290,25 @@ class PdfController extends Controller
         $jenisLabel = $seminar->jenis === 'sempro' ? 'Seminar Proposal' : ($seminar->jenis === 'semhas' ? 'Seminar Hasil' : 'Sidang Skripsi');
         $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
 
+        // QR Signature
+        $signatureMode = $this->getSignatureMode($request);
+        $qrData = null;
+        $nim = $seminar->skripsi->mahasiswa->nim;
+
+        if ($signatureMode === 'qr') {
+            // Generate a single QR code for the entire berita acara document
+            $ketuaName = $ketuaPenguji?->dosen?->full_name ?? ($ketuaPenguji?->dosen?->nama ?? '-');
+            $qrData = $this->generateQrToken(
+                $request,
+                'berita_acara',
+                $seminar->id,
+                $beritaAcara->nomor ?? '-',
+                $ketuaName,
+                'Ketua Penguji',
+                "Berita_Acara_{$seminar->jenis}_{$nim}.pdf"
+            );
+        }
+
         $data = [
             'seminar' => $seminar,
             'beritaAcara' => $beritaAcara,
@@ -259,12 +316,13 @@ class PdfController extends Controller
             'tanggal' => now()->translatedFormat('d F Y'),
             'perbaikan' => $seminar->perbaikanProposal,
             'ketuaPenguji' => $ketuaPenguji,
+            'signatureMode' => $signatureMode,
+            'qrData' => $qrData,
         ];
 
         $pdf = Pdf::loadView('pdf.berita-acara-seminar', $data);
         $pdf->setPaper('a4', 'portrait');
 
-        $nim = $seminar->skripsi->mahasiswa->nim;
         return $pdf->download("Berita_Acara_{$seminar->jenis}_{$nim}.pdf");
     }
 
@@ -301,6 +359,24 @@ class PdfController extends Controller
 
         $prodi = $seminar->skripsi->mahasiswa->prodi;
         $fakultas = $prodi->fakultas ?? null;
+        $kaprodi = $this->resolveKaprodi($prodi);
+        $dekan = $this->resolveDekan($fakultas);
+
+        // QR Signature
+        $signatureMode = $this->getSignatureMode($request);
+        $qrData = null;
+        $nim = $seminar->skripsi->mahasiswa->nim;
+        if ($signatureMode === 'qr') {
+            $qrData = $this->generateQrToken(
+                $request,
+                'sk_penguji',
+                $seminar->id,
+                '-',
+                $dekan['name'],
+                $dekan['position'],
+                "SK_Penguji_{$nim}.pdf"
+            );
+        }
 
         $data = [
             'seminar' => $seminar,
@@ -309,16 +385,17 @@ class PdfController extends Controller
             'tahun_ajaran' => $this->getTahunAjaran(),
             'prodi_lengkap' => $prodi->nama ?? '',
             'fakultas' => $fakultas->nama_fakultas ?? '-',
-            'kaprodi' => $this->resolveKaprodi($prodi),
-            'dekan' => $this->resolveDekan($fakultas),
+            'kaprodi' => $kaprodi,
+            'dekan' => $dekan,
             'city' => 'Bangil',
             'institution' => "Universitas Islam Internasional Darullughah Wadda'wah",
+            'signatureMode' => $signatureMode,
+            'qrData' => $qrData,
         ];
 
         $pdf = Pdf::loadView('pdf.sk-penguji', $data);
         $pdf->setPaper('a4', 'portrait');
 
-        $nim = $seminar->skripsi->mahasiswa->nim;
         return $pdf->download("SK_Penguji_{$nim}.pdf");
     }
 
@@ -328,7 +405,7 @@ class PdfController extends Controller
     public function jadwalUjian(Request $request)
     {
         $query = Seminar::with([
-            'skripsi.mahasiswa.prodi',
+            'skripsi.mahasiswa.prodi.fakultas',
             'skripsi.pembimbing.dosen',
             'penguji.dosen'
         ])->where('jenis', 'sidang');
@@ -337,6 +414,13 @@ class PdfController extends Controller
         if ($request->filled('prodi_id')) {
             $query->whereHas('skripsi.mahasiswa', function ($q) use ($request) {
                 $q->where('prodi_id', $request->prodi_id);
+            });
+        }
+
+        // Filter by fakultas
+        if ($request->filled('fakultas_id')) {
+            $query->whereHas('skripsi.mahasiswa.prodi', function ($q) use ($request) {
+                $q->where('fakultas_id', $request->fakultas_id);
             });
         }
 
@@ -370,26 +454,128 @@ class PdfController extends Controller
             $query->where('status', $request->status);
         }
 
-        $ujianList = $query->orderBy('tanggal', 'asc')->orderBy('waktu', 'asc')->get();
-
-        // Determine semester label
-        $tahunAkademik = $request->input('tahun_akademik', $this->getTahunAjaran());
-        $semesterLabel = '';
-        if (str_contains($tahunAkademik, 'Ganjil') || str_contains($tahunAkademik, 'Genap')) {
-            $semesterLabel = $tahunAkademik;
-        } else {
-            $semesterLabel = 'Tahun Akademik ' . $tahunAkademik;
+        // Search by nama/NIM
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('skripsi.mahasiswa', function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nim', 'like', "%{$search}%");
+            });
         }
 
-        // Get prodi name if filtered
+        // Filter by specific date
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal', $request->tanggal);
+        }
+
+        // Filter by pembimbing name
+        if ($request->filled('pembimbing')) {
+            $pembimbing = $request->pembimbing;
+            $query->whereHas('skripsi.pembimbing.dosen', function ($q) use ($pembimbing) {
+                $q->where(function ($sq) use ($pembimbing) {
+                    $sq->where('nama', 'like', "%{$pembimbing}%")
+                        ->orWhere('gelar_depan', 'like', "%{$pembimbing}%")
+                        ->orWhere('gelar_belakang', 'like', "%{$pembimbing}%");
+                });
+            });
+        }
+
+        // Filter by penguji name
+        if ($request->filled('penguji')) {
+            $penguji = $request->penguji;
+            $query->whereHas('penguji.dosen', function ($q) use ($penguji) {
+                $q->where(function ($sq) use ($penguji) {
+                    $sq->where('nama', 'like', "%{$penguji}%")
+                        ->orWhere('gelar_depan', 'like', "%{$penguji}%")
+                        ->orWhere('gelar_belakang', 'like', "%{$penguji}%");
+                });
+            });
+        }
+
+        $ujianList = $query->orderBy('tanggal', 'asc')->orderBy('waktu', 'asc')->get();
+
+        // Determine semester & tahun label
+        $tahunAkademik = $request->input('tahun_akademik', $this->getTahunAjaran());
+        $semesterLabel = '';
+        if ($request->filled('semester')) {
+            $semLabel = $request->semester === 'ganjil' ? 'Ganjil' : 'Genap';
+            $semesterLabel = "Semester {$semLabel} {$tahunAkademik}";
+        } else {
+            $semesterLabel = $tahunAkademik;
+        }
+
+        // Get prodi & fakultas info
         $prodiName = '';
         $fakultasName = '';
+        $prodi = null;
+        $fakultas = null;
+
         if ($request->filled('prodi_id')) {
-            $prodi = Prodi::find($request->prodi_id);
+            $prodi = Prodi::with('fakultas')->find($request->prodi_id);
             if ($prodi) {
                 $prodiName = $prodi->nama;
-                $fakultasName = $prodi->fakultas ?? '';
+                $fakultas = $prodi->fakultas;
+                $fakultasName = $fakultas->nama_fakultas ?? '';
             }
+        } elseif ($request->filled('fakultas_id')) {
+            $fakultas = \App\Models\Fakultas::with('prodi')->find($request->fakultas_id);
+            if ($fakultas) {
+                $fakultasName = $fakultas->nama_fakultas ?? '';
+                // Use first prodi of this fakultas for kaprodi resolution
+                $prodi = $fakultas->prodi->first();
+            }
+        } else {
+            // No filter active: title will show "SEMUA FAKULTAS — SEMUA PRODI"
+            // But still resolve prodi/fakultas from first item for signature resolution only
+            $firstItem = $ujianList->first();
+            if ($firstItem) {
+                $prodi = $firstItem->skripsi->mahasiswa->prodi ?? null;
+                if ($prodi) {
+                    $prodi->load('fakultas');
+                    $fakultas = $prodi->fakultas;
+                }
+            }
+        }
+
+        // Resolve signers from pejabat data
+        $kaprodi = $prodi ? $this->resolveKaprodi($prodi) : [
+            'name' => '-',
+            'nip' => '-',
+            'position' => 'Kepala Program Studi',
+            'signature' => null,
+        ];
+        $dekan = $fakultas ? $this->resolveDekan($fakultas) : [
+            'name' => '-',
+            'nip' => '-',
+            'position' => 'Dekan Fakultas',
+            'signature' => null,
+        ];
+
+        // Determine signature mode (qr vs biasa)
+        $signatureMode = $this->getSignatureMode($request);
+        $qrDataKaprodi = null;
+        $qrDataDekan = null;
+
+        if ($signatureMode === 'qr') {
+            $nomorSurat = 'JU-' . date('Y') . '-' . str_pad($ujianList->count(), 3, '0', STR_PAD_LEFT);
+            $qrDataKaprodi = $this->generateQrToken(
+                $request,
+                'jadwal_ujian',
+                null,
+                $nomorSurat,
+                $kaprodi['name'],
+                $kaprodi['position'],
+                'Jadwal_Ujian_Skripsi.pdf'
+            );
+            $qrDataDekan = $this->generateQrToken(
+                $request,
+                'jadwal_ujian',
+                null,
+                $nomorSurat,
+                $dekan['name'],
+                $dekan['position'],
+                'Jadwal_Ujian_Skripsi.pdf'
+            );
         }
 
         $data = [
@@ -399,19 +585,14 @@ class PdfController extends Controller
             'semester_label' => $semesterLabel,
             'prodi_name' => $prodiName,
             'fakultas_name' => $fakultasName,
-            'kaprodi' => [
-                'name'      => $request->input('kaprodi_name', 'Nama Kaprodi'),
-                'nip'       => $request->input('kaprodi_nip', '-'),
-                'position'  => $request->input('kaprodi_position', 'Kepala Program Studi'),
-                'signature' => $request->input('kaprodi_signature'),
-            ],
-            'dekan' => [
-                'name'      => $request->input('dekan_name', 'Nama Dekan'),
-                'nip'       => $request->input('dekan_nip', '-'),
-                'position'  => $request->input('dekan_position', 'Dekan Fakultas'),
-                'signature' => $request->input('dekan_signature'),
-            ],
+            'kaprodi' => $kaprodi,
+            'dekan' => $dekan,
+            'signature_mode' => $signatureMode,
+            'qr_kaprodi' => $qrDataKaprodi,
+            'qr_dekan' => $qrDataDekan,
             'city' => $request->input('city', 'Bangil'),
+            'kop_path' => public_path('images/kop surat.jpg'),
+            'cap_path' => public_path('images/capori.png'),
         ];
 
         $pdf = Pdf::loadView('pdf.jadwal-ujian', $data);
@@ -420,54 +601,14 @@ class PdfController extends Controller
         return $pdf->download("Jadwal_Ujian_Skripsi.pdf");
     }
 
-    /**
-     * Export Rekap SK Yudisium PDF (landscape - like jadwal ujian)
-     */
-    public function rekapYudisium(Request $request)
-    {
-        $query = Seminar::with([
-            'skripsi.mahasiswa.prodi',
-            'skripsi.pembimbing.dosen',
-            'skripsi.skYudisium',
-            'penguji.dosen',
-        ])->where('jenis', 'sidang')
-            ->where('status', 'selesai')
-            ->whereIn('hasil', ['lulus', 'lulus_revisi'])
-            ->orderBy('tanggal', 'desc');
 
-        $items = $query->get();
-
-        $data = [
-            'items' => $items,
-            'tanggal' => now()->translatedFormat('d F Y'),
-            'tahun_ajaran' => $this->getTahunAjaran(),
-            'kaprodi' => [
-                'name'      => $request->input('kaprodi_name', 'Nama Kaprodi'),
-                'nip'       => $request->input('kaprodi_nip', '-'),
-                'position'  => $request->input('kaprodi_position', 'Kepala Program Studi'),
-                'signature' => $request->input('kaprodi_signature'),
-            ],
-            'dekan' => [
-                'name'      => $request->input('dekan_name', 'Nama Dekan'),
-                'nip'       => $request->input('dekan_nip', '-'),
-                'position'  => $request->input('dekan_position', 'Dekan Fakultas'),
-                'signature' => $request->input('dekan_signature'),
-            ],
-            'city' => $request->input('city', 'Bangil'),
-        ];
-
-        $pdf = Pdf::loadView('pdf.rekap-yudisium', $data);
-        $pdf->setPaper('a4', 'landscape');
-
-        return $pdf->download("Rekap_SK_Yudisium.pdf");
-    }
 
     /**
      * Generate individual SK Yudisium PDF for a specific skripsi
      */
     public function skYudisium(Request $request, Skripsi $skripsi)
     {
-        $skripsi->load(['mahasiswa.prodi', 'pembimbing.dosen', 'skYudisium']);
+        $skripsi->load(['mahasiswa.prodi.fakultas', 'pembimbing.dosen', 'skYudisium']);
 
         $skYudisium = $skripsi->skYudisium;
         if (!$skYudisium) {
@@ -483,6 +624,28 @@ class PdfController extends Controller
             ->where('status', 'selesai')
             ->first();
 
+        // Resolve Kaprodi & Dekan dynamically
+        $prodi = $skripsi->mahasiswa->prodi;
+        $fakultas = $prodi->fakultas ?? null;
+        $kaprodi = $this->resolveKaprodi($prodi);
+        $dekan = $this->resolveDekan($fakultas);
+
+        // QR Signature
+        $signatureMode = $this->getSignatureMode($request);
+        $qrData = null;
+        $nim = $skripsi->mahasiswa->nim ?? 'unknown';
+        if ($signatureMode === 'qr') {
+            $qrData = $this->generateQrToken(
+                $request,
+                'sk_yudisium',
+                $skripsi->id,
+                $skYudisium->nomor_sk ?? '-',
+                $dekan['name'],
+                $dekan['position'],
+                "SK_Yudisium_{$nim}.pdf"
+            );
+        }
+
         $data = [
             'skripsi' => $skripsi,
             'mahasiswa' => $skripsi->mahasiswa,
@@ -490,25 +653,16 @@ class PdfController extends Controller
             'tanggal_ujian' => $ujian?->tanggal ? Carbon::parse($ujian->tanggal)->translatedFormat('d F Y') : '-',
             'tanggal_yudisium' => $skYudisium->tanggal_yudisium ? Carbon::parse($skYudisium->tanggal_yudisium)->translatedFormat('d F Y') : '-',
             'tanggal' => now()->translatedFormat('d F Y'),
-            'kaprodi' => [
-                'name'      => $request->input('kaprodi_name', 'Nama Kaprodi'),
-                'nip'       => $request->input('kaprodi_nip', '-'),
-                'position'  => $request->input('kaprodi_position', 'Kepala Program Studi'),
-                'signature' => $request->input('kaprodi_signature'),
-            ],
-            'dekan' => [
-                'name'      => $request->input('dekan_name', 'Nama Dekan'),
-                'nip'       => $request->input('dekan_nip', '-'),
-                'position'  => $request->input('dekan_position', 'Dekan Fakultas'),
-                'signature' => $request->input('dekan_signature'),
-            ],
+            'kaprodi' => $kaprodi,
+            'dekan' => $dekan,
             'city' => $request->input('city', 'Bangil'),
+            'signatureMode' => $signatureMode,
+            'qrData' => $qrData,
         ];
 
         $pdf = Pdf::loadView('pdf.sk-yudisium', $data);
         $pdf->setPaper('a4', 'portrait');
 
-        $nim = $skripsi->mahasiswa->nim ?? 'unknown';
         return $pdf->download("SK_Yudisium_{$nim}.pdf");
     }
 
@@ -527,5 +681,201 @@ class PdfController extends Controller
         } else {
             return "Ganjil " . ($year - 1) . "/" . $year;
         }
+    }
+
+    /**
+     * Get the signature mode from configuration.
+     */
+    private function getSignatureMode(Request $request): string
+    {
+        // If forced via request (e.g. from verification controller)
+        if ($request->input('_force_qr')) {
+            return 'qr';
+        }
+
+        $config = Configuration::where('key', 'jenis_ttd')->first();
+        return $config?->value['jenis'] ?? 'biasa';
+    }
+
+    /**
+     * Generate a QR token and QR code image for a document.
+     */
+    private function generateQrToken(
+        Request $request,
+        string $docType,
+        ?int $docId,
+        string $nomorSurat,
+        string $signerName,
+        string $signerPosition,
+        string $fileName
+    ): array {
+        // Reuse existing token if provided (for re-generation from verify page)
+        $existingToken = $request->input('_existing_token');
+        if ($existingToken) {
+            $docToken = DocumentToken::where('token', $existingToken)->first();
+        }
+
+        if (empty($docToken)) {
+            $docToken = DocumentToken::generate(
+                $docType,
+                $docId,
+                $nomorSurat,
+                $signerName,
+                $signerPosition,
+                $fileName
+            );
+        }
+
+        // Build verification URL
+        $frontendUrl = rtrim(config('app.frontend_url', config('app.url', 'http://localhost:5173')), '/');
+        $verifyUrl = $frontendUrl . '/verify/' . $docToken->token;
+
+        // Generate QR code as base64 PNG
+        $options = new QROptions([
+            'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+            'eccLevel' => QRCode::ECC_M,
+            'scale' => 5,
+            'imageBase64' => false,
+        ]);
+
+        $qrcode = (new QRCode($options))->render($verifyUrl);
+        $qrBase64 = 'data:image/png;base64,' . base64_encode($qrcode);
+
+        return [
+            'token' => $docToken->token,
+            'verify_url' => $verifyUrl,
+            'qr_base64' => $qrBase64,
+        ];
+    }
+
+    /**
+     * Rekap SK Yudisium PDF - filtered export
+     */
+    public function rekapYudisium(Request $request)
+    {
+        $query = Seminar::with([
+            'skripsi.mahasiswa.prodi.fakultas',
+            'skripsi.pembimbing.dosen',
+            'skripsi.skYudisium',
+            'penguji.dosen',
+        ])->where('jenis', 'sidang')
+            ->where('status', 'selesai')
+            ->whereIn('hasil', ['lulus', 'lulus_revisi']);
+
+        // Filter by tahun akademik
+        if ($request->filled('tahun_akademik')) {
+            $tahun = $request->tahun_akademik;
+            if (str_contains($tahun, '/')) {
+                $parts = explode('/', $tahun);
+                $startYear = (int) $parts[0];
+                $endYear = (int) $parts[1];
+                $query->whereBetween('tanggal', ["{$startYear}-08-01", "{$endYear}-07-31"]);
+            }
+        }
+
+        // Filter by fakultas
+        if ($request->filled('fakultas_id')) {
+            $query->whereHas('skripsi.mahasiswa.prodi', function ($q) use ($request) {
+                $q->where('fakultas_id', $request->fakultas_id);
+            });
+        }
+
+        // Filter by prodi
+        if ($request->filled('prodi_id')) {
+            $query->whereHas('skripsi.mahasiswa', function ($q) use ($request) {
+                $q->where('prodi_id', $request->prodi_id);
+            });
+        }
+
+        $items = $query->orderBy('tanggal', 'desc')->get();
+
+        // Resolve prodi & fakultas names for title
+        $prodiName = '';
+        $fakultasName = '';
+        $prodi = null;
+        $fakultas = null;
+
+        if ($request->filled('prodi_id')) {
+            $prodi = Prodi::with('fakultas')->find($request->prodi_id);
+            if ($prodi) {
+                $prodiName = $prodi->nama;
+                $fakultas = $prodi->fakultas;
+                $fakultasName = $fakultas->nama_fakultas ?? '';
+            }
+        } elseif ($request->filled('fakultas_id')) {
+            $fakultas = \App\Models\Fakultas::with('prodi')->find($request->fakultas_id);
+            if ($fakultas) {
+                $fakultasName = $fakultas->nama_fakultas ?? '';
+                $prodi = $fakultas->prodi->first();
+            }
+        } else {
+            // No filter: resolve from first item for signature only
+            $firstItem = $items->first();
+            if ($firstItem) {
+                $prodi = $firstItem->skripsi->mahasiswa->prodi ?? null;
+                if ($prodi) {
+                    $prodi->load('fakultas');
+                    $fakultas = $prodi->fakultas;
+                }
+            }
+        }
+
+        // Resolve signers
+        $kaprodi = $this->resolveKaprodi($prodi);
+        $dekan = $this->resolveDekan($fakultas);
+
+        // Signature mode
+        $signatureMode = $this->getSignatureMode($request);
+        $qrDataKaprodi = null;
+        $qrDataDekan = null;
+
+        if ($signatureMode === 'qr') {
+            $nomorSurat = 'RY-' . date('Y') . '-' . str_pad($items->count(), 3, '0', STR_PAD_LEFT);
+            if ($kaprodi) {
+                $qrDataKaprodi = $this->generateQrToken(
+                    $request,
+                    'rekap_yudisium',
+                    null,
+                    $nomorSurat,
+                    $kaprodi['name'],
+                    $kaprodi['position'],
+                    'Rekap_SK_Yudisium.pdf'
+                );
+            }
+            if ($dekan) {
+                $qrDataDekan = $this->generateQrToken(
+                    $request,
+                    'rekap_yudisium',
+                    null,
+                    $nomorSurat,
+                    $dekan['name'],
+                    $dekan['position'],
+                    'Rekap_SK_Yudisium.pdf'
+                );
+            }
+        }
+
+        $tahunAkademik = $request->input('tahun_akademik', $this->getTahunAjaran());
+
+        $data = [
+            'items' => $items,
+            'tahun_ajaran' => $tahunAkademik,
+            'fakultas_name' => $fakultasName,
+            'prodi_name' => $prodiName,
+            'kaprodi' => $kaprodi,
+            'dekan' => $dekan,
+            'signature_mode' => $signatureMode,
+            'qr_kaprodi' => $qrDataKaprodi,
+            'qr_dekan' => $qrDataDekan,
+            'city' => 'Bangil',
+            'tanggal' => Carbon::now()->translatedFormat('d F Y'),
+            'kop_path' => public_path('images/kop surat.jpg'),
+            'cap_path' => public_path('images/capori.png'),
+        ];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekap-yudisium', $data);
+        $pdf->setPaper('A4', 'landscape');
+
+        return $pdf->download('Rekap_SK_Yudisium.pdf');
     }
 }

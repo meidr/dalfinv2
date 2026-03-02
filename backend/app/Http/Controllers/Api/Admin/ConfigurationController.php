@@ -135,4 +135,150 @@ class ConfigurationController extends Controller
             'data' => $config->value
         ]);
     }
+
+    /**
+     * Get Tanggal Penting Configuration
+     */
+    public function getTanggalPenting()
+    {
+        $config = Configuration::where('key', 'tanggal_penting')->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => $config ? $config->value : [],
+        ]);
+    }
+
+    /**
+     * Save Tanggal Penting Configuration
+     */
+    public function saveTanggalPenting(Request $request)
+    {
+        $request->validate([
+            'dates' => 'required|array',
+            'dates.*.label' => 'required|string|max:255',
+            'dates.*.tanggal' => 'required|date',
+        ]);
+
+        $config = Configuration::updateOrCreate(
+            ['key' => 'tanggal_penting'],
+            ['value' => $request->dates]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tanggal penting berhasil disimpan',
+            'data' => $config->value,
+        ]);
+    }
+
+    /**
+     * Upload a panduan file
+     */
+    public function uploadPanduan(Request $request, $type)
+    {
+        if (!in_array($type, ['mahasiswa', 'dosen', 'staff'])) {
+            return response()->json(['success' => false, 'message' => 'Tipe panduan tidak valid.'], 400);
+        }
+
+        $request->validate([
+            'file' => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx',
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store("panduan/{$type}", 'public');
+
+        $panduan = \App\Models\Panduan::create([
+            'type' => $type,
+            'nama_file' => $file->getClientOriginalName(),
+            'file_path' => $path,
+            'ukuran' => $file->getSize(),
+            'uploaded_by' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'File panduan berhasil diunggah',
+            'data' => [
+                'id' => $panduan->id,
+                'nama_file' => $panduan->nama_file,
+                'ukuran' => $panduan->ukuran,
+                'created_at' => $panduan->created_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Get list of panduan files by type
+     */
+    public function getPanduanList($type)
+    {
+        if (!in_array($type, ['mahasiswa', 'dosen', 'staff'])) {
+            return response()->json(['success' => false, 'message' => 'Tipe panduan tidak valid.'], 400);
+        }
+
+        $panduan = \App\Models\Panduan::where('type', $type)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($p) => [
+                'id' => $p->id,
+                'nama_file' => $p->nama_file,
+                'ukuran' => $p->ukuran,
+                'created_at' => $p->created_at,
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $panduan,
+        ]);
+    }
+
+    /**
+     * Delete a panduan file
+     */
+    public function deletePanduan($id)
+    {
+        $panduan = \App\Models\Panduan::findOrFail($id);
+
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($panduan->file_path);
+        $panduan->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'File panduan berhasil dihapus',
+        ]);
+    }
+    /**
+     * Get Jenis Tanda Tangan Configuration
+     */
+    public function getJenisTtd()
+    {
+        $config = Configuration::where('key', 'jenis_ttd')->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => $config ? $config->value : ['jenis' => 'biasa'],
+        ]);
+    }
+
+    /**
+     * Save Jenis Tanda Tangan Configuration
+     */
+    public function saveJenisTtd(Request $request)
+    {
+        $request->validate([
+            'jenis' => 'required|string|in:biasa,qr',
+        ]);
+
+        $config = Configuration::updateOrCreate(
+            ['key' => 'jenis_ttd'],
+            ['value' => ['jenis' => $request->jenis]]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Jenis tanda tangan berhasil disimpan',
+            'data' => $config->value,
+        ]);
+    }
 }

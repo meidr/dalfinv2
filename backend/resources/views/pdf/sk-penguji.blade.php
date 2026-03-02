@@ -356,12 +356,19 @@
                     <div>Mengetahui,</div>
                     <div>{{ $dekan['position'] ?? 'Dekan Fakultas' }}</div>
 
-                    <div class="ttd-space">
-                        @if (!empty($dekan['signature']))
-                            <img class="ttd-img" src="{{ $dekan['signature'] }}">
-                        @endif
-                        <img class="cap" src="{{ public_path('images/cap.jpg') }}">
-                    </div>
+                    @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                        <div class="ttd-space" style="height: 110px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ $qrData['qr_base64'] }}" style="width: 90px; height: 90px;" alt="QR">
+                        </div>
+                        <p style="font-size: 7pt; color: #666; margin: 0 0 4px 0;">Scan QR untuk verifikasi</p>
+                    @else
+                        <div class="ttd-space">
+                            @if (!empty($dekan['signature']))
+                                <img class="ttd-img" src="{{ $dekan['signature'] }}">
+                            @endif
+                            <img class="cap" src="{{ public_path('images/cap.jpg') }}">
+                        </div>
+                    @endif
 
                     <div class="nama">{{ $dekan['name'] ?? 'Nama Dekan' }}</div>
                     <div class="niy">NIP/NIY: {{ $dekan['nip'] ?? '-' }}</div>
@@ -370,12 +377,19 @@
                     <div>{{ $city ?? 'Bangil' }}, {{ $tanggal }}</div>
                     <div>{{ $kaprodi['position'] ?? 'Kepala Program Studi' }}</div>
 
-                    <div class="ttd-space">
-                        @if (!empty($kaprodi['signature']))
-                            <img class="ttd-img" src="{{ $kaprodi['signature'] }}">
-                        @endif
-                        <img class="cap" src="{{ public_path('images/cap.jpg') }}">
-                    </div>
+                    @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                        <div class="ttd-space" style="height: 110px; display: flex; align-items: center; justify-content: center;">
+                            <img src="{{ $qrData['qr_base64'] }}" style="width: 90px; height: 90px;" alt="QR">
+                        </div>
+                        <p style="font-size: 7pt; color: #666; margin: 0 0 4px 0;">Scan QR untuk verifikasi</p>
+                    @else
+                        <div class="ttd-space">
+                            @if (!empty($kaprodi['signature']))
+                                <img class="ttd-img" src="{{ $kaprodi['signature'] }}">
+                            @endif
+                            <img class="cap" src="{{ public_path('images/cap.jpg') }}">
+                        </div>
+                    @endif
 
                     <div class="nama">{{ $kaprodi['name'] ?? 'Nama Kaprodi' }}</div>
                     <div class="niy">NIP/NIY: {{ $kaprodi['nip'] ?? '-' }}</div>

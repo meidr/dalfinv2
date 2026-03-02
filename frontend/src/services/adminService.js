@@ -67,6 +67,21 @@ export const adminService = {
     return response.data;
   },
 
+  async bulkApproveSkripsiVerification(ids) {
+    const response = await api.post(
+      "/admin/skripsi-verification/bulk-approve",
+      { ids },
+    );
+    return response.data;
+  },
+
+  async bulkRejectSkripsiVerification(ids) {
+    const response = await api.post("/admin/skripsi-verification/bulk-reject", {
+      ids,
+    });
+    return response.data;
+  },
+
   // Pembimbing
   async getPendingPembimbing(params = {}) {
     const response = await api.get("/admin/pembimbing", { params });
@@ -436,8 +451,8 @@ export const adminService = {
     return response;
   },
 
-  async exportRekapYudisiumPdf() {
-    const response = await api.get("/admin/pdf/rekap-yudisium", {
+  async exportRekapYudisiumPdf(params = {}) {
+    const response = await api.post("/admin/pdf/rekap-yudisium", params, {
       responseType: "blob",
     });
     return response;
@@ -519,6 +534,64 @@ export const adminService = {
       data,
     );
     return response.data;
+  },
+
+  // Jenis Tanda Tangan
+  async getJenisTtd() {
+    const response = await api.get("/admin/configuration/jenis-ttd");
+    return response.data;
+  },
+
+  async saveJenisTtd(data) {
+    const response = await api.post("/admin/configuration/jenis-ttd", data);
+    return response.data;
+  },
+
+  // Tanggal Penting
+  async getTanggalPenting() {
+    const response = await api.get("/admin/configuration/tanggal-penting");
+    return response.data;
+  },
+
+  async saveTanggalPenting(data) {
+    const response = await api.post(
+      "/admin/configuration/tanggal-penting",
+      data,
+    );
+    return response.data;
+  },
+
+  // Panduan Management
+  async getPanduanList(type) {
+    const response = await api.get(`/admin/configuration/panduan/${type}`);
+    return response.data;
+  },
+
+  async uploadPanduan(type, formData) {
+    const response = await api.post(
+      `/admin/configuration/panduan/${type}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return response.data;
+  },
+
+  async deletePanduan(id) {
+    const response = await api.delete(`/admin/configuration/panduan/${id}`);
+    return response.data;
+  },
+
+  // Staff Panduan (public endpoint)
+  async getStaffPanduan() {
+    const response = await api.get("/public/panduan/staff");
+    return response.data;
+  },
+
+  async downloadStaffPanduan(id) {
+    const response = await api.get(`/public/panduan/${id}/download`, {
+      responseType: "blob",
+    });
+    return response;
   },
 
   // Notifications

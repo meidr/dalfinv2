@@ -129,6 +129,75 @@ class UjianController extends Controller
             }
         }
 
+        // Filter by prodi
+        if ($request->filled('prodi_id')) {
+            $query->whereHas('mahasiswa', function ($q) use ($request) {
+                $q->where('prodi_id', $request->prodi_id);
+            });
+        }
+
+        // Filter by fakultas
+        if ($request->filled('fakultas_id')) {
+            $query->whereHas('mahasiswa.prodi', function ($q) use ($request) {
+                $q->where('fakultas_id', $request->fakultas_id);
+            });
+        }
+
+        // Filter by tahun akademik (e.g. "2024/2025")
+        if ($request->filled('tahun_akademik')) {
+            $tahun = $request->tahun_akademik;
+            if (str_contains($tahun, '/')) {
+                $parts = explode('/', $tahun);
+                $startYear = (int) $parts[0];
+                $endYear = (int) $parts[1];
+                $query->whereHas('seminar', function ($q) use ($startYear, $endYear) {
+                    $q->where('jenis', 'sidang')
+                        ->whereBetween('tanggal', ["{$startYear}-08-01", "{$endYear}-07-31"]);
+                });
+            }
+        }
+
+        // Filter by semester
+        if ($request->filled('semester')) {
+            $sem = $request->semester;
+            $query->whereHas('seminar', function ($q) use ($sem) {
+                $q->where('jenis', 'sidang');
+                if ($sem === 'ganjil') {
+                    $q->where(function ($sq) {
+                        $sq->whereMonth('tanggal', '>=', 8)
+                            ->orWhereMonth('tanggal', '<=', 1);
+                    });
+                } elseif ($sem === 'genap') {
+                    $q->whereMonth('tanggal', '>=', 2)
+                        ->whereMonth('tanggal', '<=', 7);
+                }
+            });
+        }
+
+        // Filter by pembimbing name
+        if ($request->filled('pembimbing')) {
+            $pembimbing = $request->pembimbing;
+            $query->whereHas('pembimbing.dosen', function ($q) use ($pembimbing) {
+                $q->where(function ($sq) use ($pembimbing) {
+                    $sq->where('nama', 'like', "%{$pembimbing}%")
+                        ->orWhere('gelar_depan', 'like', "%{$pembimbing}%")
+                        ->orWhere('gelar_belakang', 'like', "%{$pembimbing}%");
+                });
+            });
+        }
+
+        // Filter by penguji name
+        if ($request->filled('penguji')) {
+            $penguji = $request->penguji;
+            $query->whereHas('seminar.penguji.dosen', function ($q) use ($penguji) {
+                $q->where(function ($sq) use ($penguji) {
+                    $sq->where('nama', 'like', "%{$penguji}%")
+                        ->orWhere('gelar_depan', 'like', "%{$penguji}%")
+                        ->orWhere('gelar_belakang', 'like', "%{$penguji}%");
+                });
+            });
+        }
+
         $perPage = $request->get('per_page', 15);
         $skripsiList = $query->orderBy('created_at', 'desc')->paginate($perPage);
 

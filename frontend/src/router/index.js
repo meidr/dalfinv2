@@ -16,6 +16,12 @@ const routes = [
     component: Login,
   },
   {
+    path: "/verify/:token",
+    name: "VerifyDocument",
+    component: () => import("../views/VerifyDocument.vue"),
+    meta: { public: true },
+  },
+  {
     path: "/admin",
     component: AdminLayout,
     redirect: "/admin/dashboard",
@@ -258,6 +264,11 @@ const routes = [
         name: "DosenProfil",
         component: () => import("../views/dosen/Profil.vue"),
       },
+      {
+        path: "informasi",
+        name: "DosenInformasi",
+        component: () => import("../views/dosen/Informasi.vue"),
+      },
     ],
   },
   {
@@ -383,6 +394,11 @@ const routes = [
         path: "jadwal-sidang",
         name: "JadwalSidangMahasiswa",
         component: () => import("../views/mahasiswa/JadwalSidang.vue"),
+      },
+      {
+        path: "informasi",
+        name: "MahasiswaInformasi",
+        component: () => import("../views/mahasiswa/Informasi.vue"),
       },
     ],
   },

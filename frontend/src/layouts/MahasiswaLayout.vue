@@ -41,6 +41,14 @@
             <span>Skripsi Saya</span>
           </router-link>
           <router-link
+            to="/mahasiswa/informasi"
+            active-class="text-primary after:scale-x-100"
+            class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
+          >
+            <span class="material-symbols-outlined text-[20px]">info</span>
+            <span>Informasi</span>
+          </router-link>
+          <router-link
             to="/mahasiswa/profil"
             active-class="text-primary after:scale-x-100"
             class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
@@ -88,12 +96,12 @@
     >
       <router-view></router-view>
     </main>
-    <ChatWidget />
+    <ChatWidget ref="chatWidgetRef" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, provide } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import ChatWidget from "../components/ChatWidget.vue";
@@ -101,6 +109,11 @@ import ChatWidget from "../components/ChatWidget.vue";
 const router = useRouter();
 const authStore = useAuthStore();
 const isDark = ref(false);
+const chatWidgetRef = ref(null);
+
+provide("openChatWithAdmin", () => {
+  chatWidgetRef.value?.openChatWithAdmin();
+});
 
 const toggleTheme = () => {
   if (isDark.value) {

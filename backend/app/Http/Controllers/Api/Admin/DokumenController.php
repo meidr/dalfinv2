@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dokumen;
+use App\Models\Seminar;
 use App\Models\Skripsi;
+use App\Models\SkripsiHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -132,9 +134,44 @@ class DokumenController extends Controller
 
         // Auto-update skripsi status to lulus when revision document is approved
         if ($dokumen->jenis === 'revisi' && $request->status === 'approved') {
-            Skripsi::where('id', $dokumen->skripsi_id)
-                ->where('status', 'revisi')
-                ->update(['status' => 'lulus', 'progress_percentage' => 100]);
+            $skripsi = Skripsi::with('mahasiswa')->find($dokumen->skripsi_id);
+
+            if ($skripsi && $skripsi->status === 'revisi') {
+                if ($skripsi->mahasiswa && $skripsi->mahasiswa->jenis_kelamin === 'P') {
+                    // Perempuan: butuh verifikasi admin tambahan, buat history pending
+                    $skripsi->history()->create([
+                        'judul_lama' => $skripsi->judul,
+                        'judul_baru' => $skripsi->judul,
+                        'status_lama' => 'revisi',
+                        'status_baru' => 'lulus',
+                        'alasan' => 'Dokumen revisi disetujui staff, menunggu verifikasi admin',
+                        'verification_status' => 'pending',
+                        'updated_by' => $request->user()->id,
+                    ]);
+                } else {
+                    // Laki-laki: langsung advance ke lulus
+                    $skripsi->update(['status' => 'lulus', 'progress_percentage' => 100]);
+
+                    // Also update sidang seminar hasil from lulus_revisi to lulus
+                    Seminar::where('skripsi_id', $skripsi->id)
+                        ->where('jenis', 'sidang')
+                        ->where('hasil', 'lulus_revisi')
+                        ->update(['hasil' => 'lulus']);
+                }
+            }
+        }
+
+        // Auto-update skripsi status to penentuan_dospem when revisi_proposal is approved
+        // This is used for lulus_bersyarat sempro flow
+        if ($dokumen->jenis === 'revisi_proposal' && $request->status === 'approved') {
+            $skripsi = Skripsi::find($dokumen->skripsi_id);
+
+            if ($skripsi && $skripsi->status === 'sempro') {
+                $skripsi->update([
+                    'status' => 'penentuan_dospem',
+                    'progress_percentage' => 30,
+                ]);
+            }
         }
 
         return response()->json([
@@ -174,6 +211,9 @@ class DokumenController extends Controller
             ], 404);
         }
 
-        return Storage::disk('public')->download($dokumen->path, $dokumen->nama_file);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return $disk->download($dokumen->path, $dokumen->nama_file);
     }
 }

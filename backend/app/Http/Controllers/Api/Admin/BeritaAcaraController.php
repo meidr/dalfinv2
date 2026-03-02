@@ -69,15 +69,23 @@ class BeritaAcaraController extends Controller
      */
     public function generate(Request $request, Seminar $seminar)
     {
-        // Check if already generated
+        // Check if already generated — just re-download PDF
+        $seminar->load('beritaAcara');
         if ($seminar->beritaAcara) {
             return $this->downloadPdf($request, $seminar);
         }
 
-        // Generate nomor BA
+        // Generate a unique nomor BA
         $year = now()->year;
+        $romanMonth = $this->getRomanMonth();
         $count = BeritaAcara::whereYear('created_at', $year)->count() + 1;
-        $nomor = sprintf('BA/%03d/%s/%d', $count, $this->getRomanMonth(), $year);
+        $nomor = sprintf('BA/%03d/%s/%d', $count, $romanMonth, $year);
+
+        // Ensure nomor is truly unique (increment if collision)
+        while (BeritaAcara::where('nomor', $nomor)->exists()) {
+            $count++;
+            $nomor = sprintf('BA/%03d/%s/%d', $count, $romanMonth, $year);
+        }
 
         // Create berita acara record
         $beritaAcara = BeritaAcara::create([
@@ -97,40 +105,9 @@ class BeritaAcaraController extends Controller
      */
     public function downloadPdf(Request $request, Seminar $seminar)
     {
-        $seminar->load([
-            'skripsi.mahasiswa.prodi',
-            'skripsi.pembimbing.dosen',
-            'penguji.dosen',
-            'beritaAcara',
-            'perbaikanProposal',
-        ]);
-
-        $beritaAcara = $seminar->beritaAcara;
-
-        if (!$beritaAcara) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Berita acara belum di-generate'
-            ], 404);
-        }
-
-        $jenisLabel = 'Sidang Skripsi';
-        $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
-
-        $data = [
-            'seminar' => $seminar,
-            'beritaAcara' => $beritaAcara,
-            'jenisLabel' => $jenisLabel,
-            'tanggal' => now()->translatedFormat('d F Y'),
-            'perbaikan' => $seminar->perbaikanProposal,
-            'ketuaPenguji' => $ketuaPenguji,
-        ];
-
-        $pdf = Pdf::loadView('pdf.berita-acara-seminar', $data);
-        $pdf->setPaper('a4', 'portrait');
-
-        $fileName = "Berita_Acara_{$seminar->skripsi->mahasiswa->nim}.pdf";
-        return $pdf->download($fileName);
+        // Delegate to PdfController which has full QR + signature support
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        return $pdfController->beritaAcaraSeminar($request, $seminar);
     }
 
     /**

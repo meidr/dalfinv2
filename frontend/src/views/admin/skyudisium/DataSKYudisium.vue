@@ -107,42 +107,89 @@
       v-else
       class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
     >
-      <div
-        class="p-5 border-b border-border-light flex flex-col md:flex-row gap-4 items-center justify-between"
-      >
-        <div>
-          <h3 class="text-text-main text-lg font-bold">
-            Daftar Mahasiswa Siap Yudisium
-          </h3>
-          <p class="text-text-secondary text-sm">
-            Mahasiswa dengan status 'Sudah Terbit Berita Acara'.
-          </p>
-        </div>
-        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-          <div class="relative w-full md:w-64">
-            <input
-              v-model="searchQuery"
-              @input="debouncedSearch"
-              class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-background-light text-text-main placeholder-text-secondary dark:bg-background"
-              placeholder="Cari mahasiswa..."
-            />
-            <span
-              class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-secondary"
-              >search</span
-            >
+      <!-- Toolbar -->
+      <div class="p-5 border-b border-border-light space-y-3">
+        <!-- Row 1: Title + Search + Export -->
+        <div
+          class="flex flex-col md:flex-row gap-3 items-center justify-between"
+        >
+          <div>
+            <h3 class="text-text-main text-lg font-bold">
+              Daftar Mahasiswa Siap Yudisium
+            </h3>
+            <p class="text-text-secondary text-sm">
+              Mahasiswa dengan status 'Sudah Terbit Berita Acara'.
+            </p>
           </div>
-          <button
-            @click="exportPdf"
-            :disabled="exporting"
-            class="flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary/90 text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm shadow-primary/20 w-full md:w-auto disabled:opacity-50"
-          >
-            <span class="material-symbols-outlined text-[18px]"
-              >picture_as_pdf</span
+          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            <div class="relative w-full md:w-64">
+              <input
+                v-model="searchQuery"
+                @input="debouncedSearch"
+                class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light dark:border-white/10 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-background-light dark:bg-surface-light text-text-main placeholder-text-secondary"
+                placeholder="Cari mahasiswa..."
+              />
+              <span
+                class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-secondary"
+                >search</span
+              >
+            </div>
+            <button
+              @click="exportPdf"
+              :disabled="exporting"
+              class="flex items-center justify-center gap-2 text-white bg-green-600 hover:bg-green-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm w-full md:w-auto disabled:opacity-50"
             >
-            {{ exporting ? "Mengunduh..." : "Export PDF" }}
+              <span class="material-symbols-outlined text-[18px]"
+                >picture_as_pdf</span
+              >
+              {{ exporting ? "Mengunduh..." : "Export PDF" }}
+            </button>
+          </div>
+        </div>
+        <!-- Row 2: Filter bar -->
+        <div class="flex flex-wrap gap-2 items-center">
+          <select
+            v-model="filterTahunAkademik"
+            @change="applyFilters"
+            class="px-3 py-2 bg-white dark:bg-surface-light border border-border-light dark:border-white/10 rounded-lg text-text-main text-xs focus:ring-1 focus:ring-primary transition-colors"
+          >
+            <option value="">Semua Tahun</option>
+            <option v-for="t in tahunList" :key="t.id" :value="t.name">
+              {{ t.name }}
+            </option>
+          </select>
+          <select
+            v-model="filterFakultas"
+            @change="onFakultasChange"
+            class="px-3 py-2 bg-white dark:bg-surface-light border border-border-light dark:border-white/10 rounded-lg text-text-main text-xs focus:ring-1 focus:ring-primary transition-colors"
+          >
+            <option value="">Semua Fakultas</option>
+            <option v-for="f in fakultasList" :key="f.id" :value="f.id">
+              {{ f.nama_fakultas }}
+            </option>
+          </select>
+          <select
+            v-model="filterProdi"
+            @change="applyFilters"
+            class="px-3 py-2 bg-white dark:bg-surface-light border border-border-light dark:border-white/10 rounded-lg text-text-main text-xs focus:ring-1 focus:ring-primary transition-colors"
+          >
+            <option value="">Semua Prodi</option>
+            <option v-for="p in filteredProdiList" :key="p.id" :value="p.id">
+              {{ p.nama }}
+            </option>
+          </select>
+          <button
+            v-if="hasActiveFilters"
+            @click="clearAllFilters"
+            class="flex items-center gap-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+          >
+            <span class="material-symbols-outlined text-[14px]">close</span>
+            Reset
           </button>
         </div>
       </div>
+
+      <!-- Table -->
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm whitespace-nowrap">
           <thead
@@ -236,6 +283,8 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination -->
       <div
         class="flex items-center justify-between px-6 py-4 border-t border-border-light"
       >
@@ -299,7 +348,7 @@
               <input
                 v-model="yudisiumForm.nomor_sk"
                 type="text"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               />
             </div>
@@ -310,7 +359,7 @@
               <input
                 v-model="yudisiumForm.tanggal"
                 type="date"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               />
             </div>
@@ -324,7 +373,7 @@
                 step="0.01"
                 min="0"
                 max="4"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               />
             </div>
@@ -334,7 +383,7 @@
               >
               <select
                 v-model="yudisiumForm.predikat"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               >
                 <option value="memuaskan">Memuaskan</option>
@@ -379,7 +428,25 @@ const selectedItem = ref(null);
 const yudisiumList = ref([]);
 const searchQuery = ref("");
 
+// Filter state
+const filterTahunAkademik = ref("");
+const filterFakultas = ref("");
+const filterProdi = ref("");
+const tahunList = ref([]);
+const fakultasList = ref([]);
+const prodiList = ref([]);
+let filterTimeout = null;
+
 const currentYear = computed(() => new Date().getFullYear());
+
+const filteredProdiList = computed(() => {
+  if (!filterFakultas.value) return prodiList.value;
+  return prodiList.value.filter((p) => p.fakultas_id == filterFakultas.value);
+});
+
+const hasActiveFilters = computed(() => {
+  return filterTahunAkademik.value || filterFakultas.value || filterProdi.value;
+});
 
 const stats = reactive({
   siap_yudisium: 0,
@@ -403,8 +470,6 @@ const yudisiumForm = reactive({
   predikat: "memuaskan",
 });
 
-let searchTimeout = null;
-
 const fetchYudisium = async () => {
   try {
     loading.value = true;
@@ -412,6 +477,11 @@ const fetchYudisium = async () => {
       page: pagination.current_page,
       search: searchQuery.value,
     };
+    if (filterTahunAkademik.value)
+      params.tahun_akademik = filterTahunAkademik.value;
+    if (filterFakultas.value) params.fakultas_id = filterFakultas.value;
+    if (filterProdi.value) params.prodi_id = filterProdi.value;
+
     const response = await adminService.getSKYudisium(params);
     if (response.success) {
       yudisiumList.value = response.data.data || response.data;
@@ -436,11 +506,28 @@ const fetchYudisium = async () => {
 };
 
 const debouncedSearch = () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
+  clearTimeout(filterTimeout);
+  filterTimeout = setTimeout(() => {
     pagination.current_page = 1;
     fetchYudisium();
   }, 300);
+};
+
+const applyFilters = () => {
+  pagination.current_page = 1;
+  fetchYudisium();
+};
+
+const onFakultasChange = () => {
+  filterProdi.value = "";
+  applyFilters();
+};
+
+const clearAllFilters = () => {
+  filterTahunAkademik.value = "";
+  filterFakultas.value = "";
+  filterProdi.value = "";
+  applyFilters();
 };
 
 const goToPage = (page) => {
@@ -486,7 +573,13 @@ const submitYudisium = async () => {
 const exportPdf = async () => {
   try {
     exporting.value = true;
-    const response = await adminService.exportRekapYudisiumPdf();
+    const params = {};
+    if (filterTahunAkademik.value)
+      params.tahun_akademik = filterTahunAkademik.value;
+    if (filterFakultas.value) params.fakultas_id = filterFakultas.value;
+    if (filterProdi.value) params.prodi_id = filterProdi.value;
+
+    const response = await adminService.exportRekapYudisiumPdf(params);
     const url = window.URL.createObjectURL(
       new Blob([response.data], { type: "application/pdf" }),
     );
@@ -529,6 +622,21 @@ const generateSK = async (item) => {
     );
   } finally {
     generatingId.value = null;
+  }
+};
+
+const loadFilterData = async () => {
+  try {
+    const [tahunRes, fakultasRes, prodiRes] = await Promise.all([
+      adminService.getTahun(),
+      adminService.getFakultas(),
+      adminService.getProdi(),
+    ]);
+    tahunList.value = tahunRes.data || [];
+    fakultasList.value = fakultasRes.data || [];
+    prodiList.value = prodiRes.data || [];
+  } catch (error) {
+    console.error("Failed to load filter data:", error);
   }
 };
 
@@ -582,6 +690,29 @@ const getStatusLabel = (status) => {
 };
 
 onMounted(() => {
+  loadFilterData();
   fetchYudisium();
 });
 </script>
+
+<style scoped>
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+/* Dark mode: native select/option styling */
+:root.dark select,
+.dark select {
+  color-scheme: dark;
+}
+:root.dark select option,
+.dark select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+</style>

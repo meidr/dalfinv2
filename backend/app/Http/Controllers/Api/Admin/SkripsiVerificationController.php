@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dokumen;
+use App\Models\Seminar;
 use App\Models\Skripsi;
 use App\Models\SkripsiHistory;
 use Illuminate\Http\Request;
@@ -53,6 +54,14 @@ class SkripsiVerificationController extends Controller
 
             $skripsi->save();
 
+            // If status changes to lulus, also update sidang seminar hasil
+            if ($history->status_baru === 'lulus') {
+                Seminar::where('skripsi_id', $skripsi->id)
+                    ->where('jenis', 'sidang')
+                    ->where('hasil', 'lulus_revisi')
+                    ->update(['hasil' => 'lulus']);
+            }
+
             // Update history status
             $history->verification_status = 'approved';
             $history->save();
@@ -92,6 +101,90 @@ class SkripsiVerificationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Perubahan telah ditolak.'
+        ]);
+    }
+
+    /**
+     * Bulk approve multiple pending verifications
+     */
+    public function bulkApprove(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:skripsi_history,id',
+        ]);
+
+        $approved = 0;
+        $skipped = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($request->ids as $id) {
+                $history = SkripsiHistory::find($id);
+                if (!$history || $history->verification_status !== 'pending') {
+                    $skipped++;
+                    continue;
+                }
+
+                $skripsi = $history->skripsi;
+                $skripsi->judul = $history->judul_baru;
+                $skripsi->status = $history->status_baru;
+                $skripsi->progress_percentage = $this->calculateProgress($history->status_baru);
+                $skripsi->save();
+
+                // If status changes to lulus, also update sidang seminar hasil
+                if ($history->status_baru === 'lulus') {
+                    Seminar::where('skripsi_id', $skripsi->id)
+                        ->where('jenis', 'sidang')
+                        ->where('hasil', 'lulus_revisi')
+                        ->update(['hasil' => 'lulus']);
+                }
+
+                $history->verification_status = 'approved';
+                $history->save();
+                $approved++;
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$approved} perubahan berhasil disetujui." . ($skipped > 0 ? " {$skipped} dilewati." : ''),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Bulk reject multiple pending verifications
+     */
+    public function bulkReject(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:skripsi_history,id',
+        ]);
+
+        $rejected = 0;
+
+        foreach ($request->ids as $id) {
+            $history = SkripsiHistory::find($id);
+            if (!$history || $history->verification_status !== 'pending') {
+                continue;
+            }
+            $history->verification_status = 'rejected';
+            $history->save();
+            $rejected++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$rejected} perubahan telah ditolak.",
         ]);
     }
 

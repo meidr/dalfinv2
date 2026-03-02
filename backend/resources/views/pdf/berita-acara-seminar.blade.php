@@ -323,12 +323,32 @@
                             } else {
                                 $peranLabel = ucfirst(str_replace('_', ' ', $peranLabel));
                             }
+
+                            $ttdPath = null;
+                            if ($p->dosen) {
+                                $ttdModel = \App\Models\TandaTangan::where('dosen_id', $p->dosen->id)->first();
+                                if ($ttdModel && $ttdModel->ttd) {
+                                    $path = storage_path('app/public/' . $ttdModel->ttd);
+                                    if (file_exists($path)) {
+                                        $ttdPath = $path;
+                                    }
+                                }
+                            }
                         @endphp
                         <p>{{ $peranLabel }},</p>
-                        <div class="ttd-cap">
-                            <img class="cap" src="{{ public_path('images/cap.jpg') }}">
-                        </div>
-                        <p class="name">{{ $p->dosen->full_name ?? ($p->dosen->nama ?? '-') }}</p>
+                        @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                            <div class="ttd-cap" style="height: 100px; display: flex; align-items: center; justify-content: center;">
+                                <img src="{{ $qrData['qr_base64'] }}" style="width: 80px; height: 80px;" alt="QR">
+                            </div>
+                        @else
+                            <div class="ttd-cap" style="position: relative; height: 80px;">
+                                @if ($ttdPath)
+                                    <img src="{{ $ttdPath }}" style="position: absolute; left: 50%; transform: translateX(-50%); top: -5px; width: 80px; z-index: 3;" alt="TTD">
+                                @endif
+                                <img class="cap" src="{{ public_path('images/cap.jpg') }}" style="position: absolute; left: 50%; transform: translateX(-50%); top: -15px; margin-left: -15px; width: 120px; opacity: 0.8; z-index: 2;">
+                            </div>
+                        @endif
+                        <p class="name" style="margin-top: {{ (isset($signatureMode) && $signatureMode === 'qr') ? '0' : '40px' }};">{{ $p->dosen->full_name ?? ($p->dosen->nama ?? '-') }}</p>
                         <p class="nip">NIP/NIY. {{ $p->dosen->nip ?? '-' }}</p>
                     </td>
                 @endforeach
@@ -416,10 +436,32 @@
             <div style="margin-top: 40px; text-align: right; padding-right: 40px;">
                 <p>Pasuruan, {{ \Carbon\Carbon::parse($seminar->tanggal)->translatedFormat('d F Y') }}</p>
                 <p style="margin-top: 5px;">Ketua Penguji Seminar Proposal</p>
-                <div class="ttd-cap" style="display: inline-block; position: relative; width: 150px; height: 80px; margin-top: 5px;">
-                    <img class="cap" src="{{ public_path('images/capori.png') }}" style="position: absolute; left: 50%; transform: translateX(-50%); top: -10px; width: 110px; opacity: 0.85;">
-                </div>
-                <p class="name" style="margin-top: 0;">{{ $ketuaPenguji->dosen->full_name ?? ($ketuaPenguji->dosen->nama ?? '-') }}</p>
+                @php
+                    $ketuaTtdPath = null;
+                    if (isset($ketuaPenguji) && $ketuaPenguji->dosen) {
+                        $kttdModel = \App\Models\TandaTangan::where('dosen_id', $ketuaPenguji->dosen->id)->first();
+                        if ($kttdModel && $kttdModel->ttd) {
+                            $kpath = storage_path('app/public/' . $kttdModel->ttd);
+                            if (file_exists($kpath)) {
+                                $ketuaTtdPath = $kpath;
+                            }
+                        }
+                    }
+                @endphp
+                @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                    <div style="height: 100px; display: flex; align-items: center; justify-content: center; margin-top: 5px;">
+                        <img src="{{ $qrData['qr_base64'] }}" style="width: 90px; height: 90px;" alt="QR">
+                    </div>
+                    <p style="font-size: 7pt; color: #666; margin: 2px 0 4px 0;">Scan QR untuk verifikasi</p>
+                @else
+                    <div class="ttd-cap" style="display: inline-block; position: relative; width: 150px; height: 80px; margin-top: 5px;">
+                        @if ($ketuaTtdPath)
+                            <img src="{{ $ketuaTtdPath }}" style="position: absolute; left: 50%; transform: translateX(-50%); top: 5px; width: 90px; z-index: 3;" alt="TTD">
+                        @endif
+                        <img class="cap" src="{{ public_path('images/capori.png') }}" style="position: absolute; left: 50%; transform: translateX(-50%); top: -10px; width: 110px; opacity: 0.85; z-index: 2;">
+                    </div>
+                @endif
+                <p class="name" style="margin-top: {{ (isset($signatureMode) && $signatureMode === 'qr') ? '0' : '20px' }};">{{ $ketuaPenguji->dosen->full_name ?? ($ketuaPenguji->dosen->nama ?? '-') }}</p>
                 <p class="nip">NIP/NIY. {{ $ketuaPenguji->dosen->nip ?? '-' }}</p>
             </div>
         @endif

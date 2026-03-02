@@ -22,7 +22,7 @@
         </div>
 
         <!-- Desktop Menu -->
-        <nav class="hidden md:flex items-center gap-8">
+        <nav class="hidden md:flex items-center gap-6">
           <router-link
             to="/dosen/dashboard"
             active-class="text-primary after:scale-x-100"
@@ -38,7 +38,7 @@
             class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
           >
             <span class="material-symbols-outlined text-[20px]">groups</span>
-            <span>Mahasiswa Bimbingan</span>
+            <span>Bimbingan</span>
           </router-link>
 
           <router-link
@@ -50,6 +50,15 @@
               >calendar_month</span
             >
             <span>Jadwal</span>
+          </router-link>
+
+          <router-link
+            to="/dosen/informasi"
+            active-class="text-primary after:scale-x-100"
+            class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
+          >
+            <span class="material-symbols-outlined text-[20px]">info</span>
+            <span>Informasi</span>
           </router-link>
 
           <router-link

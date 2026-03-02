@@ -169,12 +169,6 @@
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
           >
             <tr>
-              <th class="px-6 py-4 w-12">
-                <input
-                  type="checkbox"
-                  class="rounded border-border-light text-primary focus:ring-primary h-4 w-4"
-                />
-              </th>
               <th
                 class="px-6 py-4 cursor-pointer hover:text-primary transition-colors select-none group"
                 @click="handleSort('mahasiswa_nama')"
@@ -235,7 +229,7 @@
           <tbody class="divide-y divide-border-light">
             <tr v-if="skripsiList.length === 0">
               <td
-                colspan="7"
+                colspan="6"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data skripsi
@@ -246,12 +240,6 @@
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
-              <td class="px-6 py-4">
-                <input
-                  type="checkbox"
-                  class="rounded border-border-light text-primary focus:ring-primary h-4 w-4"
-                />
-              </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div
@@ -284,8 +272,8 @@
                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
                   :class="
                     item.is_active
-                      ? 'bg-green-50 text-green-600 border border-green-100'
-                      : 'bg-red-50 text-red-600 border border-red-100'
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-600 border border-green-100 dark:border-green-800'
+                      : 'bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-100 dark:border-red-800'
                   "
                 >
                   <span
@@ -506,7 +494,7 @@
               <textarea
                 v-model="form.judul"
                 rows="3"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Masukkan judul skripsi..."
                 required
               ></textarea>
@@ -518,45 +506,122 @@
               <textarea
                 v-model="form.alasan"
                 rows="2"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Jelaskan alasan perubahan..."
                 required
               ></textarea>
             </div>
 
-            <div>
+            <div class="relative" ref="formStatusDropdownRef">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Status</label
               >
-              <select
-                v-model="form.status"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              <button
+                type="button"
+                @click="formStatusDropdownOpen = !formStatusDropdownOpen"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main text-left flex items-center justify-between transition-colors text-sm"
               >
-                <option value="pengajuan">Pengajuan</option>
-                <option value="proposal">Proposal</option>
-                <option value="sempro">Seminar Proposal</option>
-                <option value="penentuan_dospem">Penentuan Dospem</option>
-                <option value="bimbingan">Bimbingan</option>
-                <option v-if="authStore.semhasEnabled" value="semhas">
-                  Seminar Hasil
-                </option>
-                <option value="sidang">Sidang</option>
-                <option value="revisi">Revisi</option>
-                <option value="lulus">Lulus</option>
-              </select>
+                <span>{{ getFormStatusLabel(form.status) }}</span>
+                <span
+                  class="material-symbols-outlined text-[18px] text-text-secondary transition-transform"
+                  :class="{ 'rotate-180': formStatusDropdownOpen }"
+                  >expand_more</span
+                >
+              </button>
+              <Transition name="dropdown-fade">
+                <div
+                  v-if="formStatusDropdownOpen"
+                  class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-xl z-20 py-1 max-h-60 overflow-y-auto"
+                >
+                  <button
+                    v-for="opt in formStatusOptions"
+                    :key="opt.value"
+                    type="button"
+                    @click="
+                      form.status = opt.value;
+                      formStatusDropdownOpen = false;
+                    "
+                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                    :class="
+                      form.status === opt.value
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                    "
+                  >
+                    {{ opt.label }}
+                    <span
+                      v-if="form.status === opt.value"
+                      class="material-symbols-outlined text-[16px] text-primary"
+                      >check</span
+                    >
+                  </button>
+                </div>
+              </Transition>
             </div>
 
-            <div>
+            <div class="relative" ref="formActiveDropdownRef">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Status Aktif</label
               >
-              <select
-                v-model="form.is_active"
-                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              <button
+                type="button"
+                @click="formActiveDropdownOpen = !formActiveDropdownOpen"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main text-left flex items-center justify-between transition-colors text-sm"
               >
-                <option :value="true">Aktif</option>
-                <option :value="false">Nonaktif</option>
-              </select>
+                <span>{{ form.is_active ? "Aktif" : "Nonaktif" }}</span>
+                <span
+                  class="material-symbols-outlined text-[18px] text-text-secondary transition-transform"
+                  :class="{ 'rotate-180': formActiveDropdownOpen }"
+                  >expand_more</span
+                >
+              </button>
+              <Transition name="dropdown-fade">
+                <div
+                  v-if="formActiveDropdownOpen"
+                  class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-xl z-20 py-1"
+                >
+                  <button
+                    type="button"
+                    @click="
+                      form.is_active = true;
+                      formActiveDropdownOpen = false;
+                    "
+                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                    :class="
+                      form.is_active
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                    "
+                  >
+                    Aktif
+                    <span
+                      v-if="form.is_active"
+                      class="material-symbols-outlined text-[16px] text-primary"
+                      >check</span
+                    >
+                  </button>
+                  <button
+                    type="button"
+                    @click="
+                      form.is_active = false;
+                      formActiveDropdownOpen = false;
+                    "
+                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                    :class="
+                      !form.is_active
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                    "
+                  >
+                    Nonaktif
+                    <span
+                      v-if="!form.is_active"
+                      class="material-symbols-outlined text-[16px] text-primary"
+                      >check</span
+                    >
+                  </button>
+                </div>
+              </Transition>
               <p class="mt-1 text-xs text-text-secondary">
                 Jika dipilih <strong>Aktif</strong>, skripsi lain milik
                 mahasiswa ini akan otomatis menjadi <strong>Nonaktif</strong>.
@@ -595,7 +660,7 @@
               <button
                 type="button"
                 @click="closeModal"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
               >
                 Batal
               </button>
@@ -660,7 +725,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, reactive } from "vue";
 import { useRouter } from "vue-router";
 import adminService from "../../../services/adminService";
 import { useAuthStore } from "../../../stores/auth";
@@ -678,6 +743,48 @@ const showModal = ref(false);
 const showDeleteModal = ref(false);
 const isEditing = ref(false);
 const deleteItem = ref(null);
+const formStatusDropdownOpen = ref(false);
+const formActiveDropdownOpen = ref(false);
+const formStatusDropdownRef = ref(null);
+const formActiveDropdownRef = ref(null);
+
+const formStatusOptionsList = [
+  { value: "pengajuan", label: "Pengajuan" },
+  { value: "proposal", label: "Proposal" },
+  { value: "sempro", label: "Seminar Proposal" },
+  { value: "penentuan_dospem", label: "Penentuan Dospem" },
+  { value: "bimbingan", label: "Bimbingan" },
+  { value: "semhas", label: "Seminar Hasil" },
+  { value: "sidang", label: "Sidang" },
+  { value: "revisi", label: "Revisi" },
+  { value: "lulus", label: "Lulus" },
+];
+
+const formStatusOptions = computed(() =>
+  formStatusOptionsList.filter(
+    (opt) => opt.value !== "semhas" || authStore.semhasEnabled,
+  ),
+);
+
+const getFormStatusLabel = (value) => {
+  const found = formStatusOptionsList.find((o) => o.value === value);
+  return found ? found.label : value;
+};
+
+const handleFormDropdownClickOutside = (e) => {
+  if (
+    formStatusDropdownRef.value &&
+    !formStatusDropdownRef.value.contains(e.target)
+  ) {
+    formStatusDropdownOpen.value = false;
+  }
+  if (
+    formActiveDropdownRef.value &&
+    !formActiveDropdownRef.value.contains(e.target)
+  ) {
+    formActiveDropdownOpen.value = false;
+  }
+};
 
 const sorting = reactive({
   by: "created_at",
@@ -1065,5 +1172,33 @@ const formatDate = (date) => {
 onMounted(() => {
   fetchSkripsi();
   fetchStats();
+  document.addEventListener("click", handleFormDropdownClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleFormDropdownClickOutside);
 });
 </script>
+
+<style scoped>
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: all 0.15s ease;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+</style>

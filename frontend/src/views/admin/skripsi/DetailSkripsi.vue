@@ -71,7 +71,9 @@
             >{{ skripsi.progress_percentage || 0 }}%</span
           >
         </div>
-        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+        <div
+          class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3 overflow-hidden"
+        >
           <div
             class="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-500"
             :style="{ width: `${skripsi.progress_percentage || 0}%` }"
@@ -120,7 +122,7 @@
             <div
               v-for="(p, index) in pembimbing"
               :key="p.id"
-              class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-background rounded-lg"
+              class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-white/5 rounded-lg"
             >
               <div
                 class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold"
@@ -171,7 +173,7 @@
             <div class="flex items-center justify-between mb-4">
               <h4 class="font-bold text-text-main">Riwayat Bimbingan</h4>
               <span
-                class="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-bold"
+                class="text-xs px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full font-bold"
               >
                 {{ skripsi.bimbingan?.length || 0 }} sesi
               </span>
@@ -183,7 +185,7 @@
               <div
                 v-for="bimbingan in skripsi.bimbingan"
                 :key="bimbingan.id"
-                class="p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light"
+                class="p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-border-light"
               >
                 <div class="flex justify-between items-start mb-2">
                   <div>
@@ -206,13 +208,13 @@
                       v-if="bimbingan.status"
                       class="px-2 py-0.5 rounded-full text-[11px] font-bold"
                       :class="{
-                        'bg-green-50 text-green-600 border border-green-200':
+                        'bg-green-50 dark:bg-green-900/20 text-green-600 border border-green-200 dark:border-green-800':
                           bimbingan.status === 'approved',
-                        'bg-yellow-50 text-yellow-600 border border-yellow-200':
+                        'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border border-yellow-200 dark:border-yellow-800':
                           bimbingan.status === 'pending',
-                        'bg-orange-50 text-orange-600 border border-orange-200':
+                        'bg-orange-50 dark:bg-orange-900/20 text-orange-600 border border-orange-200 dark:border-orange-800':
                           bimbingan.status === 'revision',
-                        'bg-red-50 text-red-600 border border-red-200':
+                        'bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800':
                           bimbingan.status === 'rejected',
                       }"
                     >
@@ -264,15 +266,15 @@
               <div
                 v-for="seminar in filteredSeminars"
                 :key="seminar.id"
-                class="p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light"
+                class="p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-border-light"
               >
                 <div class="flex items-center justify-between mb-3">
                   <span
                     class="px-2 py-1 rounded text-xs font-bold uppercase"
                     :class="
                       seminar.jenis === 'sempro'
-                        ? 'bg-purple-100 text-purple-600'
-                        : 'bg-orange-100 text-orange-600'
+                        ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600'
+                        : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600'
                     "
                   >
                     {{ seminar.jenis === "sempro" ? "Sempro" : "Semhas" }}
@@ -329,10 +331,10 @@
             <div v-if="skripsi.file_skripsi" class="mb-6">
               <h4 class="font-bold text-text-main mb-3">File Skripsi</h4>
               <div
-                class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light"
+                class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-border-light"
               >
                 <div
-                  class="size-12 rounded-lg bg-red-100 text-red-500 flex items-center justify-center"
+                  class="size-12 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-500 flex items-center justify-center"
                 >
                   <span class="material-symbols-outlined text-[28px]"
                     >description</span
@@ -378,12 +380,14 @@
               <h4 class="font-bold text-text-main mb-3">Dokumen Lainnya</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div
-                  v-for="doc in skripsi.dokumen"
+                  v-for="doc in skripsi.dokumen.filter(
+                    (d) => d.jenis !== 'revisi_proposal',
+                  )"
                   :key="doc.id"
-                  class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light hover:border-primary/30 transition-colors"
+                  class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-border-light hover:border-primary/30 transition-colors"
                 >
                   <div
-                    class="size-10 rounded-lg bg-red-100 text-red-500 flex items-center justify-center shrink-0"
+                    class="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-500 flex items-center justify-center shrink-0"
                   >
                     <span class="material-symbols-outlined"
                       >picture_as_pdf</span
@@ -426,6 +430,109 @@
               </div>
             </div>
 
+            <!-- Revisi Proposal Dokumen -->
+            <div v-if="revisiProposalDocs.length > 0">
+              <h4 class="font-bold text-text-main mb-3 flex items-center gap-2">
+                <span
+                  class="material-symbols-outlined text-yellow-600 text-[20px]"
+                  >rate_review</span
+                >
+                Revisi Proposal
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"
+                >
+                  {{ revisiProposalDocs.length }} berkas
+                </span>
+              </h4>
+              <div class="space-y-3">
+                <div
+                  v-for="doc in revisiProposalDocs"
+                  :key="doc.id"
+                  class="flex items-center justify-between p-4 rounded-xl border transition-colors"
+                  :class="
+                    doc.status === 'pending'
+                      ? 'border-yellow-300 dark:border-yellow-800 bg-yellow-50/50 dark:bg-yellow-900/10'
+                      : 'border-border-light bg-gray-50 dark:bg-white/5'
+                  "
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div
+                      class="size-10 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 flex items-center justify-center shrink-0"
+                    >
+                      <span class="material-symbols-outlined">description</span>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="font-bold text-text-main text-sm truncate">
+                        {{ doc.nama_file || "Revisi Proposal" }}
+                      </p>
+                      <p class="text-xs text-text-secondary">
+                        {{ formatDate(doc.created_at) }}
+                        <span v-if="doc.ukuran">
+                          • {{ formatFileSize(doc.ukuran) }}</span
+                        >
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span
+                      class="px-2.5 py-1 rounded-full text-[10px] font-bold"
+                      :class="
+                        doc.status === 'approved'
+                          ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                          : doc.status === 'rejected'
+                            ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                            : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400'
+                      "
+                    >
+                      {{
+                        doc.status === "approved"
+                          ? "Disetujui"
+                          : doc.status === "rejected"
+                            ? "Ditolak"
+                            : "Menunggu"
+                      }}
+                    </span>
+                    <a
+                      :href="getFileUrl(doc.path)"
+                      target="_blank"
+                      class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-primary hover:border-primary transition-all"
+                      title="Lihat"
+                    >
+                      <span class="material-symbols-outlined text-[16px]"
+                        >visibility</span
+                      >
+                    </a>
+                    <template v-if="doc.status === 'pending'">
+                      <button
+                        @click="approveRevisiProposal(doc.id)"
+                        :disabled="approvingRevisiProposal === doc.id"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                      >
+                        <span class="material-symbols-outlined text-[14px]"
+                          >check</span
+                        >
+                        {{
+                          approvingRevisiProposal === doc.id
+                            ? "Proses..."
+                            : "Setujui"
+                        }}
+                      </button>
+                      <button
+                        @click="rejectRevisiProposal(doc.id)"
+                        :disabled="approvingRevisiProposal === doc.id"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                      >
+                        <span class="material-symbols-outlined text-[14px]"
+                          >close</span
+                        >
+                        Tolak
+                      </button>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div
               v-if="!skripsi.file_skripsi && !skripsi.dokumen?.length"
               class="text-center py-8 text-text-secondary"
@@ -446,7 +553,7 @@
               <div
                 v-for="history in skripsi.history"
                 :key="history.id"
-                class="flex gap-4 p-4 bg-gray-50 dark:bg-background rounded-lg border border-border-light"
+                class="flex gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-border-light"
               >
                 <div
                   class="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0"
@@ -534,28 +641,51 @@
             </p>
           </div>
           <form @submit.prevent="saveStatus" class="p-6 space-y-4">
-            <div>
+            <div class="relative" ref="statusDropdownRef">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Status</label
               >
-              <select
-                v-model="editForm.status"
-                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                required
+              <button
+                type="button"
+                @click="statusDropdownOpen = !statusDropdownOpen"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary text-left flex items-center justify-between transition-colors"
               >
-                <option value="pengajuan">Pengajuan</option>
-                <option value="disetujui">Disetujui</option>
-                <option value="ditolak">Ditolak</option>
-                <option value="proposal">Proposal</option>
-                <option value="sempro">Sempro</option>
-                <option value="bimbingan">Bimbingan</option>
-                <option v-if="authStore.semhasEnabled" value="semhas">
-                  Semhas
-                </option>
-                <option value="sidang">Sidang</option>
-                <option value="revisi">Revisi</option>
-                <option value="lulus">Lulus</option>
-              </select>
+                <span>{{ getStatusLabel(editForm.status) }}</span>
+                <span
+                  class="material-symbols-outlined text-[18px] text-text-secondary transition-transform"
+                  :class="{ 'rotate-180': statusDropdownOpen }"
+                  >expand_more</span
+                >
+              </button>
+              <Transition name="dropdown-fade">
+                <div
+                  v-if="statusDropdownOpen"
+                  class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-xl z-20 py-1 max-h-60 overflow-y-auto"
+                >
+                  <button
+                    v-for="opt in statusOptionsFiltered"
+                    :key="opt.value"
+                    type="button"
+                    @click="
+                      editForm.status = opt.value;
+                      statusDropdownOpen = false;
+                    "
+                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                    :class="
+                      editForm.status === opt.value
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                    "
+                  >
+                    {{ opt.label }}
+                    <span
+                      v-if="editForm.status === opt.value"
+                      class="material-symbols-outlined text-[16px] text-primary"
+                      >check</span
+                    >
+                  </button>
+                </div>
+              </Transition>
             </div>
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
@@ -564,7 +694,7 @@
               <textarea
                 v-model="editForm.catatan_admin"
                 rows="3"
-                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Tambahkan catatan..."
               ></textarea>
             </div>
@@ -572,7 +702,7 @@
               <button
                 type="button"
                 @click="showEditModal = false"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
               >
                 Batal
               </button>
@@ -592,7 +722,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import adminService from "../../../services/adminService";
 
@@ -607,6 +737,34 @@ const saving = ref(false);
 const skripsi = ref(null);
 const showEditModal = ref(false);
 const activeTab = ref("bimbingan");
+const approvingRevisiProposal = ref(null);
+const statusDropdownOpen = ref(false);
+const statusDropdownRef = ref(null);
+
+const statusOptions = [
+  { value: "pengajuan", label: "Pengajuan" },
+  { value: "disetujui", label: "Disetujui" },
+  { value: "ditolak", label: "Ditolak" },
+  { value: "proposal", label: "Proposal" },
+  { value: "sempro", label: "Sempro" },
+  { value: "bimbingan", label: "Bimbingan" },
+  { value: "semhas", label: "Semhas" },
+  { value: "sidang", label: "Sidang" },
+  { value: "revisi", label: "Revisi" },
+  { value: "lulus", label: "Lulus" },
+];
+
+const statusOptionsFiltered = computed(() =>
+  statusOptions.filter(
+    (opt) => opt.value !== "semhas" || authStore.semhasEnabled,
+  ),
+);
+
+const handleClickOutside = (e) => {
+  if (statusDropdownRef.value && !statusDropdownRef.value.contains(e.target)) {
+    statusDropdownOpen.value = false;
+  }
+};
 
 const editForm = reactive({
   status: "",
@@ -631,6 +789,49 @@ const filteredSeminars = computed(() => {
   }
   return seminars;
 });
+
+const revisiProposalDocs = computed(() => {
+  const docs = skripsi.value?.dokumen || [];
+  return docs.filter((d) => d.jenis === "revisi_proposal");
+});
+
+const approveRevisiProposal = async (docId) => {
+  if (
+    !confirm(
+      "Apakah Anda yakin ingin menyetujui dokumen revisi proposal ini? Status skripsi akan berubah menjadi Penentuan Dospem.",
+    )
+  )
+    return;
+  try {
+    approvingRevisiProposal.value = docId;
+    await adminService.updateDokumen(docId, { status: "approved" });
+    alert("Dokumen revisi proposal disetujui.");
+    fetchSkripsi();
+  } catch (error) {
+    console.error("Failed to approve revisi proposal:", error);
+    alert(
+      "Gagal menyetujui: " + (error.response?.data?.message || error.message),
+    );
+  } finally {
+    approvingRevisiProposal.value = null;
+  }
+};
+
+const rejectRevisiProposal = async (docId) => {
+  const catatan = prompt("Alasan penolakan (opsional):");
+  if (catatan === null) return;
+  try {
+    approvingRevisiProposal.value = docId;
+    await adminService.updateDokumen(docId, { status: "rejected", catatan });
+    alert("Dokumen revisi proposal ditolak.");
+    fetchSkripsi();
+  } catch (error) {
+    console.error("Failed to reject revisi proposal:", error);
+    alert("Gagal menolak: " + (error.response?.data?.message || error.message));
+  } finally {
+    approvingRevisiProposal.value = null;
+  }
+};
 
 const fetchSkripsi = async () => {
   try {
@@ -774,6 +975,11 @@ const formatFileSize = (bytes) => {
 
 onMounted(() => {
   fetchSkripsi();
+  document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
 });
 </script>
 
@@ -786,5 +992,16 @@ onMounted(() => {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: all 0.15s ease;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

@@ -59,6 +59,12 @@ use App\Http\Controllers\Api\Admin\MasterFakultasController;
 use App\Http\Controllers\Api\Admin\PeriodeJabatanController;
 use App\Http\Controllers\Api\Admin\JabatanPejabatController;
 use App\Http\Controllers\Api\Admin\TandaTanganController;
+use App\Http\Controllers\Api\PublicConfigController;
+use App\Http\Controllers\Api\VerifyDocumentController;
+
+// Public Document Verification (no auth needed)
+Route::get('/verify/{token}', [VerifyDocumentController::class, 'verify']);
+Route::get('/verify/{token}/pdf', [VerifyDocumentController::class, 'pdf']);
 
 Route::prefix('tes')->group(function () {
     Route::get('/pembimbing', [AdminPembimbingController::class, 'index']);
@@ -102,6 +108,8 @@ Route::prefix('admin')
             Route::get('/skripsi-verification', [SkripsiVerificationController::class, 'index']);
             Route::post('/skripsi-verification/{id}/approve', [SkripsiVerificationController::class, 'approve']);
             Route::post('/skripsi-verification/{id}/reject', [SkripsiVerificationController::class, 'reject']);
+            Route::post('/skripsi-verification/bulk-approve', [SkripsiVerificationController::class, 'bulkApprove']);
+            Route::post('/skripsi-verification/bulk-reject', [SkripsiVerificationController::class, 'bulkReject']);
         });
 
         // Skripsi Management
@@ -231,6 +239,13 @@ Route::prefix('admin')
         Route::post('/configuration/syarat-bimbingan', [AdminConfigurationController::class, 'saveSyaratBimbingan']);
         Route::get('/configuration/kuota-bimbingan', [AdminConfigurationController::class, 'getKuotaBimbingan']);
         Route::post('/configuration/kuota-bimbingan', [AdminConfigurationController::class, 'saveKuotaBimbingan']);
+        Route::get('/configuration/tanggal-penting', [AdminConfigurationController::class, 'getTanggalPenting']);
+        Route::post('/configuration/tanggal-penting', [AdminConfigurationController::class, 'saveTanggalPenting']);
+        Route::get('/configuration/panduan/{type}', [AdminConfigurationController::class, 'getPanduanList']);
+        Route::post('/configuration/panduan/{type}', [AdminConfigurationController::class, 'uploadPanduan']);
+        Route::delete('/configuration/panduan/{id}', [AdminConfigurationController::class, 'deletePanduan']);
+        Route::get('/configuration/jenis-ttd', [AdminConfigurationController::class, 'getJenisTtd']);
+        Route::post('/configuration/jenis-ttd', [AdminConfigurationController::class, 'saveJenisTtd']);
 
         // Notifications
         Route::get('/notifications', [AdminNotificationController::class, 'index']);
@@ -238,6 +253,13 @@ Route::prefix('admin')
         Route::put('/notifications/read-all', [AdminNotificationController::class, 'markAllRead']);
         Route::put('/notifications/{notification}/read', [AdminNotificationController::class, 'markAsRead']);
     });
+
+// Public Config Routes (any authenticated user)
+Route::middleware('auth:sanctum')->prefix('public')->group(function () {
+    Route::get('/tanggal-penting', [PublicConfigController::class, 'getTanggalPenting']);
+    Route::get('/panduan/{type}', [PublicConfigController::class, 'getPanduan']);
+    Route::get('/panduan/{id}/download', [PublicConfigController::class, 'downloadPanduan']);
+});
 
 // Super Admin Routes (super_admin only)
 Route::prefix('super-admin')

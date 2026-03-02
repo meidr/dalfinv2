@@ -29,6 +29,7 @@
             <option value="full_draft">Draft Lengkap</option>
             <option value="final">Naskah Final</option>
             <option value="revisi">Revisi</option>
+            <option value="revisi_proposal">Revisi Proposal</option>
             <option value="lainnya">Lainnya</option>
           </select>
           <button
@@ -221,7 +222,7 @@
           class="flex items-center gap-4 p-3 border border-border-light rounded-lg hover:border-primary/30 transition-colors bg-white dark:bg-gray-900"
         >
           <div
-            class="size-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shrink-0"
+            class="size-10 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 flex items-center justify-center shrink-0"
           >
             <span class="material-symbols-outlined text-[18px]"
               >attach_file</span
@@ -399,7 +400,7 @@
         <form @submit.prevent="submitUpload" class="p-6 flex flex-col gap-5">
           <div
             v-if="uploadError"
-            class="flex gap-2 bg-red-50 p-3 rounded-lg border border-red-100 text-sm text-red-700"
+            class="flex gap-2 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-800 text-sm text-red-700 dark:text-red-300"
           >
             <span class="material-symbols-outlined text-red-500 text-[18px]"
               >error</span
@@ -509,7 +510,9 @@
         class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-sm p-6 flex flex-col gap-4"
       >
         <div class="flex items-center gap-3">
-          <div class="p-2 bg-red-100 rounded-lg text-red-600">
+          <div
+            class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-600"
+          >
             <span class="material-symbols-outlined">delete</span>
           </div>
           <h3 class="text-lg font-bold text-text-main">Hapus Berkas?</h3>
@@ -576,6 +579,7 @@ const dokumenList = computed(() => {
       "full_draft",
       "final",
       "revisi",
+      "revisi_proposal",
       "lainnya",
     ];
     return order.indexOf(a.jenis) - order.indexOf(b.jenis);
@@ -648,7 +652,7 @@ const officialDocuments = computed(() => {
     type: "sk-tugas",
     label: "SK Pembimbing Skripsi",
     icon: "picture_as_pdf",
-    iconClass: "bg-red-50 text-red-500",
+    iconClass: "bg-red-50 dark:bg-red-900/20 text-red-500",
     available: skTugasAvailable,
     subtitle: skTugasSubtitle,
   });
@@ -658,7 +662,7 @@ const officialDocuments = computed(() => {
     type: "nota-bimbingan",
     label: "Nota / Kartu Bimbingan",
     icon: "picture_as_pdf",
-    iconClass: "bg-blue-50 text-blue-500",
+    iconClass: "bg-blue-50 dark:bg-blue-900/20 text-blue-500",
     available: true,
     subtitle: s.nota_bimbingan
       ? "Diterbitkan " +
@@ -676,7 +680,7 @@ const officialDocuments = computed(() => {
       type: "sk-penguji-sempro",
       label: "SK Penguji Sempro",
       icon: "gavel",
-      iconClass: "bg-purple-50 text-purple-500",
+      iconClass: "bg-purple-50 dark:bg-purple-900/20 text-purple-500",
       available: hasSpPenguji,
       subtitle: hasSpPenguji
         ? `${sempro.penguji.length} penguji ditugaskan`
@@ -688,7 +692,7 @@ const officialDocuments = computed(() => {
       type: "berita-acara-sempro",
       label: "Berita Acara Sempro",
       icon: "article",
-      iconClass: "bg-amber-50 text-amber-600",
+      iconClass: "bg-amber-50 dark:bg-amber-900/20 text-amber-600",
       available: hasBaSempro,
       subtitle: hasBaSempro
         ? "Diterbitkan " + formatDateTime(sempro.berita_acara.created_at)
@@ -706,7 +710,7 @@ const officialDocuments = computed(() => {
       type: "sk-penguji-semhas",
       label: "SK Penguji Semhas",
       icon: "gavel",
-      iconClass: "bg-orange-50 text-orange-500",
+      iconClass: "bg-orange-50 dark:bg-orange-900/20 text-orange-500",
       available: hasShPenguji,
       subtitle: hasShPenguji
         ? `${semhas.penguji.length} penguji ditugaskan`
@@ -718,7 +722,7 @@ const officialDocuments = computed(() => {
       type: "berita-acara-semhas",
       label: "Berita Acara Semhas",
       icon: "article",
-      iconClass: "bg-teal-50 text-teal-600",
+      iconClass: "bg-teal-50 dark:bg-teal-900/20 text-teal-600",
       available: hasBaSemhas,
       subtitle: hasBaSemhas
         ? "Diterbitkan " + formatDateTime(semhas.berita_acara.created_at)
@@ -734,7 +738,7 @@ const officialDocuments = computed(() => {
       type: "sk-penguji-sidang",
       label: "SK Penguji Sidang",
       icon: "gavel",
-      iconClass: "bg-indigo-50 text-indigo-500",
+      iconClass: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500",
       available: hasSdPenguji,
       subtitle: hasSdPenguji
         ? `${sidang.penguji.length} penguji ditugaskan`
@@ -746,7 +750,7 @@ const officialDocuments = computed(() => {
       type: "berita-acara-sidang",
       label: "Berita Acara Sidang",
       icon: "article",
-      iconClass: "bg-rose-50 text-rose-600",
+      iconClass: "bg-rose-50 dark:bg-rose-900/20 text-rose-600",
       available: hasBaSidang,
       subtitle: hasBaSidang
         ? "Diterbitkan " + formatDateTime(sidang.berita_acara.created_at)
@@ -760,7 +764,7 @@ const officialDocuments = computed(() => {
       type: "sk-yudisium",
       label: "SK Yudisium",
       icon: "school",
-      iconClass: "bg-emerald-50 text-emerald-600",
+      iconClass: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600",
       available: true,
       subtitle:
         "Diterbitkan " +
@@ -790,6 +794,7 @@ const jenisOptions = [
   { value: "full_draft", label: "Draft Lengkap" },
   { value: "final", label: "Naskah Final" },
   { value: "revisi", label: "Revisi" },
+  { value: "revisi_proposal", label: "Revisi Proposal" },
   { value: "lainnya", label: "Dokumen Lainnya" },
 ];
 
@@ -964,6 +969,7 @@ const getJenisLabel = (jenis) => {
     full_draft: "Draft Lengkap",
     final: "Naskah Final",
     revisi: "Revisi",
+    revisi_proposal: "Revisi Proposal",
     lainnya: "Lainnya",
     sk_tugas: "SK Pembimbing Skripsi",
   };
@@ -981,6 +987,7 @@ const getDocIcon = (jenis) => {
     full_draft: "menu_book",
     final: "task",
     revisi: "rate_review",
+    revisi_proposal: "rate_review",
     lainnya: "article",
   };
   return map[jenis] || "description";
@@ -988,18 +995,19 @@ const getDocIcon = (jenis) => {
 
 const getDocIconClass = (jenis) => {
   const map = {
-    proposal: "bg-blue-100 text-blue-600",
-    bab1: "bg-indigo-100 text-indigo-600",
-    bab2: "bg-purple-100 text-purple-600",
-    bab3: "bg-violet-100 text-violet-600",
-    bab4: "bg-fuchsia-100 text-fuchsia-600",
-    bab5: "bg-pink-100 text-pink-600",
-    full_draft: "bg-amber-100 text-amber-600",
-    final: "bg-green-100 text-green-600",
-    revisi: "bg-orange-100 text-orange-600",
-    lainnya: "bg-gray-100 text-gray-600",
+    proposal: "bg-blue-100 dark:bg-blue-900/30 text-blue-600",
+    bab1: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600",
+    bab2: "bg-purple-100 dark:bg-purple-900/30 text-purple-600",
+    bab3: "bg-violet-100 dark:bg-violet-900/30 text-violet-600",
+    bab4: "bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-600",
+    bab5: "bg-pink-100 dark:bg-pink-900/30 text-pink-600",
+    full_draft: "bg-amber-100 dark:bg-amber-900/30 text-amber-600",
+    final: "bg-green-100 dark:bg-green-900/30 text-green-600",
+    revisi: "bg-orange-100 dark:bg-orange-900/30 text-orange-600",
+    revisi_proposal: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600",
+    lainnya: "bg-gray-100 dark:bg-gray-800 text-gray-600",
   };
-  return map[jenis] || "bg-gray-100 text-gray-600";
+  return map[jenis] || "bg-gray-100 dark:bg-gray-800 text-gray-600";
 };
 
 const getStatusLabel = (status) => {
@@ -1013,11 +1021,17 @@ const getStatusLabel = (status) => {
 
 const getStatusClass = (status) => {
   const map = {
-    pending: "bg-blue-50 text-blue-700 border border-blue-200",
-    approved: "bg-green-50 text-green-700 border border-green-200",
-    rejected: "bg-red-50 text-red-700 border border-red-200",
+    pending:
+      "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800",
+    approved:
+      "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800",
+    rejected:
+      "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800",
   };
-  return map[status] || "bg-gray-50 text-gray-600 border border-gray-200";
+  return (
+    map[status] ||
+    "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
+  );
 };
 
 const getBimbinganStatusLabel = (status) => {
@@ -1032,12 +1046,19 @@ const getBimbinganStatusLabel = (status) => {
 
 const getBimbinganStatusClass = (status) => {
   const map = {
-    approved: "bg-green-50 text-green-600 border border-green-100",
-    pending: "bg-blue-50 text-blue-600 border border-blue-100",
-    revision: "bg-orange-50 text-orange-600 border border-orange-100",
-    rejected: "bg-red-50 text-red-600 border border-red-100",
+    approved:
+      "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800",
+    pending:
+      "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800",
+    revision:
+      "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800",
+    rejected:
+      "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800",
   };
-  return map[status] || "bg-gray-50 text-gray-600 border border-gray-100";
+  return (
+    map[status] ||
+    "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700"
+  );
 };
 
 const getFileUrl = (path) => {

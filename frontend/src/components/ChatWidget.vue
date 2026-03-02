@@ -622,6 +622,44 @@ onBeforeUnmount(() => {
   clearInterval(unreadPollInterval);
   clearTimeout(searchDebounce);
 });
+// --- Public API ---
+const openChatWithAdmin = async () => {
+  // Open the panel first
+  isOpen.value = true;
+  await fetchConversations();
+
+  // Check if there's already a conversation with an admin
+  const existingAdminConv = conversations.value.find(
+    (c) => c.other_user.role === "admin" || c.other_user.role === "super_admin",
+  );
+  if (existingAdminConv) {
+    openConversation(existingAdminConv);
+    return;
+  }
+
+  // Otherwise, search for admin users and start a chat
+  showNewChat.value = true;
+  searchQuery.value = "admin";
+  searchLoading.value = true;
+  try {
+    const res = await chatService.searchUsers("admin");
+    if (res.success && res.data.length > 0) {
+      const adminUser = res.data.find(
+        (u) => u.role === "admin" || u.role === "super_admin",
+      );
+      if (adminUser) {
+        await startChat(adminUser);
+        return;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to find admin:", err);
+  } finally {
+    searchLoading.value = false;
+  }
+};
+
+defineExpose({ openChatWithAdmin });
 </script>
 
 <style scoped>

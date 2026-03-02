@@ -172,12 +172,17 @@ class SeminarNilaiController extends Controller
                 }
                 $updateData['status'] = 'selesai';
 
-                // Auto-create BeritaAcara if not exists
+                // Auto-create or update BeritaAcara
                 if (!$seminar->beritaAcara) {
+                    $baNomor = 'BA-' . strtoupper($seminar->jenis) . '-' . $seminar->id . '-' . now()->format('YmdHis');
+                    // Ensure unique nomor
+                    while (BeritaAcara::where('nomor', $baNomor)->exists()) {
+                        $baNomor = 'BA-' . strtoupper($seminar->jenis) . '-' . $seminar->id . '-' . now()->format('YmdHis') . '-' . rand(100, 999);
+                    }
                     BeritaAcara::create([
                         'jenis' => 'seminar',
                         'seminar_id' => $seminar->id,
-                        'nomor' => 'BA-' . strtoupper($seminar->jenis) . '-' . $seminar->id . '-' . now()->format('Ymd'),
+                        'nomor' => $baNomor,
                         'tanggal' => now(),
                         'hasil' => $updateData['hasil'] ?? ($ketuaHasil ?? 'lulus'),
                         'catatan' => null,

@@ -32,17 +32,19 @@
               class="w-full xl:w-1/5 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center p-6"
             >
               <div
-                class="bg-white/90 dark:bg-surface-dark/90 p-3 rounded-lg text-center shadow-md"
+                class="bg-white/90 dark:bg-white/10 p-4 rounded-xl text-center shadow-md"
               >
                 <p
-                  class="text-primary text-[10px] font-bold uppercase tracking-widest"
+                  class="text-primary text-xs font-bold uppercase tracking-widest"
                 >
                   {{ getMonth(s.tanggal) }}
                 </p>
-                <p class="text-text-main dark:text-white text-2xl font-black">
+                <p
+                  class="text-text-main dark:text-white text-4xl font-black leading-tight"
+                >
                   {{ getDay(s.tanggal) }}
                 </p>
-                <p class="text-text-secondary text-xs font-medium">
+                <p class="text-text-secondary text-sm font-medium">
                   {{ getYear(s.tanggal) }}
                 </p>
               </div>

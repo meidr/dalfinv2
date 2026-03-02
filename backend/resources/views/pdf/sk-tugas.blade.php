@@ -258,12 +258,21 @@
         <div class="ttd-date">Bangil, {{ $tanggal }}</div>
         <div class="ttd-title">Kepala Program Studi {{ $prodi_nama ?? '' }}</div>
 
-        <div class="ttd-space">
-            @if (!empty($signer['signature']))
-                <img class="ttd-img" src="{{ $signer['signature'] }}">
-            @endif
-            <img class="cap" src="{{ public_path('images/capori.png') }}">
-        </div>
+        @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+            {{-- QR Code Signature --}}
+            <div class="ttd-space" style="height: 120px; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ $qrData['qr_base64'] }}" style="width: 110px; height: 110px;" alt="QR Verification">
+            </div>
+            <p style="font-size: 7pt; color: #666; margin: 2px 0 6px 0;">Scan QR untuk verifikasi keaslian dokumen</p>
+        @else
+            {{-- TTD Biasa + Stempel --}}
+            <div class="ttd-space">
+                @if (!empty($signer['signature']))
+                    <img class="ttd-img" src="{{ $signer['signature'] }}">
+                @endif
+                <img class="cap" src="{{ public_path('images/capori.png') }}">
+            </div>
+        @endif
 
         <div class="nama">{{ $signer['name'] ?? '-' }}</div>
         <div class="niy">NIY: {{ $signer['nip'] ?? '-' }}</div>

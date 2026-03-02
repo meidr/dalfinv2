@@ -23,7 +23,40 @@
           Pantau progres skripsi Anda dan selesaikan tahapan berikutnya.
         </p>
       </section>
+
+      <!-- Ditolak setelah sempro: is_active false, tampilkan info -->
       <div
+        v-if="rejectedSkripsi"
+        class="bg-surface-light rounded-xl shadow-sm border border-red-200 dark:border-red-800 overflow-hidden"
+      >
+        <div
+          class="p-6 flex flex-col items-center justify-center gap-4 text-center"
+        >
+          <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-full">
+            <span class="material-symbols-outlined text-5xl text-red-500"
+              >block</span
+            >
+          </div>
+          <h3 class="text-xl font-bold text-red-700 dark:text-red-400">
+            Skripsi Tidak Lulus Seminar Proposal
+          </h3>
+          <p class="text-text-secondary max-w-md">
+            Maaf, judul skripsi "<strong>{{ rejectedSkripsi.judul }}</strong
+            >" tidak lulus pada seminar proposal. Silakan ajukan judul baru
+            untuk memulai kembali proses skripsi.
+          </p>
+          <router-link
+            to="/mahasiswa/skripsi"
+            class="mt-2 inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20"
+          >
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            Ajukan Judul Baru
+          </router-link>
+        </div>
+      </div>
+
+      <div
+        v-else
         class="bg-surface-light rounded-xl shadow-sm border border-border-light p-12 flex flex-col items-center justify-center gap-4 text-center"
       >
         <span
@@ -279,15 +312,15 @@
                 Butuh Bantuan?
               </p>
               <p class="font-bold mb-4 text-lg">Hubungi Admin Prodi</p>
-              <a
-                href="mailto:admin@universitas.ac.id"
-                class="text-xs font-bold bg-white/10 hover:bg-white/20 backdrop-blur-sm py-2.5 px-4 rounded-lg text-white transition-all border border-white/10 hover:border-white/30 flex items-center gap-2 w-fit"
+              <button
+                @click="openChatWithAdmin"
+                class="text-xs font-bold bg-white/10 hover:bg-white/20 backdrop-blur-sm py-2.5 px-4 rounded-lg text-white transition-all border border-white/10 hover:border-white/30 flex items-center gap-2 w-fit cursor-pointer"
               >
                 <span class="material-symbols-outlined text-[16px]"
                   >support_agent</span
                 >
                 Kontak Admin
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -362,7 +395,9 @@
                 >error</span
               >
               <div>
-                <p class="text-sm font-bold text-red-700 mb-1">
+                <p
+                  class="text-sm font-bold text-red-700 dark:text-red-400 mb-1"
+                >
                   Pengajuan Ujian Ditolak
                 </p>
                 <p
@@ -454,6 +489,144 @@
         </div>
       </section>
 
+      <!-- Revisi Proposal Sempro Section (for lulus_bersyarat) -->
+      <section
+        v-if="isLulusBersyaratSempro"
+        class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden hover:shadow-md transition-all"
+      >
+        <div
+          class="p-5 border-b border-border-light flex items-center justify-between"
+        >
+          <div>
+            <h3 class="text-lg font-bold text-text-main">
+              Revisi Proposal Seminar
+            </h3>
+            <p class="text-sm text-text-secondary">
+              Unggah dokumen revisi proposal sesuai catatan dosen penguji
+            </p>
+          </div>
+          <span
+            class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800"
+          >
+            Lulus Bersyarat
+          </span>
+        </div>
+        <div class="p-5 space-y-4">
+          <!-- Info alert -->
+          <div
+            class="flex items-start gap-3 p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border-l-4 border-yellow-400"
+          >
+            <span class="material-symbols-outlined text-yellow-600 mt-0.5"
+              >info</span
+            >
+            <div>
+              <p class="text-sm text-text-main">
+                Hasil seminar proposal Anda adalah
+                <strong>Lulus Bersyarat</strong>. Silakan perbaiki proposal
+                sesuai catatan dari dosen penguji, lalu unggah dokumen revisi
+                proposal di bawah ini. Setelah disetujui oleh staff/admin,
+                status Anda akan berubah menjadi
+                <strong>Penentuan Dospem</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Upload form -->
+          <div class="border border-dashed border-border-light rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="material-symbols-outlined text-primary text-xl"
+                >upload_file</span
+              >
+              <p class="text-sm font-bold text-text-main">
+                Unggah Revisi Proposal
+              </p>
+            </div>
+            <div class="flex gap-3">
+              <input
+                type="file"
+                ref="revisiProposalFileInput"
+                accept=".pdf,.doc,.docx"
+                class="flex-1 px-3 py-2 border border-border-light rounded-lg bg-background-light text-text-main text-sm dark:bg-background"
+              />
+              <button
+                @click="uploadRevisiProposal"
+                :disabled="uploadingRevisiProposal"
+                class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-bold disabled:opacity-50 flex items-center gap-2"
+              >
+                <span
+                  v-if="uploadingRevisiProposal"
+                  class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                ></span>
+                <span v-else class="material-symbols-outlined text-[18px]"
+                  >cloud_upload</span
+                >
+                {{ uploadingRevisiProposal ? "Mengunggah..." : "Unggah" }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Uploaded docs list -->
+          <div v-if="revisiProposalDocs.length > 0" class="space-y-2">
+            <p
+              class="text-xs font-bold text-text-secondary uppercase tracking-wider"
+            >
+              Dokumen yang Diunggah
+            </p>
+            <div
+              v-for="doc in revisiProposalDocs"
+              :key="doc.id"
+              class="flex items-center justify-between p-3 border border-border-light rounded-lg"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <span
+                  class="material-symbols-outlined text-xl"
+                  :class="
+                    doc.status === 'approved'
+                      ? 'text-green-600'
+                      : doc.status === 'rejected'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                  "
+                  >description</span
+                >
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-text-main truncate">
+                    {{ doc.nama_file }}
+                  </p>
+                  <p class="text-[10px] text-text-secondary">
+                    {{
+                      new Date(doc.created_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    }}
+                  </p>
+                </div>
+              </div>
+              <span
+                class="px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0"
+                :class="
+                  doc.status === 'approved'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                    : doc.status === 'rejected'
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                      : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                "
+              >
+                {{
+                  doc.status === "approved"
+                    ? "Disetujui"
+                    : doc.status === "rejected"
+                      ? "Ditolak"
+                      : "Menunggu"
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Ujian Confirmation Modal -->
       <Transition name="modal-fade">
         <div
@@ -527,7 +700,7 @@
             </p>
           </div>
           <span
-            class="px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200"
+            class="px-3 py-1 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800"
           >
             Perlu Revisi
           </span>
@@ -627,10 +800,10 @@
                 class="px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0"
                 :class="
                   doc.status === 'approved'
-                    ? 'bg-green-100 text-green-700'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                     : doc.status === 'rejected'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-yellow-100 text-yellow-700'
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                      : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
                 "
               >
                 {{
@@ -641,6 +814,106 @@
                       : "Menunggu"
                 }}
               </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dokumen Umum Skripsi Section (SK Tugas & Nota Bimbingan) -->
+      <section
+        v-if="skTugas || hasBimbingan"
+        class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden hover:shadow-md transition-all"
+      >
+        <div class="p-5 border-b border-border-light">
+          <h3 class="text-lg font-bold text-text-main">Dokumen Umum Skripsi</h3>
+          <p class="text-sm text-text-secondary">
+            Surat tugas pembimbing dan nota bimbingan
+          </p>
+        </div>
+        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- SK Tugas Pembimbing -->
+          <div
+            v-if="skTugas"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
+          >
+            <div
+              class="size-12 rounded-xl flex items-center justify-center bg-purple-50 dark:bg-purple-900/20 text-purple-500 dark:text-purple-400 shrink-0"
+            >
+              <span class="material-symbols-outlined">assignment</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm font-bold text-text-main">
+                SK Tugas Pembimbing
+              </h4>
+              <p class="text-xs text-text-secondary">
+                Surat penugasan dosen pembimbing
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                @click="previewPdf('sk-tugas')"
+                :disabled="previewingPdf === 'sk-tugas'"
+                class="p-2 text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50"
+                title="Lihat"
+              >
+                <span class="material-symbols-outlined text-[18px]">{{
+                  previewingPdf === "sk-tugas" ? "hourglass_top" : "visibility"
+                }}</span>
+              </button>
+              <button
+                @click="downloadPdf('sk-tugas')"
+                :disabled="downloadingPdf === 'sk-tugas'"
+                class="p-2 text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm"
+                title="Unduh"
+              >
+                <span class="material-symbols-outlined text-[18px]">{{
+                  downloadingPdf === "sk-tugas" ? "hourglass_top" : "download"
+                }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Nota Bimbingan -->
+          <div
+            v-if="hasBimbingan"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
+          >
+            <div
+              class="size-12 rounded-xl flex items-center justify-center bg-amber-50 dark:bg-amber-900/20 text-amber-500 dark:text-amber-400 shrink-0"
+            >
+              <span class="material-symbols-outlined">menu_book</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-sm font-bold text-text-main">Nota Bimbingan</h4>
+              <p class="text-xs text-text-secondary">
+                Rekap bimbingan dengan dosen
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                @click="previewPdf('nota-bimbingan')"
+                :disabled="previewingPdf === 'nota-bimbingan'"
+                class="p-2 text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50"
+                title="Lihat"
+              >
+                <span class="material-symbols-outlined text-[18px]">{{
+                  previewingPdf === "nota-bimbingan"
+                    ? "hourglass_top"
+                    : "visibility"
+                }}</span>
+              </button>
+              <button
+                @click="downloadPdf('nota-bimbingan')"
+                :disabled="downloadingPdf === 'nota-bimbingan'"
+                class="p-2 text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm"
+                title="Unduh"
+              >
+                <span class="material-symbols-outlined text-[18px]">{{
+                  downloadingPdf === "nota-bimbingan"
+                    ? "hourglass_top"
+                    : "download"
+                }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -666,10 +939,10 @@
           <!-- SK Penguji Sempro -->
           <div
             v-if="semproSeminar.penguji?.length"
-            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-background"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
           >
             <div
-              class="size-12 rounded-xl flex items-center justify-center bg-red-50 text-red-500 shrink-0"
+              class="size-12 rounded-xl flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 shrink-0"
             >
               <span class="material-symbols-outlined">picture_as_pdf</span>
             </div>
@@ -712,10 +985,10 @@
           <!-- Berita Acara Sempro -->
           <div
             v-if="semproSeminar.berita_acara"
-            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-background"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
           >
             <div
-              class="size-12 rounded-xl flex items-center justify-center bg-blue-50 text-blue-500 shrink-0"
+              class="size-12 rounded-xl flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 shrink-0"
             >
               <span class="material-symbols-outlined">description</span>
             </div>
@@ -775,10 +1048,10 @@
         <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div
             v-if="semhasSeminar.penguji?.length"
-            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-background"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
           >
             <div
-              class="size-12 rounded-xl flex items-center justify-center bg-orange-50 text-orange-500 shrink-0"
+              class="size-12 rounded-xl flex items-center justify-center bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400 shrink-0"
             >
               <span class="material-symbols-outlined">picture_as_pdf</span>
             </div>
@@ -820,10 +1093,10 @@
 
           <div
             v-if="semhasSeminar.berita_acara"
-            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-background"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
           >
             <div
-              class="size-12 rounded-xl flex items-center justify-center bg-teal-50 text-teal-500 shrink-0"
+              class="size-12 rounded-xl flex items-center justify-center bg-teal-50 dark:bg-teal-900/20 text-teal-500 dark:text-teal-400 shrink-0"
             >
               <span class="material-symbols-outlined">description</span>
             </div>
@@ -882,10 +1155,10 @@
         <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div
             v-if="sidangSeminar.penguji?.length"
-            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-background"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
           >
             <div
-              class="size-12 rounded-xl flex items-center justify-center bg-indigo-50 text-indigo-500 shrink-0"
+              class="size-12 rounded-xl flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 dark:text-indigo-400 shrink-0"
             >
               <span class="material-symbols-outlined">picture_as_pdf</span>
             </div>
@@ -927,10 +1200,10 @@
 
           <div
             v-if="sidangSeminar.berita_acara"
-            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-background"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
           >
             <div
-              class="size-12 rounded-xl flex items-center justify-center bg-rose-50 text-rose-500 shrink-0"
+              class="size-12 rounded-xl flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 shrink-0"
             >
               <span class="material-symbols-outlined">description</span>
             </div>
@@ -983,10 +1256,10 @@
         </div>
         <div class="p-5">
           <div
-            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-background"
+            class="flex items-center gap-4 p-4 rounded-xl border border-border-light bg-white dark:bg-white/5"
           >
             <div
-              class="size-12 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-500 shrink-0"
+              class="size-12 rounded-xl flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 dark:text-emerald-400 shrink-0"
             >
               <span class="material-symbols-outlined">school</span>
             </div>
@@ -1046,11 +1319,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { mahasiswaService } from "../../services/mahasiswaService";
 import { useAuthStore } from "../../stores/auth";
 
 const authStore = useAuthStore();
+const openChatWithAdmin = inject("openChatWithAdmin", () => {});
 const loading = ref(true);
 const mahasiswa = ref(null);
 const skripsi = ref(null);
@@ -1061,6 +1335,8 @@ const semproSeminar = ref(null);
 const semhasSeminar = ref(null);
 const sidangSeminar = ref(null);
 const skYudisium = ref(null);
+const skTugas = ref(null);
+const hasBimbingan = ref(false);
 const downloadingPdf = ref(null);
 const previewingPdf = ref(null);
 
@@ -1074,6 +1350,12 @@ const ujianToast = ref({ show: false, message: "", type: "success" });
 const revisiDocsMhs = ref([]);
 const uploadingRevisi = ref(false);
 const revisiFileInput = ref(null);
+
+// Revisi Proposal (Sempro lulus bersyarat) state
+const revisiProposalDocs = ref([]);
+const uploadingRevisiProposal = ref(false);
+const revisiProposalFileInput = ref(null);
+const rejectedSkripsi = ref(null);
 
 const eligibilityChecklist = computed(() => {
   if (!ujianEligibility.value) return [];
@@ -1175,6 +1457,57 @@ const uploadRevisiDoc = async () => {
     );
   } finally {
     uploadingRevisi.value = false;
+  }
+};
+
+// ---- REVISI PROPOSAL DOCS (SEMPRO LULUS BERSYARAT) ----
+const isLulusBersyaratSempro = computed(() => {
+  if (!skripsi.value || skripsi.value.status !== "sempro") return false;
+  // Check if sempro seminar has hasil lulus_bersyarat
+  if (semproSeminar.value?.berita_acara?.hasil === "lulus_bersyarat")
+    return true;
+  if (semproSeminar.value?.hasil === "lulus_bersyarat") return true;
+  return false;
+});
+
+const fetchRevisiProposalDocs = async () => {
+  if (!skripsi.value) return;
+  try {
+    const response = await mahasiswaService.getDokumen({
+      jenis: "revisi_proposal",
+    });
+    if (response.success) {
+      revisiProposalDocs.value = response.data || [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch revisi proposal docs:", error);
+  }
+};
+
+const uploadRevisiProposal = async () => {
+  const fileInput = revisiProposalFileInput.value;
+  if (!fileInput?.files?.length) {
+    alert("Pilih file terlebih dahulu");
+    return;
+  }
+  try {
+    uploadingRevisiProposal.value = true;
+    await mahasiswaService.uploadDokumen({
+      jenis: "revisi_proposal",
+      file: fileInput.files[0],
+    });
+    fileInput.value = "";
+    await fetchRevisiProposalDocs();
+    alert(
+      "Dokumen revisi proposal berhasil diunggah. Menunggu persetujuan staff/admin.",
+    );
+  } catch (error) {
+    console.error("Failed to upload revisi proposal:", error);
+    alert(
+      "Gagal mengunggah: " + (error.response?.data?.message || error.message),
+    );
+  } finally {
+    uploadingRevisiProposal.value = false;
   }
 };
 
@@ -1371,8 +1704,9 @@ const activeStageDescription = computed(() => {
       "Selamat! Judul skripsi Anda telah disetujui. Langkah selanjutnya adalah melakukan bimbingan dengan dosen pembimbing.",
     proposal:
       "Anda sedang dalam tahap proposal. Persiapkan materi proposal Anda untuk seminar proposal.",
-    sempro:
-      "Selamat! Anda telah menyelesaikan Seminar Proposal. Langkah selanjutnya adalah melakukan Revisi Pasca Sempro sesuai dengan catatan dari dosen penguji.",
+    sempro: isLulusBersyaratSempro.value
+      ? "Hasil seminar proposal Anda adalah Lulus Bersyarat. Silakan upload revisi proposal sesuai catatan dosen penguji. Setelah disetujui, status Anda akan dilanjutkan ke tahap Penentuan Dospem."
+      : "Selamat! Anda telah menyelesaikan Seminar Proposal. Menunggu proses selanjutnya.",
     penentuan_dospem:
       "Pembimbing skripsi Anda sedang ditentukan oleh admin. Mohon tunggu hingga SK Tugas Pembimbing diterbitkan.",
     dospem:
@@ -1412,6 +1746,8 @@ const formatDate = (dateStr) => {
 };
 
 const pdfFileNames = {
+  "sk-tugas": "SK_Tugas_Pembimbing.pdf",
+  "nota-bimbingan": "Nota_Bimbingan.pdf",
   "sk-penguji-sempro": "SK_Penguji_Sempro.pdf",
   "berita-acara-sempro": "Berita_Acara_Sempro.pdf",
   "sk-penguji-semhas": "SK_Penguji_Semhas.pdf",
@@ -1474,6 +1810,8 @@ onMounted(async () => {
       semhasSeminar.value = res.data.semhas_seminar;
       sidangSeminar.value = res.data.sidang_seminar;
       skYudisium.value = res.data.sk_yudisium;
+      skTugas.value = res.data.sk_tugas;
+      hasBimbingan.value = res.data.has_bimbingan ?? false;
 
       // Check ujian eligibility if in bimbingan status
       if (res.data.skripsi?.status === "bimbingan") {
@@ -1483,6 +1821,26 @@ onMounted(async () => {
       // Fetch revisi docs if in revisi status
       if (res.data.skripsi?.status === "revisi") {
         fetchRevisiDocs();
+      }
+
+      // Fetch revisi proposal docs if sempro lulus bersyarat
+      if (res.data.skripsi?.status === "sempro") {
+        fetchRevisiProposalDocs();
+      }
+    } else {
+      // No active skripsi — check for rejected (ditolak, is_active=false) skripsi
+      try {
+        const skripsiRes = await mahasiswaService.getSkripsiList();
+        if (skripsiRes.success && skripsiRes.data) {
+          const rejected = skripsiRes.data.find(
+            (s) => s.status === "ditolak" && !s.is_active,
+          );
+          if (rejected) {
+            rejectedSkripsi.value = rejected;
+          }
+        }
+      } catch (rejErr) {
+        console.error("Failed to check rejected skripsi:", rejErr);
       }
     }
   } catch (err) {

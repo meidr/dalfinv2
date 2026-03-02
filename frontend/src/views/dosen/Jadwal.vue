@@ -61,7 +61,7 @@
           <input
             v-model="dateFrom"
             type="date"
-            class="border border-border-light rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-surface-dark text-text-main focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            class="border border-border-light rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-white/5 text-text-main focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
           />
         </div>
         <div class="flex items-center gap-2">
@@ -69,7 +69,7 @@
           <input
             v-model="dateTo"
             type="date"
-            class="border border-border-light rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-surface-dark text-text-main focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            class="border border-border-light rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-white/5 text-text-main focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
           />
         </div>
         <button
@@ -119,7 +119,7 @@
             class="w-full md:w-28 shrink-0 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center p-4"
           >
             <div
-              class="bg-white dark:bg-surface-dark px-3 py-2 rounded-lg text-center shadow border border-primary/20"
+              class="bg-white dark:bg-white/10 px-3 py-2 rounded-lg text-center shadow border border-primary/20"
             >
               <p
                 class="text-primary text-xs font-extrabold uppercase tracking-widest"
@@ -146,7 +146,7 @@
                   <!-- Role Badge -->
                   <span
                     v-if="s.is_penguji"
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-300"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-300 dark:border-orange-800"
                   >
                     <span class="material-symbols-outlined text-[12px]"
                       >school</span
@@ -155,7 +155,7 @@
                   </span>
                   <span
                     v-else-if="s.role === 'pembimbing'"
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-300"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-800"
                   >
                     <span class="material-symbols-outlined text-[12px]"
                       >supervisor_account</span
@@ -253,7 +253,7 @@
               <button
                 v-if="s.is_penguji"
                 @click="openDetailModal(s)"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-50 text-text-secondary border border-border-light hover:bg-gray-100 transition-colors"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-50 dark:bg-white/5 text-text-secondary border border-border-light hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
               >
                 <span class="material-symbols-outlined text-[14px]"
                   >visibility</span
@@ -262,7 +262,7 @@
               </button>
               <button
                 @click="goToSkripsiDetail(s.skripsi_id)"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
               >
                 <span class="material-symbols-outlined text-[14px]"
                   >description</span
@@ -346,7 +346,7 @@
         >
           <!-- Header -->
           <div
-            class="p-5 border-b border-border-light sticky top-0 bg-white z-10"
+            class="p-5 border-b border-border-light sticky top-0 bg-white dark:bg-surface-light z-10"
           >
             <div class="flex items-center justify-between">
               <div>
@@ -400,7 +400,7 @@
                     min="0"
                     max="100"
                     step="0.01"
-                    class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm font-bold text-center focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm font-bold text-center bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="0-100"
                   />
                 </div>
@@ -415,7 +415,7 @@
                     min="0"
                     max="100"
                     step="0.01"
-                    class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm font-bold text-center focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm font-bold text-center bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="0-100"
                   />
                 </div>
@@ -430,7 +430,7 @@
                     min="0"
                     max="100"
                     step="0.01"
-                    class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm font-bold text-center focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm font-bold text-center bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="0-100"
                   />
                 </div>
@@ -445,7 +445,7 @@
                     min="0"
                     max="100"
                     step="0.01"
-                    class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm font-bold text-center focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm font-bold text-center bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="0-100"
                   />
                 </div>
@@ -455,7 +455,7 @@
             <!-- Per-penguji average preview -->
             <div
               v-if="nilaiFormAvg !== null"
-              class="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl p-4 border border-indigo-100"
+              class="bg-gradient-to-r from-slate-50 to-indigo-50 dark:from-slate-800/50 dark:to-indigo-900/30 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800"
             >
               <div class="flex items-center justify-between">
                 <div>
@@ -487,7 +487,7 @@
               <textarea
                 v-model="nilaiForm.catatan"
                 rows="3"
-                class="w-full px-3 py-2 border border-border-light rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="Catatan untuk mahasiswa (opsional)"
               ></textarea>
             </div>
@@ -511,7 +511,7 @@
               </div>
               <select
                 v-model="nilaiForm.hasil"
-                class="w-full px-3 py-2.5 border border-amber-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-amber-200 focus:border-amber-400 bg-white dark:bg-surface-dark"
+                class="w-full px-3 py-2.5 border border-amber-300 dark:border-amber-700 rounded-lg text-sm font-bold text-text-main focus:ring-2 focus:ring-amber-200 focus:border-amber-400 bg-white dark:bg-white/5"
               >
                 <option value="">— Pilih Hasil —</option>
                 <option value="lulus">✅ Lulus</option>
@@ -560,7 +560,7 @@
               <div
                 v-for="(item, idx) in nilaiForm.perbaikan"
                 :key="idx"
-                class="bg-white dark:bg-surface-dark rounded-lg p-3 border border-blue-100 dark:border-blue-800 mb-2"
+                class="bg-white dark:bg-white/5 rounded-lg p-3 border border-blue-100 dark:border-blue-800 mb-2"
               >
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-xs font-bold text-blue-700"
@@ -621,7 +621,7 @@
             <div class="flex gap-3 pt-2">
               <button
                 @click="showNilaiModal = false"
-                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-gray-50 transition-colors text-sm font-medium"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-sm font-medium"
               >
                 Batal
               </button>
@@ -649,7 +649,7 @@
           class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
         >
           <div
-            class="p-5 border-b border-border-light sticky top-0 bg-white z-10 flex justify-between items-center"
+            class="p-5 border-b border-border-light sticky top-0 bg-white dark:bg-surface-light z-10 flex justify-between items-center"
           >
             <div>
               <h2 class="text-lg font-bold text-text-main">Detail Seminar</h2>
@@ -704,12 +704,12 @@
                 <div
                   v-for="p in detailData.penguji"
                   :key="p.id"
-                  class="bg-gray-50 rounded-lg px-3 py-3 border border-border-light"
+                  class="bg-gray-50 dark:bg-white/5 rounded-lg px-3 py-3 border border-border-light"
                 >
                   <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2">
                       <div
-                        class="bg-orange-100 size-6 rounded-full flex items-center justify-center text-orange-600"
+                        class="bg-orange-100 dark:bg-orange-900/30 size-6 rounded-full flex items-center justify-center text-orange-600"
                       >
                         <span class="material-symbols-outlined text-[12px]"
                           >school</span
@@ -719,7 +719,7 @@
                         p.dosen?.full_name || p.dosen?.nama || "-"
                       }}</span>
                       <span
-                        class="text-[9px] px-1.5 py-0.5 rounded bg-gray-200 text-text-secondary"
+                        class="text-[9px] px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-text-secondary"
                         >{{ getPeranLabel(p.peran) }}</span
                       >
                     </div>
@@ -738,7 +738,7 @@
                     class="grid grid-cols-4 gap-2 text-center"
                   >
                     <div
-                      class="bg-white rounded px-2 py-1 border border-border-light"
+                      class="bg-white dark:bg-white/5 rounded px-2 py-1 border border-border-light"
                     >
                       <p class="text-[9px] text-text-secondary font-medium">
                         MT
@@ -748,7 +748,7 @@
                       </p>
                     </div>
                     <div
-                      class="bg-white rounded px-2 py-1 border border-border-light"
+                      class="bg-white dark:bg-white/5 rounded px-2 py-1 border border-border-light"
                     >
                       <p class="text-[9px] text-text-secondary font-medium">
                         MS
@@ -758,7 +758,7 @@
                       </p>
                     </div>
                     <div
-                      class="bg-white rounded px-2 py-1 border border-border-light"
+                      class="bg-white dark:bg-white/5 rounded px-2 py-1 border border-border-light"
                     >
                       <p class="text-[9px] text-text-secondary font-medium">
                         PM
@@ -768,7 +768,7 @@
                       </p>
                     </div>
                     <div
-                      class="bg-white rounded px-2 py-1 border border-border-light"
+                      class="bg-white dark:bg-white/5 rounded px-2 py-1 border border-border-light"
                     >
                       <p class="text-[9px] text-text-secondary font-medium">
                         PI
@@ -795,7 +795,7 @@
             <!-- Final Result -->
             <div
               v-if="detailData.all_scored"
-              class="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl p-4 border border-indigo-100"
+              class="bg-gradient-to-r from-slate-50 to-indigo-50 dark:from-slate-800/50 dark:to-indigo-900/30 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800"
             >
               <p
                 class="text-xs text-text-secondary font-bold uppercase tracking-wider mb-2"
@@ -832,9 +832,9 @@
             </div>
             <div
               v-else-if="detailData.total_penguji > 0"
-              class="bg-amber-50 rounded-xl p-4 border border-amber-200 text-center"
+              class="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800 text-center"
             >
-              <p class="text-sm text-amber-700 font-medium">
+              <p class="text-sm text-amber-700 dark:text-amber-400 font-medium">
                 {{ detailData.scored_count }}/{{ detailData.total_penguji }}
                 penguji sudah memberikan nilai
               </p>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Skripsi;
 use App\Models\Bimbingan;
 use App\Models\Dokumen;
+use App\Models\SkripsiHistory;
 use App\Models\NotaBimbingan;
 use App\Models\SKTugas;
 use App\Models\SKYudisium;
@@ -315,7 +316,7 @@ class SkripsiController extends Controller
     public function uploadDokumen(Request $request)
     {
         $request->validate([
-            'jenis' => 'required|string|in:proposal,bab1,bab2,bab3,bab4,bab5,full_draft,final,revisi,lainnya',
+            'jenis' => 'required|string|in:proposal,bab1,bab2,bab3,bab4,bab5,full_draft,final,revisi,revisi_proposal,lainnya',
             'file' => 'required|file|max:10240|mimes:pdf,doc,docx',
             'catatan' => 'nullable|string|max:500',
         ]);
@@ -356,6 +357,7 @@ class SkripsiController extends Controller
             'full_draft' => 'Draft Lengkap',
             'final' => 'Naskah Final',
             'revisi' => 'Revisi',
+            'revisi_proposal' => 'Revisi Proposal',
             'lainnya' => 'Dokumen Lainnya',
         ];
 
@@ -381,16 +383,38 @@ class SkripsiController extends Controller
         );
 
         // Auto-advance skripsi status when proposal is uploaded
+        $needsVerification = false;
         if ($request->jenis === 'proposal' && $skripsi->status === 'pengajuan') {
-            $skripsi->status = 'proposal';
-            $skripsi->progress_percentage = 15;
-            $skripsi->save();
+            if ($mahasiswa->jenis_kelamin === 'P') {
+                // Perempuan: otomatis buat history pending (seperti staff edit)
+                // Admin tinggal approve untuk ubah status ke 'proposal'
+                $needsVerification = true;
+
+                $skripsi->history()->create([
+                    'judul_lama' => $skripsi->judul,
+                    'judul_baru' => $skripsi->judul,
+                    'status_lama' => 'pengajuan',
+                    'status_baru' => 'proposal',
+                    'alasan' => 'Upload proposal oleh mahasiswi (verifikasi otomatis)',
+                    'verification_status' => 'pending',
+                    'updated_by' => $request->user()->id,
+                ]);
+            } else {
+                // Laki-laki: langsung advance ke status 'proposal'
+                $skripsi->status = 'proposal';
+                $skripsi->progress_percentage = 15;
+                $skripsi->save();
+            }
         }
+
+        $message = $needsVerification
+            ? 'Dokumen berhasil diunggah. Menunggu verifikasi admin.'
+            : 'Dokumen berhasil diunggah';
 
         return response()->json([
             'success' => true,
-            'message' => 'Dokumen berhasil diunggah',
-            'data' => $dokumen
+            'message' => $message,
+            'data' => $dokumen,
         ], 201);
     }
 
@@ -672,8 +696,6 @@ class SkripsiController extends Controller
 
     private function downloadSkTugas(Skripsi $skripsi)
     {
-        $skripsi->load(['mahasiswa.prodi.fakultas', 'pembimbing.dosen']);
-
         $skTugas = $skripsi->skTugas;
         if (!$skTugas) {
             return response()->json([
@@ -682,58 +704,16 @@ class SkripsiController extends Controller
             ], 404);
         }
 
-        // Auto-resolve KAPRODI for this mahasiswa's prodi
-        $prodi = $skripsi->mahasiswa->prodi;
-        $signer = $this->resolveKaprodi($prodi);
-
-        $data = [
-            'skripsi' => $skripsi,
-            'skTugas' => $skTugas,
-            'tanggal' => now()->translatedFormat('d F Y'),
-            'tahun_ajaran' => $this->getTahunAjaran(),
-            'prodi_kode' => $prodi->kode ?? '',
-            'prodi_nama' => $prodi->nama ?? '',
-            'signer' => $signer,
-        ];
-
-        $pdf = Pdf::loadView('pdf.sk-tugas', $data);
-        $pdf->setPaper('a4', 'portrait');
-
-        return $pdf->download("SK_Tugas_{$skripsi->mahasiswa->nim}.pdf");
+        // Delegate to PdfController (has QR support)
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        return $pdfController->skTugas(request(), $skripsi);
     }
 
     private function downloadNotaBimbingan(Skripsi $skripsi)
     {
-        $skripsi->load([
-            'mahasiswa.prodi',
-            'pembimbing.dosen',
-            'bimbingan' => function ($q) {
-                $q->with('dosen')->orderBy('tanggal', 'asc');
-            }
-        ]);
-
-        $nota = $skripsi->notaBimbingan;
-        if (!$nota) {
-            $nomor = 'NB/' . date('Y') . '/' . str_pad($skripsi->id, 4, '0', STR_PAD_LEFT);
-            $nota = NotaBimbingan::create([
-                'skripsi_id' => $skripsi->id,
-                'nomor' => $nomor,
-                'tanggal_terbit' => now(),
-                'total_bimbingan' => $skripsi->bimbingan->count(),
-            ]);
-        }
-
-        $data = [
-            'skripsi' => $skripsi,
-            'nota' => $nota,
-            'bimbingan' => $skripsi->bimbingan,
-            'tanggal' => now()->translatedFormat('d F Y'),
-        ];
-
-        $pdf = Pdf::loadView('pdf.nota-bimbingan', $data);
-        $pdf->setPaper('a4', 'portrait');
-
-        return $pdf->download("Nota_Bimbingan_{$skripsi->mahasiswa->nim}.pdf");
+        // Delegate to PdfController (has QR support)
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        return $pdfController->notaBimbingan(request(), $skripsi);
     }
 
     private function downloadSkPenguji(Skripsi $skripsi, string $jenis)
@@ -749,33 +729,9 @@ class SkripsiController extends Controller
             ], 404);
         }
 
-        $seminar->load([
-            'skripsi.mahasiswa.prodi.fakultas',
-            'skripsi.pembimbing.dosen',
-            'penguji.dosen'
-        ]);
-
-        $prodi = $seminar->skripsi->mahasiswa->prodi;
-        $fakultas = $prodi->fakultas ?? null;
-
-        $data = [
-            'seminar' => $seminar,
-            'skripsi' => $seminar->skripsi,
-            'tanggal' => now()->translatedFormat('d F Y'),
-            'tahun_ajaran' => $this->getTahunAjaran(),
-            'prodi_lengkap' => $prodi->nama ?? '',
-            'fakultas' => $fakultas->nama_fakultas ?? '-',
-            'institution' => "Universitas Islam Internasional Darullughah Wadda'wah",
-            'city' => 'Bangil',
-            'kaprodi' => $this->resolveKaprodi($prodi),
-            'dekan' => $this->resolveDekan($fakultas),
-        ];
-
-        $pdf = Pdf::loadView('pdf.sk-penguji', $data);
-        $pdf->setPaper('a4', 'portrait');
-
-        $nim = $skripsi->mahasiswa->nim;
-        return $pdf->download("SK_Penguji_{$jenis}_{$nim}.pdf");
+        // Delegate to PdfController (has QR support)
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        return $pdfController->skPenguji(request(), $seminar);
     }
 
     private function downloadBeritaAcara(Skripsi $skripsi, string $jenis)
@@ -791,14 +747,7 @@ class SkripsiController extends Controller
             ], 404);
         }
 
-        $seminar->load([
-            'skripsi.mahasiswa.prodi.fakultas',
-            'skripsi.pembimbing.dosen',
-            'penguji.dosen',
-            'beritaAcara',
-            'perbaikanProposal',
-        ]);
-
+        $seminar->load('beritaAcara');
         $beritaAcara = $seminar->beritaAcara;
         if (!$beritaAcara) {
             return response()->json([
@@ -807,23 +756,9 @@ class SkripsiController extends Controller
             ], 404);
         }
 
-        // Find ketua penguji for perbaikan signature
-        $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
-
-        $data = [
-            'seminar' => $seminar,
-            'beritaAcara' => $beritaAcara,
-            'jenisLabel' => $label,
-            'tanggal' => now()->translatedFormat('d F Y'),
-            'perbaikan' => $seminar->perbaikanProposal,
-            'ketuaPenguji' => $ketuaPenguji,
-        ];
-
-        $pdf = Pdf::loadView('pdf.berita-acara-seminar', $data);
-        $pdf->setPaper('a4', 'portrait');
-
-        $nim = $skripsi->mahasiswa->nim;
-        return $pdf->download("Berita_Acara_{$jenis}_{$nim}.pdf");
+        // Delegate to PdfController (has QR support)
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        return $pdfController->beritaAcaraSeminar(request(), $seminar);
     }
 
     private function downloadSkYudisium(Skripsi $skripsi)
@@ -837,19 +772,9 @@ class SkripsiController extends Controller
             ], 404);
         }
 
-        $skripsi->load(['mahasiswa.prodi', 'pembimbing.dosen', 'nilai']);
-
-        $data = [
-            'skripsi' => $skripsi,
-            'skYudisium' => $skYudisium,
-            'tanggal' => now()->translatedFormat('d F Y'),
-        ];
-
-        $pdf = Pdf::loadView('pdf.sk-yudisium', $data);
-        $pdf->setPaper('a4', 'portrait');
-
-        $nim = $skripsi->mahasiswa->nim;
-        return $pdf->download("SK_Yudisium_{$nim}.pdf");
+        // Delegate to PdfController (has QR support)
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        return $pdfController->skYudisium(request(), $skripsi);
     }
 
     private function getTahunAjaran(): string

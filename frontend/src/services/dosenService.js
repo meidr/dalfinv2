@@ -85,6 +85,24 @@ export const dosenService = {
     );
     return response.data;
   },
+
+  // Informasi Publik
+  async getTanggalPenting() {
+    const response = await api.get("/public/tanggal-penting");
+    return response.data;
+  },
+
+  async getPanduan() {
+    const response = await api.get("/public/panduan/dosen");
+    return response.data;
+  },
+
+  async downloadPanduan(id) {
+    const response = await api.get(`/public/panduan/${id}/download`, {
+      responseType: "blob",
+    });
+    return response;
+  },
 };
 
 export default dosenService;
