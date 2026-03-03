@@ -141,30 +141,32 @@
                 <th class="px-6 py-3">Detail</th>
                 <th class="px-6 py-3">IP</th>
                 <th class="px-6 py-3">Waktu</th>
+                <th class="px-6 py-3"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-border-light">
               <tr v-if="logsLoading">
-                <td colspan="6" class="p-8 text-center text-text-secondary">
+                <td colspan="7" class="p-8 text-center text-text-secondary">
                   <div
                     class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"
                   ></div>
                 </td>
               </tr>
               <tr v-else-if="logs.length === 0">
-                <td colspan="6" class="p-8 text-center text-text-secondary">
+                <td colspan="7" class="p-8 text-center text-text-secondary">
                   Belum ada log aktivitas
                 </td>
               </tr>
               <tr
                 v-for="log in logs"
                 :key="log.id"
-                class="hover:bg-sidebar-light/30 transition-colors"
+                class="hover:bg-sidebar-light/30 transition-colors group"
               >
                 <td class="px-6 py-3">
                   <div class="flex items-center gap-2">
                     <div
-                      class="size-7 rounded-full flex items-center justify-center text-[10px] font-bold bg-blue-100 text-blue-600"
+                      class="size-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+                      :class="getAvatarColor(log.user?.role)"
                     >
                       {{ log.user?.name?.charAt(0)?.toUpperCase() || "?" }}
                     </div>
@@ -186,12 +188,13 @@
                   >
                 </td>
                 <td
-                  class="px-6 py-3 text-text-secondary text-xs max-w-xs truncate"
+                  class="px-6 py-3 text-text-secondary text-xs max-w-[180px] truncate"
+                  :title="log.description"
                 >
                   {{ log.description }}
                 </td>
                 <td
-                  class="px-6 py-3 text-text-main text-xs max-w-sm"
+                  class="px-6 py-3 text-text-main text-xs max-w-[220px] truncate"
                   :title="log.detail"
                 >
                   {{ log.detail || "-" }}
@@ -199,8 +202,21 @@
                 <td class="px-6 py-3 text-text-secondary text-xs font-mono">
                   {{ log.ip_address }}
                 </td>
-                <td class="px-6 py-3 text-text-secondary text-xs">
+                <td
+                  class="px-6 py-3 text-text-secondary text-xs whitespace-nowrap"
+                >
                   {{ formatTime(log.created_at) }}
+                </td>
+                <td class="px-6 py-3">
+                  <button
+                    @click="openLogDetail(log)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-primary bg-blue-50 hover:bg-blue-100 rounded-md transition-colors whitespace-nowrap"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >visibility</span
+                    >
+                    Lihat Detail
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -237,6 +253,170 @@
         </div>
       </div>
     </div>
+
+    <!-- Log Detail Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="detailModal.show"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          @click.self="detailModal.show = false"
+        >
+          <div
+            class="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            @click="detailModal.show = false"
+          ></div>
+          <div
+            class="relative bg-surface-light rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden border border-border-light animate-fade-in-up z-10"
+          >
+            <!-- Header -->
+            <div
+              class="flex items-center justify-between px-6 py-4 border-b border-border-light bg-sidebar-light/30"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="size-9 bg-primary/10 rounded-lg flex items-center justify-center"
+                >
+                  <span class="material-symbols-outlined text-primary text-xl"
+                    >info</span
+                  >
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-text-main">
+                    Detail Log Aktivitas
+                  </h3>
+                  <p class="text-[11px] text-text-secondary">
+                    ID: #{{ detailModal.log?.id }}
+                  </p>
+                </div>
+              </div>
+              <button
+                @click="detailModal.show = false"
+                class="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-text-secondary hover:text-red-500 transition-colors"
+              >
+                <span class="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+            <!-- Body -->
+            <div
+              class="px-6 py-5 overflow-y-auto max-h-[calc(85vh-80px)] space-y-4"
+            >
+              <!-- User info -->
+              <div
+                class="flex items-center gap-3 p-4 bg-sidebar-light/50 rounded-xl border border-border-light"
+              >
+                <div
+                  class="size-10 rounded-full flex items-center justify-center text-sm font-bold"
+                  :class="getAvatarColor(detailModal.log?.user?.role)"
+                >
+                  {{
+                    detailModal.log?.user?.name?.charAt(0)?.toUpperCase() || "?"
+                  }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-text-main text-sm">
+                    {{ detailModal.log?.user?.name || "System" }}
+                  </p>
+                  <p class="text-xs text-text-secondary">
+                    {{ detailModal.log?.user?.email }}
+                  </p>
+                </div>
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase"
+                  :class="getRoleBadge(detailModal.log?.user?.role)"
+                  >{{ detailModal.log?.user?.role }}</span
+                >
+              </div>
+
+              <!-- Info grid -->
+              <div class="grid grid-cols-2 gap-3">
+                <div
+                  class="p-3 bg-sidebar-light/30 rounded-lg border border-border-light"
+                >
+                  <p
+                    class="text-[10px] font-bold uppercase text-text-secondary tracking-wider mb-1"
+                  >
+                    Aksi
+                  </p>
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase"
+                    :class="getActionBadge(detailModal.log?.action)"
+                    >{{ detailModal.log?.action }}</span
+                  >
+                </div>
+                <div
+                  class="p-3 bg-sidebar-light/30 rounded-lg border border-border-light"
+                >
+                  <p
+                    class="text-[10px] font-bold uppercase text-text-secondary tracking-wider mb-1"
+                  >
+                    Waktu
+                  </p>
+                  <p class="text-sm text-text-main font-medium">
+                    {{ formatTime(detailModal.log?.created_at) }}
+                  </p>
+                </div>
+                <div
+                  class="p-3 bg-sidebar-light/30 rounded-lg border border-border-light"
+                >
+                  <p
+                    class="text-[10px] font-bold uppercase text-text-secondary tracking-wider mb-1"
+                  >
+                    IP Address
+                  </p>
+                  <p class="text-sm text-text-main font-mono">
+                    {{ detailModal.log?.ip_address || "-" }}
+                  </p>
+                </div>
+                <div
+                  class="p-3 bg-sidebar-light/30 rounded-lg border border-border-light"
+                >
+                  <p
+                    class="text-[10px] font-bold uppercase text-text-secondary tracking-wider mb-1"
+                  >
+                    User Agent
+                  </p>
+                  <p
+                    class="text-[11px] text-text-secondary leading-relaxed break-all"
+                  >
+                    {{ detailModal.log?.user_agent || "-" }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Deskripsi -->
+              <div
+                class="p-4 bg-sidebar-light/30 rounded-xl border border-border-light"
+              >
+                <p
+                  class="text-[10px] font-bold uppercase text-text-secondary tracking-wider mb-2"
+                >
+                  Endpoint / Deskripsi
+                </p>
+                <code
+                  class="text-xs text-primary bg-primary/5 px-2 py-1 rounded font-mono break-all"
+                  >{{ detailModal.log?.description }}</code
+                >
+              </div>
+
+              <!-- Detail -->
+              <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                <p
+                  class="text-[10px] font-bold uppercase text-blue-600 tracking-wider mb-2"
+                >
+                  Detail Lengkap
+                </p>
+                <p
+                  class="text-sm text-text-main leading-relaxed whitespace-pre-wrap"
+                >
+                  {{ detailModal.log?.detail || "Tidak ada detail tambahan" }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- 2. Impersonation -->
     <div v-if="activeTab === 'impersonate'" class="flex flex-col gap-4">
@@ -564,6 +744,25 @@ const logActionFilter = ref("");
 const logDateFrom = ref("");
 const logDateTo = ref("");
 const exporting = ref(false);
+
+// Detail modal
+const detailModal = reactive({ show: false, log: null });
+
+const openLogDetail = (log) => {
+  detailModal.log = log;
+  detailModal.show = true;
+};
+
+const getAvatarColor = (role) => {
+  const colors = {
+    admin: "bg-purple-100 text-purple-600",
+    super_admin: "bg-red-100 text-red-600",
+    staff: "bg-amber-100 text-amber-600",
+    dosen: "bg-indigo-100 text-indigo-600",
+    mahasiswa: "bg-emerald-100 text-emerald-600",
+  };
+  return colors[role] || "bg-blue-100 text-blue-600";
+};
 const logPagination = reactive({
   current_page: 1,
   last_page: 1,

@@ -13,13 +13,14 @@
           isCollapsed ? 'justify-center' : '',
         ]"
       >
-        <div
-          class="bg-center bg-no-repeat bg-cover rounded-full size-10 aspect-square shadow-sm shrink-0"
-          data-alt="University Logo"
-          style="
-            background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCgBfrJ6gLv5MJ7k8FdXthRiv-DjdZjoh11_Q5GcfeRcHUj34lwbcA9lJxjB77qnn-6HAtzKQf3srfXdjw0GB5omKY9g0ErqAxTVENQB_cDMbhMtegaZcX9jwWS7_mlq_Kv52jrHsVmzP-8gY9eZeweWwyA5r773ACDkhLoy-MMWl-egpXdyxDw-0t_NMfxKlDlcUinaHvgi0vrWpnvzw8oKwv0b3hRXC3u_F1ymAYEugEHXBuQcDCnLYSOFgyZLci2eE3TaajTzSrw&quot;);
-          "
-        ></div>
+        <img
+          src="/DALFIN-LOGO.png"
+          alt="DALFIN Logo"
+          :class="[
+            'object-contain rounded-lg shadow-sm shrink-0 transition-all duration-300',
+            isCollapsed ? 'size-10' : 'size-12',
+          ]"
+        />
         <div
           v-show="!isCollapsed"
           class="flex flex-col overflow-hidden whitespace-nowrap transition-all duration-300"
@@ -27,10 +28,10 @@
           <h1
             class="text-text-main text-lg font-bold leading-none tracking-tight"
           >
-            SIS Admin
+            DALFIN
           </h1>
           <p class="text-text-secondary text-xs font-normal mt-1">
-            Thesis Management
+            Bachelor's Thesis Management
           </p>
         </div>
         <button
