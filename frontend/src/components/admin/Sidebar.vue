@@ -31,7 +31,7 @@
             DALFIN
           </h1>
           <p class="text-text-secondary text-xs font-normal mt-1">
-            Bachelor's Thesis Management
+            Bachelor's Thesis<br />Management
           </p>
         </div>
         <button
