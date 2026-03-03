@@ -734,7 +734,7 @@ class PdfController extends Controller
 
         // Generate QR code as base64 PNG
         $options = new QROptions([
-            'outputType' => QRGdImagePNG::class,
+            'outputInterface' => QRGdImagePNG::class,
             'eccLevel' => EccLevel::M,
             'scale' => 5,
             'imageBase64' => false,

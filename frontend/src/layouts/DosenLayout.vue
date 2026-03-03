@@ -7,44 +7,76 @@
       class="sticky top-0 z-50 bg-surface-light dark:bg-sidebar-light border-b border-border-light shadow-sm transition-colors duration-300"
     >
       <div
-        class="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between"
+        class="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between"
       >
         <!-- Logo Section -->
         <div class="flex items-center gap-3">
-          <div
-            class="bg-primary/10 p-2 rounded-lg text-primary flex items-center justify-center"
-          >
-            <span class="material-symbols-outlined text-2xl">school</span>
+          <img
+            src="/DALFIN-LOGO.png"
+            alt="DALFIN Logo"
+            class="object-contain"
+            style="width: 120px; height: 120px"
+            :style="{
+              width: windowWidth > 768 ? '160px' : '120px',
+              height: windowWidth > 768 ? '160px' : '120px',
+            }"
+          />
+          <div class="flex flex-col items-start">
+            <h1
+              class="text-sm md:text-lg font-black tracking-[0.2em] uppercase leading-none"
+              style="
+                background: linear-gradient(
+                  135deg,
+                  #0d2b3e 0%,
+                  #1a4a5e 50%,
+                  #00bcd4 100%
+                );
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+              "
+            >
+              DOSEN
+            </h1>
+            <div class="hidden sm:flex items-center gap-2 mt-1.5">
+              <span
+                class="block w-6 h-0.5 rounded-full"
+                style="background: linear-gradient(to right, #0d2b3e, #00bcd4)"
+              ></span>
+              <p
+                class="text-[9px] font-semibold tracking-[0.3em] uppercase"
+                style="color: #1a4a5e"
+              >
+                Panel Dosen
+              </p>
+            </div>
           </div>
-          <h1 class="text-xl font-bold tracking-tight text-text-main">
-            SISKRIPSI
-          </h1>
         </div>
 
         <!-- Desktop Menu -->
-        <nav class="hidden md:flex items-center gap-6">
+        <nav class="hidden md:flex items-center gap-5 ml-8">
           <router-link
             to="/dosen/dashboard"
             active-class="text-primary after:scale-x-100"
-            class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
+            class="relative group flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
           >
-            <span class="material-symbols-outlined text-[20px]">dashboard</span>
+            <span class="material-symbols-outlined text-[17px]">dashboard</span>
             <span>Dashboard</span>
           </router-link>
 
           <router-link
             to="/dosen/bimbingan"
             active-class="text-primary after:scale-x-100"
-            class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
+            class="relative group flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
           >
-            <span class="material-symbols-outlined text-[20px]">groups</span>
+            <span class="material-symbols-outlined text-[17px]">groups</span>
             <span>Bimbingan</span>
           </router-link>
 
           <router-link
             to="/dosen/jadwal"
             active-class="text-primary after:scale-x-100"
-            class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
+            class="relative group flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
           >
             <span class="material-symbols-outlined text-[20px]"
               >calendar_month</span
@@ -55,24 +87,24 @@
           <router-link
             to="/dosen/informasi"
             active-class="text-primary after:scale-x-100"
-            class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
+            class="relative group flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
           >
-            <span class="material-symbols-outlined text-[20px]">info</span>
+            <span class="material-symbols-outlined text-[17px]">info</span>
             <span>Informasi</span>
           </router-link>
 
           <router-link
             to="/dosen/profil"
             active-class="text-primary after:scale-x-100"
-            class="relative group flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
+            class="relative group flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-primary transition-colors py-5 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-t-full after:scale-x-0 after:transition-transform after:duration-300"
           >
-            <span class="material-symbols-outlined text-[20px]">person</span>
+            <span class="material-symbols-outlined text-[17px]">person</span>
             <span>Profil</span>
           </router-link>
         </nav>
 
         <!-- Actions -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 md:gap-6 ml-auto">
           <!-- Dark Mode Toggle -->
           <button
             @click="toggleTheme"
@@ -85,7 +117,7 @@
             </span>
           </button>
 
-          <div class="hidden sm:flex items-center gap-3">
+          <div class="hidden sm:flex items-center gap-4">
             <!-- Dosen Avatar + Name -->
             <router-link
               to="/dosen/profil"
@@ -118,11 +150,78 @@
 
           <!-- Mobile Menu Icon -->
           <button
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
             class="md:hidden p-2 text-text-secondary hover:text-primary transition-colors"
           >
-            <span class="material-symbols-outlined">menu</span>
+            <span class="material-symbols-outlined">{{
+              isMobileMenuOpen ? "close" : "menu"
+            }}</span>
           </button>
         </div>
+      </div>
+
+      <!-- Mobile Menu Dropdown -->
+      <div
+        v-if="isMobileMenuOpen"
+        class="md:hidden border-t border-border-light bg-surface-light dark:bg-sidebar-light shadow-lg animate-fade-in"
+      >
+        <nav class="flex flex-col px-4 py-3 gap-1">
+          <router-link
+            to="/dosen/dashboard"
+            @click="isMobileMenuOpen = false"
+            active-class="bg-primary/10 text-primary"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+          >
+            <span class="material-symbols-outlined text-[20px]">dashboard</span>
+            <span>Dashboard</span>
+          </router-link>
+          <router-link
+            to="/dosen/bimbingan"
+            @click="isMobileMenuOpen = false"
+            active-class="bg-primary/10 text-primary"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+          >
+            <span class="material-symbols-outlined text-[20px]">groups</span>
+            <span>Bimbingan</span>
+          </router-link>
+          <router-link
+            to="/dosen/jadwal"
+            @click="isMobileMenuOpen = false"
+            active-class="bg-primary/10 text-primary"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >calendar_month</span
+            >
+            <span>Jadwal</span>
+          </router-link>
+          <router-link
+            to="/dosen/informasi"
+            @click="isMobileMenuOpen = false"
+            active-class="bg-primary/10 text-primary"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+          >
+            <span class="material-symbols-outlined text-[20px]">info</span>
+            <span>Informasi</span>
+          </router-link>
+          <router-link
+            to="/dosen/profil"
+            @click="isMobileMenuOpen = false"
+            active-class="bg-primary/10 text-primary"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium"
+          >
+            <span class="material-symbols-outlined text-[20px]">person</span>
+            <span>Profil</span>
+          </router-link>
+          <div class="h-px bg-border-light my-2"></div>
+          <button
+            @click="logout"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-sm font-medium w-full text-left"
+          >
+            <span class="material-symbols-outlined text-[20px]">logout</span>
+            <span>Logout</span>
+          </button>
+        </nav>
       </div>
     </header>
 
@@ -137,7 +236,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import ChatWidget from "../components/ChatWidget.vue";
@@ -145,6 +244,12 @@ import ChatWidget from "../components/ChatWidget.vue";
 const router = useRouter();
 const authStore = useAuthStore();
 const isDark = ref(false);
+const isMobileMenuOpen = ref(false);
+const windowWidth = ref(window.innerWidth);
+
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
 
 const dosenName = computed(() => {
   return authStore.profile?.nama || authStore.user?.name || "Dosen";
@@ -193,5 +298,11 @@ onMounted(() => {
     isDark.value = false;
     document.documentElement.classList.remove("dark");
   }
+
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 </script>

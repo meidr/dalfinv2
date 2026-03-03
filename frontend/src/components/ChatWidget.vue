@@ -1,15 +1,15 @@
 <template>
   <!-- Floating Chat Button -->
-  <div class="fixed bottom-6 right-6 z-50">
+  <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
     <!-- Chat Panel -->
     <transition name="chat-panel">
       <div
         v-if="isOpen"
-        class="absolute bottom-16 right-0 w-[380px] h-[520px] bg-surface-light dark:bg-sidebar-light rounded-2xl shadow-2xl border border-border-light flex flex-col overflow-hidden"
+        class="fixed inset-0 sm:absolute sm:inset-auto sm:bottom-16 sm:right-0 sm:w-[380px] sm:h-[520px] sm:rounded-2xl bg-surface-light dark:bg-sidebar-light shadow-2xl sm:border sm:border-border-light flex flex-col overflow-hidden z-50"
       >
         <!-- Panel Header -->
         <div
-          class="bg-primary text-white px-4 py-3 flex items-center justify-between shrink-0"
+          class="bg-primary text-white px-4 py-3 sm:py-3 flex items-center justify-between shrink-0 safe-area-top"
         >
           <template v-if="activeConversation && !showNewChat">
             <button
@@ -290,7 +290,7 @@
     <!-- FAB Button -->
     <button
       @click="toggleChat"
-      class="size-14 rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+      class="size-12 sm:size-14 rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
     >
       <span v-if="isOpen" class="material-symbols-outlined text-[26px]"
         >close</span
@@ -671,5 +671,12 @@ defineExpose({ openChatWithAdmin });
 .chat-panel-leave-to {
   opacity: 0;
   transform: translateY(16px) scale(0.95);
+}
+
+/* Mobile fullscreen adjustments */
+@media (max-width: 639px) {
+  .safe-area-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
 }
 </style>
