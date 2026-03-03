@@ -196,6 +196,7 @@
                 </div>
               </th>
               <th class="px-6 py-4">Pembimbing</th>
+              <th class="px-6 py-4">Tahun Akademik</th>
               <th class="px-6 py-4">Aktif</th>
               <th
                 class="px-6 py-4 cursor-pointer hover:text-primary transition-colors select-none group"
@@ -229,7 +230,7 @@
           <tbody class="divide-y divide-border-light">
             <tr v-if="skripsiList.length === 0">
               <td
-                colspan="6"
+                colspan="8"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data skripsi
@@ -266,6 +267,9 @@
               </td>
               <td class="px-6 py-4 text-text-secondary">
                 {{ getPembimbing(item.pembimbing) }}
+              </td>
+              <td class="px-6 py-4 text-text-secondary text-xs">
+                {{ item.tahun_akademik?.name || "-" }}
               </td>
               <td class="px-6 py-4">
                 <span
@@ -499,6 +503,22 @@
                 required
               ></textarea>
             </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Tahun Akademik</label
+              >
+              <select
+                v-model="form.th_akademik_id"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+              >
+                <option value="">Pilih Tahun Akademik</option>
+                <option v-for="t in tahunList" :key="t.id" :value="t.id">
+                  {{ t.name }}
+                </option>
+              </select>
+            </div>
+
             <div v-if="isEditing">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Alasan Perubahan <span class="text-red-500">*</span></label
@@ -812,6 +832,9 @@ const showMahasiswaDropdown = ref(false);
 const filteredMahasiswa = ref([]);
 const selectedMahasiswa = ref(null);
 
+// Tahun akademik list
+const tahunList = ref([]);
+
 let searchTimeout = null;
 
 const fetchSkripsi = async () => {
@@ -894,6 +917,7 @@ const form = reactive({
   status: "pengajuan",
   is_active: true,
   alasan: "",
+  th_akademik_id: "",
   file_skripsi: null,
   file_url: null,
 });
@@ -928,6 +952,14 @@ const filterMahasiswa = () => {
 };
 
 const selectMahasiswa = (mhs) => {
+  if (mhs.status === "lulus") {
+    alert(
+      "Mahasiswa " +
+        mhs.nama +
+        " sudah berstatus LULUS. Tidak dapat menambahkan data skripsi baru.",
+    );
+    return;
+  }
   form.mahasiswa_id = mhs.id;
   selectedMahasiswa.value = mhs;
   mahasiswaSearch.value = mhs.nama;
@@ -961,6 +993,7 @@ const openAddModal = () => {
   form.status = "pengajuan";
   form.is_active = true;
   form.alasan = "";
+  form.th_akademik_id = "";
   form.file_skripsi = null;
   form.file_url = null;
   selectedMahasiswa.value = null;
@@ -977,6 +1010,7 @@ const openEditModal = (item) => {
   form.status = item.status;
   form.is_active = item.is_active ?? true;
   form.alasan = "";
+  form.th_akademik_id = item.th_akademik_id || "";
   form.file_skripsi = item.file_skripsi; // Store boolean/string presence
   form.file_url = item.file_url; // Virtual attribute from backend
   showModal.value = true;
@@ -1015,6 +1049,9 @@ const saveSkripsi = async () => {
     formData.append("status", form.status);
     if (form.file_skripsi instanceof File) {
       formData.append("file_skripsi", form.file_skripsi);
+    }
+    if (form.th_akademik_id) {
+      formData.append("th_akademik_id", form.th_akademik_id);
     }
 
     if (isEditing.value) {
@@ -1169,10 +1206,18 @@ const formatDate = (date) => {
   });
 };
 
-onMounted(() => {
+onMounted(async () => {
   fetchSkripsi();
   fetchStats();
   document.addEventListener("click", handleFormDropdownClickOutside);
+  try {
+    const tahunRes = await adminService.getTahun();
+    if (tahunRes.success) {
+      tahunList.value = tahunRes.data || [];
+    }
+  } catch (e) {
+    console.error("Failed to load tahun list:", e);
+  }
 });
 
 onBeforeUnmount(() => {

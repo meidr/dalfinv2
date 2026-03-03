@@ -857,6 +857,7 @@ const loading = ref(true);
 const jadwalList = ref([]);
 const activeTab = ref("");
 const allJadwal = ref([]);
+const semhasEnabled = ref(true);
 const dateFrom = ref("");
 const dateTo = ref("");
 const currentPage = ref(1);
@@ -883,7 +884,7 @@ const detailData = ref(null);
 
 const tabs = computed(() => {
   const all = allJadwal.value;
-  return [
+  const allTabs = [
     {
       value: "",
       label: "Semua",
@@ -909,6 +910,10 @@ const tabs = computed(() => {
       count: all.filter((j) => j.jenis === "sidang").length,
     },
   ];
+  if (!semhasEnabled.value) {
+    return allTabs.filter((t) => t.value !== "semhas");
+  }
+  return allTabs;
 });
 
 // Date-filtered list
@@ -1089,7 +1094,17 @@ const goToSkripsiDetail = (skripsiId) => {
   }
 };
 
-onMounted(fetchJadwal);
+onMounted(async () => {
+  try {
+    const moduleRes = await dosenService.getModuleSettings();
+    if (moduleRes.success) {
+      semhasEnabled.value = moduleRes.data.semhas_enabled;
+    }
+  } catch (e) {
+    console.error("Failed to load module settings:", e);
+  }
+  fetchJadwal();
+});
 
 // Helpers
 const getJenisLabel = (jenis) => {

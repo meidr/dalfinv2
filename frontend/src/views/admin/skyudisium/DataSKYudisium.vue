@@ -94,6 +94,296 @@
       </div>
     </div>
 
+    <!-- Daftar SK Yudisium (Batch) Table -->
+    <div
+      class="flex flex-col bg-surface-light border border-border-light rounded-xl shadow-sm"
+    >
+      <!-- Toolbar -->
+      <div class="p-5 border-b border-border-light space-y-3">
+        <div
+          class="flex flex-col md:flex-row gap-3 items-center justify-between"
+        >
+          <div>
+            <h3 class="text-text-main text-lg font-bold">Daftar SK Yudisium</h3>
+            <p class="text-text-secondary text-sm">
+              Pengelompokan SK Yudisium per batch.
+            </p>
+          </div>
+          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            <div class="relative w-full md:w-64">
+              <input
+                v-model="batchSearchQuery"
+                @input="debouncedBatchSearch"
+                class="w-full pl-10 pr-4 py-2 rounded-lg border border-border-light dark:border-white/10 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-background-light dark:bg-surface-light text-text-main placeholder-text-secondary"
+                placeholder="Cari nomor SK batch..."
+              />
+              <span
+                class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-secondary"
+                >search</span
+              >
+            </div>
+            <button
+              @click="showBatchModal = true"
+              class="flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary/90 text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm w-full md:w-auto"
+            >
+              <span class="material-symbols-outlined text-[18px]">add</span>
+              Tambah SK Yudisium
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead
+            class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
+          >
+            <tr>
+              <th class="px-6 py-4">No</th>
+              <th class="px-6 py-4">Tahun Akademik</th>
+              <th class="px-6 py-4">Nomor SK</th>
+              <th class="px-6 py-4">Tanggal Terbit</th>
+              <th class="px-6 py-4">Tanggal Yudisium</th>
+              <th class="px-6 py-4">Jumlah Mhs</th>
+              <th class="px-6 py-4 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border-light">
+            <tr v-if="batchLoading">
+              <td colspan="7" class="p-8 text-center text-text-secondary">
+                <div
+                  class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"
+                ></div>
+                <p class="mt-2 text-xs">Memuat data batch...</p>
+              </td>
+            </tr>
+            <tr v-else-if="batchList.length === 0">
+              <td colspan="7" class="p-8 text-center text-text-secondary">
+                Belum ada SK Yudisium batch
+              </td>
+            </tr>
+            <tr
+              v-for="(batch, index) in batchList"
+              :key="batch.nomor_sk_batch"
+              class="group hover:bg-sidebar-light/30 transition-colors"
+            >
+              <td class="px-6 py-4 font-medium text-text-main">
+                {{ (batchPagination.current_page - 1) * 10 + index + 1 }}
+              </td>
+              <td class="px-6 py-4 text-text-main">
+                {{ batch.tahun_akademik_name }}
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary"
+                >
+                  {{ batch.nomor_sk_batch }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-xs font-medium text-text-secondary">
+                {{ formatDate(batch.tanggal_terbit) }}
+              </td>
+              <td class="px-6 py-4 text-xs font-medium text-text-secondary">
+                {{ formatDate(batch.tanggal_yudisium) }}
+              </td>
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >group</span
+                  >
+                  {{ batch.jumlah_mahasiswa }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    @click="generateBatchSK(batch)"
+                    :disabled="generatingBatchId === batch.nomor_sk_batch"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-all disabled:opacity-50"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >picture_as_pdf</span
+                    >
+                    {{
+                      generatingBatchId === batch.nomor_sk_batch
+                        ? "Generating..."
+                        : "Generate SK"
+                    }}
+                  </button>
+                  <button
+                    @click="goToBatchDetail(batch)"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-primary bg-primary/5 border border-primary/20 rounded-lg hover:bg-primary/10 transition-all"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >visibility</span
+                    >
+                    Detail
+                  </button>
+                  <button
+                    @click="deleteBatch(batch)"
+                    :disabled="deletingBatchId === batch.nomor_sk_batch"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-all disabled:opacity-50"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >delete</span
+                    >
+                    {{
+                      deletingBatchId === batch.nomor_sk_batch
+                        ? "Menghapus..."
+                        : "Hapus"
+                    }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Batch Pagination -->
+      <div
+        v-if="batchList.length > 0"
+        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
+      >
+        <p class="text-sm text-text-secondary">
+          Halaman
+          <span class="font-medium text-text-main">{{
+            batchPagination.current_page
+          }}</span>
+          dari
+          <span class="font-medium text-text-main">{{
+            batchPagination.last_page
+          }}</span>
+        </p>
+        <div class="flex gap-2">
+          <button
+            @click="goToBatchPage(batchPagination.current_page - 1)"
+            :disabled="batchPagination.current_page <= 1"
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
+          >
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+          <button
+            class="px-3 py-1.5 rounded-md bg-primary text-white text-sm font-medium"
+          >
+            {{ batchPagination.current_page }}
+          </button>
+          <button
+            @click="goToBatchPage(batchPagination.current_page + 1)"
+            :disabled="
+              batchPagination.current_page >= batchPagination.last_page
+            "
+            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
+          >
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tambah SK Yudisium Batch Modal -->
+    <Transition name="modal-fade">
+      <div
+        v-if="showBatchModal"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      >
+        <div
+          class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md"
+        >
+          <div class="p-6 border-b border-border-light">
+            <h2 class="text-xl font-bold text-text-main">Tambah SK Yudisium</h2>
+            <p class="text-sm text-text-secondary mt-1">
+              Buat batch baru untuk mengelompokkan SK Yudisium.
+            </p>
+          </div>
+          <form @submit.prevent="submitBatch" class="p-6 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Nomor SK Yudisium</label
+              >
+              <input
+                v-model="batchForm.nomor_sk_batch"
+                type="text"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Contoh: 001/SK-YUD/2026"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Tahun Akademik</label
+              >
+              <select
+                v-model="batchForm.th_akademik_id"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              >
+                <option value="">Pilih Tahun Akademik</option>
+                <option v-for="t in tahunList" :key="t.id" :value="t.id">
+                  {{ t.name }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Program Studi</label
+              >
+              <select
+                v-model="batchForm.prodi_id"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              >
+                <option value="">Pilih Program Studi</option>
+                <option v-for="p in prodiList" :key="p.id" :value="p.id">
+                  {{ p.nama }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Tanggal Terbit</label
+              >
+              <input
+                v-model="batchForm.tanggal_terbit"
+                type="date"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Tanggal Yudisium</label
+              >
+              <input
+                v-model="batchForm.tanggal_yudisium"
+                type="date"
+                class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                required
+              />
+            </div>
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                @click="showBatchModal = false"
+                class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                :disabled="savingBatch"
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {{ savingBatch ? "Menyimpan..." : "Simpan" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Loading -->
     <div v-if="loading" class="p-12 text-center">
       <div
@@ -266,17 +556,29 @@
                 </button>
                 <div v-else class="flex items-center gap-2">
                   <button
-                    @click="generateSK(item)"
-                    :disabled="generatingId === item.id"
-                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-all disabled:opacity-50"
+                    v-if="item.sk_yudisium?.nomor_sk_batch"
+                    @click="
+                      generateBatchSK({
+                        nomor_sk_batch: item.sk_yudisium.nomor_sk_batch,
+                      })
+                    "
+                    :disabled="
+                      generatingBatchId === item.sk_yudisium?.nomor_sk_batch
+                    "
+                    class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-primary bg-primary/5 border border-primary/20 rounded-lg hover:bg-primary/10 transition-all disabled:opacity-50"
                   >
                     <span class="material-symbols-outlined text-[14px]"
-                      >picture_as_pdf</span
+                      >description</span
                     >
                     {{
-                      generatingId === item.id ? "Generating..." : "Generate SK"
+                      generatingBatchId === item.sk_yudisium?.nomor_sk_batch
+                        ? "Mengunduh..."
+                        : "Lihat File"
                     }}
                   </button>
+                  <span v-else class="text-xs text-text-secondary italic"
+                    >Belum ada file</span
+                  >
                 </div>
               </td>
             </tr>
@@ -416,13 +718,18 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed } from "vue";
+import { useRouter } from "vue-router";
 import adminService from "../../../services/adminService";
+
+const router = useRouter();
 
 const loading = ref(true);
 const processing = ref(null);
 const saving = ref(false);
 const exporting = ref(false);
 const generatingId = ref(null);
+const generatingBatchId = ref(null);
+const deletingBatchId = ref(null);
 const showModal = ref(false);
 const selectedItem = ref(null);
 const yudisiumList = ref([]);
@@ -436,6 +743,26 @@ const tahunList = ref([]);
 const fakultasList = ref([]);
 const prodiList = ref([]);
 let filterTimeout = null;
+let batchFilterTimeout = null;
+
+// Batch state
+const batchLoading = ref(false);
+const batchList = ref([]);
+const batchSearchQuery = ref("");
+const showBatchModal = ref(false);
+const savingBatch = ref(false);
+const batchPagination = reactive({
+  current_page: 1,
+  last_page: 1,
+  total: 0,
+});
+const batchForm = reactive({
+  nomor_sk_batch: "",
+  th_akademik_id: "",
+  prodi_id: "",
+  tanggal_terbit: "",
+  tanggal_yudisium: "",
+});
 
 const currentYear = computed(() => new Date().getFullYear());
 
@@ -598,6 +925,58 @@ const exportPdf = async () => {
   }
 };
 
+const generateBatchSK = async (batch) => {
+  try {
+    generatingBatchId.value = batch.nomor_sk_batch;
+    const params = { nomor_sk_batch: batch.nomor_sk_batch };
+    const response = await adminService.exportRekapYudisiumPdf(params);
+    const url = window.URL.createObjectURL(
+      new Blob([response.data], { type: "application/pdf" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `SK_Yudisium_${batch.nomor_sk_batch}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to generate batch SK:", error);
+    alert(
+      "Gagal generate SK: " + (error.response?.data?.message || error.message),
+    );
+  } finally {
+    generatingBatchId.value = null;
+  }
+};
+
+const deleteBatch = async (batch) => {
+  if (
+    !confirm(
+      `Yakin ingin menghapus batch "${batch.nomor_sk_batch}" beserta ${batch.jumlah_mahasiswa} mahasiswa di dalamnya?\n\nStatus skripsi & mahasiswa akan dikembalikan.`,
+    )
+  )
+    return;
+
+  try {
+    deletingBatchId.value = batch.nomor_sk_batch;
+    const response = await adminService.destroySKYudisiumBatch(
+      batch.nomor_sk_batch,
+    );
+    alert(response.message || "Batch berhasil dihapus");
+    fetchBatch();
+    fetchYudisium();
+  } catch (error) {
+    console.error("Failed to delete batch:", error);
+    alert(
+      "Gagal menghapus batch: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    deletingBatchId.value = null;
+  }
+};
+
 const generateSK = async (item) => {
   try {
     generatingId.value = item.id;
@@ -689,9 +1068,91 @@ const getStatusLabel = (status) => {
   return labels[status] || status;
 };
 
+// Batch methods
+const fetchBatch = async () => {
+  try {
+    batchLoading.value = true;
+    const params = {
+      page: batchPagination.current_page,
+      search: batchSearchQuery.value,
+    };
+    const response = await adminService.getSKYudisiumBatch(params);
+    if (response.success) {
+      batchList.value = response.data.data || [];
+      if (response.data.current_page) {
+        Object.assign(batchPagination, {
+          current_page: response.data.current_page,
+          last_page: response.data.last_page,
+          total: response.data.total,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch batch:", error);
+  } finally {
+    batchLoading.value = false;
+  }
+};
+
+const debouncedBatchSearch = () => {
+  clearTimeout(batchFilterTimeout);
+  batchFilterTimeout = setTimeout(() => {
+    batchPagination.current_page = 1;
+    fetchBatch();
+  }, 300);
+};
+
+const goToBatchPage = (page) => {
+  if (page >= 1 && page <= batchPagination.last_page) {
+    batchPagination.current_page = page;
+    fetchBatch();
+  }
+};
+
+const submitBatch = async () => {
+  try {
+    savingBatch.value = true;
+    await adminService.createSKYudisiumBatch({
+      nomor_sk_batch: batchForm.nomor_sk_batch,
+      th_akademik_id: batchForm.th_akademik_id,
+      prodi_id: batchForm.prodi_id || null,
+      tanggal_terbit: batchForm.tanggal_terbit,
+      tanggal_yudisium: batchForm.tanggal_yudisium,
+    });
+    showBatchModal.value = false;
+    // Navigate to the batch detail page so admin can assign mahasiswa
+    router.push({
+      name: "DetailSKYudisiumBatch",
+      params: { nomor: encodeURIComponent(batchForm.nomor_sk_batch) },
+      query: {
+        th_akademik_id: batchForm.th_akademik_id,
+        prodi_id: batchForm.prodi_id || null,
+        tanggal_terbit: batchForm.tanggal_terbit,
+        tanggal_yudisium: batchForm.tanggal_yudisium,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to create batch:", error);
+    alert(
+      "Gagal membuat batch: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    savingBatch.value = false;
+  }
+};
+
+const goToBatchDetail = (batch) => {
+  router.push({
+    name: "DetailSKYudisiumBatch",
+    params: { nomor: encodeURIComponent(batch.nomor_sk_batch) },
+  });
+};
+
 onMounted(() => {
   loadFilterData();
   fetchYudisium();
+  fetchBatch();
 });
 </script>
 

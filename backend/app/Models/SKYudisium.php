@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Tahun;
 
 class SKYudisium extends Model
 {
@@ -14,6 +15,9 @@ class SKYudisium extends Model
     protected $fillable = [
         'skripsi_id',
         'nomor_sk',
+        'nomor_sk_batch',
+        'th_akademik_id',
+        'prodi_id',
         'tanggal_terbit',
         'tanggal_yudisium',
         'predikat',
@@ -34,5 +38,21 @@ class SKYudisium extends Model
     public function skripsi()
     {
         return $this->belongsTo(Skripsi::class);
+    }
+
+    /**
+     * Get the tahun akademik
+     */
+    public function tahunAkademik()
+    {
+        return $this->belongsTo(Tahun::class, 'th_akademik_id');
+    }
+
+    /**
+     * Get the prodi
+     */
+    public function prodi()
+    {
+        return $this->belongsTo(\App\Models\Prodi::class);
     }
 }

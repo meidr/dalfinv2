@@ -129,6 +129,24 @@
                     }}</span>
                   </div>
                 </div>
+                <div
+                  class="flex items-center gap-3"
+                  v-if="activeSkripsi.tahun_akademik"
+                >
+                  <div
+                    class="size-10 rounded-lg bg-sidebar-light flex items-center justify-center text-text-secondary"
+                  >
+                    <span class="material-symbols-outlined">date_range</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-xs text-text-secondary font-medium"
+                      >Tahun Akademik</span
+                    >
+                    <span class="text-sm font-semibold text-text-main">{{
+                      activeSkripsi.tahun_akademik?.name || "-"
+                    }}</span>
+                  </div>
+                </div>
               </div>
 
               <!-- Progress -->
@@ -341,6 +359,23 @@
               </p>
             </div>
 
+            <!-- Tahun Akademik -->
+            <div class="flex flex-col gap-2">
+              <label class="text-sm font-bold text-text-main"
+                >Tahun Akademik
+                <span class="font-normal text-text-secondary">(opsional)</span>
+              </label>
+              <select
+                v-model="pengajuanForm.th_akademik_id"
+                class="px-4 py-2.5 rounded-lg border border-border-light bg-background-light focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm"
+              >
+                <option value="">Pilih Tahun Akademik</option>
+                <option v-for="t in tahunList" :key="t.id" :value="t.id">
+                  {{ t.name }}
+                </option>
+              </select>
+            </div>
+
             <!-- Abstrak -->
             <div class="flex flex-col gap-2">
               <label class="text-sm font-bold text-text-main"
@@ -431,7 +466,11 @@ const pengajuanForm = reactive({
   judul: "",
   abstrak: "",
   kata_kunci: "",
+  th_akademik_id: "",
 });
+
+// Tahun list
+const tahunList = ref([]);
 
 // Toast state
 const showSuccessToast = ref(false);
@@ -519,6 +558,7 @@ const closePengajuanModal = () => {
   pengajuanForm.judul = "";
   pengajuanForm.abstrak = "";
   pengajuanForm.kata_kunci = "";
+  pengajuanForm.th_akademik_id = "";
 };
 
 const submitPengajuan = async () => {
@@ -536,6 +576,9 @@ const submitPengajuan = async () => {
     }
     if (pengajuanForm.kata_kunci.trim()) {
       payload.kata_kunci = pengajuanForm.kata_kunci.trim();
+    }
+    if (pengajuanForm.th_akademik_id) {
+      payload.th_akademik_id = pengajuanForm.th_akademik_id;
     }
 
     const res = await mahasiswaService.createSkripsi(payload);
@@ -559,6 +602,7 @@ const submitPengajuan = async () => {
       pengajuanForm.judul = "";
       pengajuanForm.abstrak = "";
       pengajuanForm.kata_kunci = "";
+      pengajuanForm.th_akademik_id = "";
     }
   } catch (err) {
     console.error("Failed to submit pengajuan:", err);
@@ -574,12 +618,18 @@ const submitPengajuan = async () => {
 
 onMounted(async () => {
   try {
-    const res = await mahasiswaService.getSkripsiList();
+    const [res, tahunRes] = await Promise.all([
+      mahasiswaService.getSkripsiList(),
+      mahasiswaService.getTahunAkademik(),
+    ]);
     if (res.success) {
       skripsiList.value = res.data;
     }
+    if (tahunRes.success) {
+      tahunList.value = tahunRes.data || [];
+    }
   } catch (err) {
-    console.error("Failed to load skripsi list:", err);
+    console.error("Failed to load data:", err);
   } finally {
     loading.value = false;
   }

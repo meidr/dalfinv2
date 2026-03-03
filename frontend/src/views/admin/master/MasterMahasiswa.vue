@@ -332,6 +332,20 @@
                 </option>
               </select>
             </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Jenis Kelamin</label
+              >
+              <select
+                v-model="form.jenis_kelamin"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light"
+                required
+              >
+                <option value="" disabled>Pilih Jenis Kelamin</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
             <div v-if="!isEditing">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Password</label
@@ -582,6 +596,7 @@ const form = reactive({
   password: "",
   tahun_id: "",
   prodi_id: "",
+  jenis_kelamin: "",
 });
 
 let searchTimeout = null;
@@ -641,6 +656,7 @@ const openAddModal = () => {
   form.password = "";
   form.tahun_id = "";
   form.prodi_id = "";
+  form.jenis_kelamin = "";
   showModal.value = true;
 };
 
@@ -653,6 +669,7 @@ const openEditModal = (item) => {
   form.password = "";
   form.tahun_id = item.tahun_id || "";
   form.prodi_id = item.prodi_id || "";
+  form.jenis_kelamin = item.jenis_kelamin || "";
   showModal.value = true;
 };
 
@@ -669,6 +686,7 @@ const saveMahasiswa = async () => {
       email: form.email,
       tahun_id: form.tahun_id,
       prodi_id: form.prodi_id,
+      jenis_kelamin: form.jenis_kelamin,
     };
     if (!isEditing.value && form.password) {
       data.password = form.password;

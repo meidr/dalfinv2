@@ -224,6 +224,15 @@ Route::prefix('admin')
         Route::match(['get', 'post'], '/pdf/rekap-yudisium', [AdminPdfController::class, 'rekapYudisium']);
         Route::match(['get', 'post'], '/pdf/sk-yudisium/{skripsi}', [AdminPdfController::class, 'skYudisium']);
 
+        // SK Yudisium Batch
+        Route::get('/sk-yudisium-batch', [AdminSKYudisiumController::class, 'batchIndex']);
+        Route::post('/sk-yudisium-batch', [AdminSKYudisiumController::class, 'storeBatch']);
+        Route::post('/sk-yudisium-batch/assign', [AdminSKYudisiumController::class, 'assignBatch']);
+        Route::delete('/sk-yudisium-batch/{id}/remove', [AdminSKYudisiumController::class, 'removeBatch']);
+        Route::get('/sk-yudisium-batch/{nomor}', [AdminSKYudisiumController::class, 'batchDetail'])->where('nomor', '.*');
+        Route::put('/sk-yudisium-batch/{nomor}/update', [AdminSKYudisiumController::class, 'updateBatch'])->where('nomor', '.*');
+        Route::delete('/sk-yudisium-batch/{nomor}/destroy', [AdminSKYudisiumController::class, 'destroyBatch'])->where('nomor', '.*');
+
         // User Management
         Route::get('/users', [AdminUserController::class, 'index']);
         Route::get('/users/{user}', [AdminUserController::class, 'show']);
@@ -325,6 +334,16 @@ Route::prefix('dosen')
 
         // Official PDF Download
         Route::get('/bimbingan/{skripsi}/pdf/{type}', [DosenBimbinganController::class, 'downloadOfficialPdf']);
+
+        // Module settings
+        Route::get('/module-settings', function () {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'semhas_enabled' => \App\Models\SystemSetting::get('semhas_enabled', 'true') === 'true',
+                ],
+            ]);
+        });
     });
 
 // Mahasiswa Routes
@@ -340,6 +359,7 @@ Route::prefix('mahasiswa')
         Route::get('/skripsi', [MahasiswaSkripsiController::class, 'index']);
         Route::post('/skripsi', [MahasiswaSkripsiController::class, 'store']);
         Route::get('/skripsi/detail', [MahasiswaSkripsiController::class, 'show']);
+        Route::get('/skripsi/tahun-akademik', [MahasiswaSkripsiController::class, 'getTahunAkademikList']);
         Route::get('/skripsi/{id}/detail', [MahasiswaSkripsiController::class, 'showById']);
         Route::put('/skripsi', [MahasiswaSkripsiController::class, 'update']);
         Route::get('/skripsi/bimbingan', [MahasiswaSkripsiController::class, 'bimbingan']);

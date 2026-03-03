@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Tahun;
 
 class Skripsi extends Model
 {
@@ -13,6 +14,7 @@ class Skripsi extends Model
 
     protected $fillable = [
         'mahasiswa_id',
+        'th_akademik_id',
         'judul',
         'abstrak',
         'kata_kunci',
@@ -71,6 +73,14 @@ class Skripsi extends Model
     public function mahasiswa()
     {
         return $this->belongsTo(Mahasiswa::class);
+    }
+
+    /**
+     * Get tahun akademik
+     */
+    public function tahunAkademik()
+    {
+        return $this->belongsTo(Tahun::class, 'th_akademik_id');
     }
 
     /**
@@ -198,7 +208,7 @@ class Skripsi extends Model
     /**
      * Log history on status/title change
      */
-    public function logHistory(string $oldTitle = null, string $oldStatus = null, string $reason = null, User $user = null)
+    public function logHistory(?string $oldTitle = null, ?string $oldStatus = null, ?string $reason = null, ?User $user = null)
     {
         return $this->history()->create([
             'judul_lama' => $oldTitle,

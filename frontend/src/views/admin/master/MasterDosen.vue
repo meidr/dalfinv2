@@ -297,6 +297,20 @@
                 required
               />
             </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Jenis Kelamin</label
+              >
+              <select
+                v-model="form.jenis_kelamin"
+                class="w-full px-3 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light"
+                required
+              >
+                <option value="" disabled>Pilih Jenis Kelamin</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-text-main mb-1"
@@ -563,6 +577,7 @@ const form = reactive({
   password: "",
   jabatan_fungsional: "",
   kuota_bimbingan: 10,
+  jenis_kelamin: "",
 });
 
 let searchTimeout = null;
@@ -623,6 +638,7 @@ const openAddModal = () => {
   form.password = "";
   form.jabatan_fungsional = "";
   form.kuota_bimbingan = globalKuota.value;
+  form.jenis_kelamin = "";
   showModal.value = true;
 };
 
@@ -636,6 +652,7 @@ const openEditModal = (item) => {
   form.password = "";
   form.jabatan_fungsional = item.jabatan_fungsional || "";
   form.kuota_bimbingan = item.kuota_bimbingan || 10;
+  form.jenis_kelamin = item.jenis_kelamin || "";
   showModal.value = true;
 };
 
@@ -653,6 +670,7 @@ const saveDosen = async () => {
       email: form.email,
       jabatan_fungsional: form.jabatan_fungsional,
       kuota_bimbingan: form.kuota_bimbingan,
+      jenis_kelamin: form.jenis_kelamin,
     };
     if (!isEditing.value && form.password) {
       data.password = form.password;

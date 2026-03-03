@@ -28,6 +28,11 @@ export const mahasiswaService = {
     return response.data;
   },
 
+  async getTahunAkademik() {
+    const response = await api.get("/mahasiswa/skripsi/tahun-akademik");
+    return response.data;
+  },
+
   async updateSkripsi(data) {
     const response = await api.put("/mahasiswa/skripsi", data);
     return response.data;

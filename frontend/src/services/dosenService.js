@@ -103,6 +103,12 @@ export const dosenService = {
     });
     return response;
   },
+
+  // Module Settings
+  async getModuleSettings() {
+    const response = await api.get("/dosen/module-settings");
+    return response.data;
+  },
 };
 
 export default dosenService;

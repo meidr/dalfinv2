@@ -15,6 +15,8 @@ use App\Models\DocumentToken;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use chillerlan\QRCode\Common\EccLevel;
+use chillerlan\QRCode\Output\QRGdImagePNG;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
@@ -732,8 +734,8 @@ class PdfController extends Controller
 
         // Generate QR code as base64 PNG
         $options = new QROptions([
-            'outputType' => QRCode::OUTPUT_IMAGE_PNG,
-            'eccLevel' => QRCode::ECC_M,
+            'outputType' => QRGdImagePNG::class,
+            'eccLevel' => EccLevel::M,
             'scale' => 5,
             'imageBase64' => false,
         ]);
@@ -756,7 +758,7 @@ class PdfController extends Controller
         $query = Seminar::with([
             'skripsi.mahasiswa.prodi.fakultas',
             'skripsi.pembimbing.dosen',
-            'skripsi.skYudisium',
+            'skripsi.skYudisium.prodi.fakultas',
             'penguji.dosen',
         ])->where('jenis', 'sidang')
             ->where('status', 'selesai')
@@ -787,72 +789,96 @@ class PdfController extends Controller
             });
         }
 
+        // Filter by nomor_sk_batch
+        $nomorSkBatch = null;
+        if ($request->filled('nomor_sk_batch')) {
+            $nomorSkBatch = $request->nomor_sk_batch;
+            $query->whereHas('skripsi.skYudisium', function ($q) use ($nomorSkBatch) {
+                $q->where('nomor_sk_batch', $nomorSkBatch);
+            });
+        }
+
+        // Filter by specific skripsi (for individual mahasiswa PDF)
+        if ($request->filled('skripsi_id')) {
+            $query->where('skripsi_id', $request->skripsi_id);
+        }
+
         $items = $query->orderBy('tanggal', 'desc')->get();
 
-        // Resolve prodi & fakultas names for title
+        // Resolve prodi & fakultas names
         $prodiName = '';
         $fakultasName = '';
         $prodi = null;
         $fakultas = null;
 
+        // If filtering by batch, get prodi & fakultas from sk_yudisium record
+        if ($nomorSkBatch) {
+            $skRecord = SKYudisium::with('prodi.fakultas')
+                ->where('nomor_sk_batch', $nomorSkBatch)
+                ->first();
+            if ($skRecord && $skRecord->prodi) {
+                $prodi = $skRecord->prodi;
+                $prodiName = $prodi->nama ?? '';
+                $prodi->load('fakultas');
+                $fakultas = $prodi->fakultas;
+                $fakultasName = $fakultas->nama_fakultas ?? '';
+            }
+        }
+
         if ($request->filled('prodi_id')) {
             $prodi = Prodi::with('fakultas')->find($request->prodi_id);
             if ($prodi) {
                 $prodiName = $prodi->nama;
-                $fakultas = $prodi->fakultas;
-                $fakultasName = $fakultas->nama_fakultas ?? '';
+                if (!$fakultas) {
+                    $fakultas = $prodi->fakultas;
+                    $fakultasName = $fakultas->nama_fakultas ?? '';
+                }
             }
-        } elseif ($request->filled('fakultas_id')) {
+        } elseif ($request->filled('fakultas_id') && !$fakultas) {
             $fakultas = \App\Models\Fakultas::with('prodi')->find($request->fakultas_id);
             if ($fakultas) {
                 $fakultasName = $fakultas->nama_fakultas ?? '';
                 $prodi = $fakultas->prodi->first();
+                if ($prodi) $prodiName = $prodi->nama;
             }
-        } else {
-            // No filter: resolve from first item for signature only
+        }
+
+        // Fallback: resolve from first item
+        if (!$fakultas || !$prodi) {
             $firstItem = $items->first();
             if ($firstItem) {
-                $prodi = $firstItem->skripsi->mahasiswa->prodi ?? null;
-                if ($prodi) {
+                if (!$prodi) {
+                    $prodi = $firstItem->skripsi->mahasiswa->prodi ?? null;
+                }
+                if ($prodi && !$fakultas) {
                     $prodi->load('fakultas');
                     $fakultas = $prodi->fakultas;
+                    $fakultasName = $fakultasName ?: ($fakultas->nama_fakultas ?? '');
+                }
+                if (!$prodiName && $prodi) {
+                    $prodiName = $prodi->nama ?? '';
                 }
             }
         }
 
-        // Resolve signers
-        $kaprodi = $this->resolveKaprodi($prodi);
+        // Resolve Dekan signature
         $dekan = $this->resolveDekan($fakultas);
 
         // Signature mode
         $signatureMode = $this->getSignatureMode($request);
-        $qrDataKaprodi = null;
         $qrDataDekan = null;
 
-        if ($signatureMode === 'qr') {
-            $nomorSurat = 'RY-' . date('Y') . '-' . str_pad($items->count(), 3, '0', STR_PAD_LEFT);
-            if ($kaprodi) {
-                $qrDataKaprodi = $this->generateQrToken(
-                    $request,
-                    'rekap_yudisium',
-                    null,
-                    $nomorSurat,
-                    $kaprodi['name'],
-                    $kaprodi['position'],
-                    'Rekap_SK_Yudisium.pdf'
-                );
-            }
-            if ($dekan) {
-                $qrDataDekan = $this->generateQrToken(
-                    $request,
-                    'rekap_yudisium',
-                    null,
-                    $nomorSurat,
-                    $dekan['name'],
-                    $dekan['position'],
-                    'Rekap_SK_Yudisium.pdf'
-                );
-            }
+        if ($signatureMode === 'qr' && $dekan) {
+            $nomorSurat = $nomorSkBatch ?: ('RY-' . date('Y') . '-' . str_pad($items->count(), 3, '0', STR_PAD_LEFT));
+            $qrDataDekan = $this->generateQrToken(
+                $request,
+                'sk_yudisium',
+                null,
+                $nomorSurat,
+                $dekan['name'],
+                $dekan['position'],
+                'SK_Yudisium.pdf'
+            );
         }
 
         $tahunAkademik = $request->input('tahun_akademik', $this->getTahunAjaran());
@@ -860,12 +886,11 @@ class PdfController extends Controller
         $data = [
             'items' => $items,
             'tahun_ajaran' => $tahunAkademik,
+            'nomor_sk_batch' => $nomorSkBatch,
             'fakultas_name' => $fakultasName,
             'prodi_name' => $prodiName,
-            'kaprodi' => $kaprodi,
             'dekan' => $dekan,
             'signature_mode' => $signatureMode,
-            'qr_kaprodi' => $qrDataKaprodi,
             'qr_dekan' => $qrDataDekan,
             'city' => 'Bangil',
             'tanggal' => Carbon::now()->translatedFormat('d F Y'),
@@ -874,8 +899,12 @@ class PdfController extends Controller
         ];
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekap-yudisium', $data);
-        $pdf->setPaper('A4', 'landscape');
+        $pdf->setPaper('A4', 'portrait');
 
-        return $pdf->download('Rekap_SK_Yudisium.pdf');
+        $filename = $nomorSkBatch
+            ? 'SK_Yudisium_' . str_replace(['/', '\\'], '_', $nomorSkBatch) . '.pdf'
+            : 'SK_Yudisium.pdf';
+
+        return $pdf->download($filename);
     }
 }

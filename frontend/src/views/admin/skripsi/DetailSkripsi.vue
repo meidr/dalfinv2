@@ -106,6 +106,12 @@
               <span class="material-symbols-outlined text-[18px]">school</span>
               {{ skripsi.semester_daftar || "-" }}
             </div>
+            <div v-if="skripsi.tahun_akademik" class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]"
+                >date_range</span
+              >
+              {{ skripsi.tahun_akademik?.name || "-" }}
+            </div>
           </div>
         </div>
 

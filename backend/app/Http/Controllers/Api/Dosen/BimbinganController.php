@@ -505,15 +505,17 @@ class BimbinganController extends Controller
             return response()->json(['success' => false, 'message' => 'SK Yudisium belum diterbitkan'], 404);
         }
 
-        $skripsi->load(['mahasiswa.prodi', 'pembimbing.dosen', 'nilai']);
+        // Delegate to PdfController rekapYudisium (latest format)
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        $req = request();
 
-        $pdf = Pdf::loadView('pdf.sk-yudisium', [
-            'skripsi' => $skripsi,
-            'skYudisium' => $skYudisium,
-            'tanggal' => now()->translatedFormat('d F Y'),
-        ]);
-        $pdf->setPaper('a4', 'portrait');
-        return $pdf->download("SK_Yudisium_{$skripsi->mahasiswa->nim}.pdf");
+        if ($skYudisium->nomor_sk_batch) {
+            $req->merge(['nomor_sk_batch' => $skYudisium->nomor_sk_batch]);
+        } else {
+            $req->merge(['skripsi_id' => $skripsi->id]);
+        }
+
+        return $pdfController->rekapYudisium($req);
     }
 
     private function getTahunAjaran(): string

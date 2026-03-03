@@ -27,7 +27,7 @@ class SkripsiController extends Controller
     {
         $mahasiswa = $request->user()->mahasiswa;
 
-        $skripsiList = Skripsi::with(['pembimbing.dosen'])
+        $skripsiList = Skripsi::with(['pembimbing.dosen', 'tahunAkademik'])
             ->where('mahasiswa_id', $mahasiswa->id)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -47,6 +47,7 @@ class SkripsiController extends Controller
             'judul' => 'required|string|max:500',
             'abstrak' => 'nullable|string',
             'kata_kunci' => 'nullable|string',
+            'th_akademik_id' => 'nullable|exists:tahuns,id',
         ]);
 
         $mahasiswa = $request->user()->mahasiswa;
@@ -60,8 +61,21 @@ class SkripsiController extends Controller
             ], 422);
         }
 
+        // Check if judul already used by another active skripsi
+        $existingJudul = Skripsi::whereRaw('LOWER(judul) = ?', [strtolower($request->judul)])
+            ->where('is_active', true)
+            ->exists();
+
+        if ($existingJudul) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Judul skripsi ini sudah digunakan oleh mahasiswa lain. Silakan gunakan judul yang berbeda.'
+            ], 422);
+        }
+
         $skripsi = Skripsi::create([
             'mahasiswa_id' => $mahasiswa->id,
+            'th_akademik_id' => $request->th_akademik_id,
             'judul' => $request->judul,
             'abstrak' => $request->abstrak,
             'kata_kunci' => $request->kata_kunci,
@@ -112,6 +126,7 @@ class SkripsiController extends Controller
             'skTugas',
             'notaBimbingan',
             'skYudisium',
+            'tahunAkademik',
             'history'
         ]);
 
@@ -151,6 +166,7 @@ class SkripsiController extends Controller
             'skTugas',
             'notaBimbingan',
             'skYudisium',
+            'tahunAkademik',
             'history'
         ]);
 
@@ -772,9 +788,32 @@ class SkripsiController extends Controller
             ], 404);
         }
 
-        // Delegate to PdfController (has QR support)
+        // Delegate to PdfController rekapYudisium
         $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
-        return $pdfController->skYudisium(request(), $skripsi);
+        $req = request();
+
+        if ($skYudisium->nomor_sk_batch) {
+            // Has batch: generate full batch PDF
+            $req->merge(['nomor_sk_batch' => $skYudisium->nomor_sk_batch]);
+        } else {
+            // No batch yet: generate PDF for this single student
+            $req->merge(['skripsi_id' => $skripsi->id]);
+        }
+
+        return $pdfController->rekapYudisium($req);
+    }
+
+    /**
+     * Get list of tahun akademik for dropdowns
+     */
+    public function getTahunAkademikList()
+    {
+        $tahun = \App\Models\Tahun::orderBy('name', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $tahun,
+        ]);
     }
 
     private function getTahunAjaran(): string

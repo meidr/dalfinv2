@@ -15,7 +15,7 @@ class SkripsiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen']);
+        $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen', 'tahunAkademik']);
 
         // Staff: only see mahasiswa matching their gender
         $user = $request->user();
@@ -84,6 +84,7 @@ class SkripsiController extends Controller
             'abstrak' => 'nullable|string',
             'kata_kunci' => 'nullable|string',
             'status' => 'nullable|string',
+            'th_akademik_id' => 'nullable|exists:tahuns,id',
             'file_skripsi' => 'nullable|file|mimes:pdf,doc,docx|max:10240', // 10MB
         ]);
 
@@ -93,6 +94,18 @@ class SkripsiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'File skripsi wajib diupload untuk status ' . $request->status
+            ], 422);
+        }
+
+        // Check if judul already used by another active skripsi
+        $existingJudul = Skripsi::whereRaw('LOWER(judul) = ?', [strtolower($request->judul)])
+            ->where('is_active', true)
+            ->exists();
+
+        if ($existingJudul) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Judul skripsi ini sudah digunakan oleh mahasiswa lain. Silakan gunakan judul yang berbeda.'
             ], 422);
         }
 
@@ -113,6 +126,7 @@ class SkripsiController extends Controller
 
         $skripsi = Skripsi::create([
             'mahasiswa_id' => $request->mahasiswa_id,
+            'th_akademik_id' => $request->th_akademik_id,
             'judul' => $request->judul,
             'abstrak' => $request->abstrak,
             'kata_kunci' => $request->kata_kunci,
@@ -148,6 +162,7 @@ class SkripsiController extends Controller
             'skTugas',
             'notaBimbingan',
             'skYudisium',
+            'tahunAkademik',
             'history.updatedBy'
         ]);
 
@@ -169,6 +184,7 @@ class SkripsiController extends Controller
             'status' => 'sometimes|string',
             'catatan_admin' => 'nullable|string',
             'is_active' => 'sometimes',
+            'th_akademik_id' => 'nullable|exists:tahuns,id',
             'file_skripsi' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
 
@@ -198,7 +214,8 @@ class SkripsiController extends Controller
             'abstrak',
             'kata_kunci',
             'status',
-            'catatan_admin'
+            'catatan_admin',
+            'th_akademik_id',
         ]);
 
         // Handle is_active toggle

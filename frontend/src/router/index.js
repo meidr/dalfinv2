@@ -117,6 +117,12 @@ const routes = [
         component: () => import("../views/admin/skyudisium/DataSKYudisium.vue"),
       },
       {
+        path: "skyudisium/batch/:nomor",
+        name: "DetailSKYudisiumBatch",
+        component: () =>
+          import("../views/admin/skyudisium/DetailSKYudisiumBatch.vue"),
+      },
+      {
         path: "master/mahasiswa",
         name: "MasterMahasiswa",
         component: () => import("../views/admin/master/MasterMahasiswa.vue"),

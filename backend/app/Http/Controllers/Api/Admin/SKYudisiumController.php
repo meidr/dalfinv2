@@ -222,4 +222,292 @@ class SKYudisiumController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Get list of SK Yudisium batches (distinct nomor_sk_batch)
+     */
+    public function batchIndex(Request $request)
+    {
+        $query = SKYudisium::whereNotNull('nomor_sk_batch')
+            ->select('nomor_sk_batch', 'th_akademik_id', 'tanggal_terbit', 'tanggal_yudisium')
+            ->selectRaw('COUNT(*) as jumlah_mahasiswa')
+            ->selectRaw('MIN(id) as id')
+            ->groupBy('nomor_sk_batch', 'th_akademik_id', 'tanggal_terbit', 'tanggal_yudisium');
+
+        if ($request->filled('search')) {
+            $query->where('nomor_sk_batch', 'like', "%{$request->search}%");
+        }
+
+        $batches = $query->orderBy('tanggal_terbit', 'desc')->paginate(10);
+
+        // Load tahun akademik names
+        $tahunIds = $batches->pluck('th_akademik_id')->filter()->unique();
+        $tahuns = \App\Models\Tahun::whereIn('id', $tahunIds)->pluck('name', 'id');
+
+        $batches->getCollection()->transform(function ($item) use ($tahuns) {
+            $item->tahun_akademik_name = $tahuns[$item->th_akademik_id] ?? '-';
+            return $item;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $batches,
+        ]);
+    }
+
+    /**
+     * Create a new SK Yudisium batch
+     */
+    public function storeBatch(Request $request)
+    {
+        $validated = $request->validate([
+            'nomor_sk_batch' => 'required|string|max:255',
+            'th_akademik_id' => 'required|exists:tahuns,id',
+            'prodi_id' => 'nullable|exists:prodi,id',
+            'tanggal_terbit' => 'required|date',
+            'tanggal_yudisium' => 'required|date',
+        ]);
+
+        // Check if batch already exists
+        $exists = SKYudisium::where('nomor_sk_batch', $validated['nomor_sk_batch'])->exists();
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nomor SK Batch sudah digunakan',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Batch SK Yudisium berhasil dibuat',
+            'data' => $validated,
+        ], 201);
+    }
+
+    /**
+     * Get detail of a specific batch
+     */
+    public function batchDetail(Request $request, $nomor)
+    {
+        $nomor = urldecode($nomor);
+
+        // Get mahasiswa assigned to this batch
+        $assigned = SKYudisium::with(['skripsi.mahasiswa.prodi', 'tahunAkademik', 'prodi.fakultas'])
+            ->where('nomor_sk_batch', $nomor)
+            ->get();
+
+        // Get batch info from first record
+        $batchInfo = $assigned->first();
+
+        // Get mahasiswa SK terbit (has sk_yudisium but not assigned to any batch)
+        $unassignedQuery = Seminar::with([
+            'skripsi.mahasiswa.prodi',
+            'skripsi.skYudisium',
+        ])->where('jenis', 'sidang')
+            ->where('status', 'selesai')
+            ->whereIn('hasil', ['lulus', 'lulus_revisi'])
+            ->whereHas('skripsi.skYudisium', function ($q) {
+                $q->whereNull('nomor_sk_batch')
+                    ->orWhere('nomor_sk_batch', '');
+            });
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $unassignedQuery->whereHas('skripsi.mahasiswa', function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nim', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by fakultas
+        if ($request->filled('fakultas_id')) {
+            $unassignedQuery->whereHas('skripsi.mahasiswa.prodi', function ($q) use ($request) {
+                $q->where('fakultas_id', $request->fakultas_id);
+            });
+        }
+
+        // Filter by prodi
+        if ($request->filled('prodi_id')) {
+            $unassignedQuery->whereHas('skripsi.mahasiswa', function ($q) use ($request) {
+                $q->where('prodi_id', $request->prodi_id);
+            });
+        }
+
+        // Filter by jenis kelamin
+        if ($request->filled('jenis_kelamin')) {
+            $unassignedQuery->whereHas('skripsi.mahasiswa', function ($q) use ($request) {
+                $q->where('jenis_kelamin', $request->jenis_kelamin);
+            });
+        }
+
+        $unassigned = $unassignedQuery->orderBy('tanggal', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'batch_info' => $batchInfo ? [
+                'nomor_sk_batch' => $batchInfo->nomor_sk_batch,
+                'th_akademik_id' => $batchInfo->th_akademik_id,
+                'tahun_akademik_name' => $batchInfo->tahunAkademik?->name ?? '-',
+                'prodi_id' => $batchInfo->prodi_id,
+                'prodi_name' => $batchInfo->prodi?->nama ?? '-',
+                'fakultas_name' => $batchInfo->prodi?->fakultas?->nama_fakultas ?? '-',
+                'tanggal_terbit' => $batchInfo->tanggal_terbit,
+                'tanggal_yudisium' => $batchInfo->tanggal_yudisium,
+            ] : null,
+            'assigned' => $assigned,
+            'unassigned' => $unassigned,
+        ]);
+    }
+
+    /**
+     * Update batch info (all sk_yudisium records with given nomor_sk_batch)
+     */
+    public function updateBatch(Request $request, $nomor)
+    {
+        $nomor = urldecode($nomor);
+
+        $validated = $request->validate([
+            'th_akademik_id' => 'required|exists:tahuns,id',
+            'prodi_id' => 'nullable|exists:prodi,id',
+            'tanggal_terbit' => 'required|date',
+            'tanggal_yudisium' => 'required|date',
+        ]);
+
+        $records = SKYudisium::where('nomor_sk_batch', $nomor)->get();
+
+        if ($records->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Batch tidak ditemukan',
+            ], 404);
+        }
+
+        DB::transaction(function () use ($records, $validated) {
+            foreach ($records as $sk) {
+                $sk->update([
+                    'th_akademik_id' => $validated['th_akademik_id'],
+                    'prodi_id' => $validated['prodi_id'] ?? null,
+                    'tanggal_terbit' => $validated['tanggal_terbit'],
+                    'tanggal_yudisium' => $validated['tanggal_yudisium'],
+                ]);
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Batch berhasil diperbarui',
+        ]);
+    }
+
+    /**
+     * Assign mahasiswa to a batch (creates sk_yudisium records)
+     */
+    public function assignBatch(Request $request)
+    {
+        $validated = $request->validate([
+            'nomor_sk_batch' => 'required|string',
+            'th_akademik_id' => 'required|exists:tahuns,id',
+            'prodi_id' => 'nullable|exists:prodi,id',
+            'tanggal_terbit' => 'required|date',
+            'tanggal_yudisium' => 'required|date',
+            'skripsi_ids' => 'required|array|min:1',
+            'skripsi_ids.*' => 'required|exists:skripsi,id',
+        ]);
+
+        $created = DB::transaction(function () use ($validated) {
+            $records = [];
+
+            foreach ($validated['skripsi_ids'] as $skripsiId) {
+                $skripsi = Skripsi::findOrFail($skripsiId);
+                $existingSk = $skripsi->skYudisium;
+
+                // If already has sk_yudisium with a batch assigned, skip
+                if ($existingSk && $existingSk->nomor_sk_batch) {
+                    continue;
+                }
+
+                if ($existingSk) {
+                    // Update existing record that has no batch
+                    $existingSk->update([
+                        'nomor_sk_batch' => $validated['nomor_sk_batch'],
+                        'th_akademik_id' => $validated['th_akademik_id'],
+                        'prodi_id' => $validated['prodi_id'] ?? null,
+                        'tanggal_terbit' => $validated['tanggal_terbit'],
+                        'tanggal_yudisium' => $validated['tanggal_yudisium'],
+                    ]);
+                    $sk = $existingSk;
+                } else {
+                    // Create new record
+                    $sk = SKYudisium::create([
+                        'skripsi_id' => $skripsi->id,
+                        'nomor_sk' => 'SK-' . strtoupper(uniqid()),
+                        'nomor_sk_batch' => $validated['nomor_sk_batch'],
+                        'th_akademik_id' => $validated['th_akademik_id'],
+                        'prodi_id' => $validated['prodi_id'] ?? null,
+                        'tanggal_terbit' => $validated['tanggal_terbit'],
+                        'tanggal_yudisium' => $validated['tanggal_yudisium'],
+                    ]);
+                }
+
+                // Update skripsi & mahasiswa status
+                $skripsi->update(['status' => 'lulus']);
+                $skripsi->mahasiswa()->update(['status' => 'lulus']);
+
+                $records[] = $sk;
+            }
+
+            return $records;
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => count($created) . ' mahasiswa berhasil diassign ke batch',
+            'data' => $created,
+        ]);
+    }
+
+    /**
+     * Remove a mahasiswa from a batch (reset nomor_sk_batch only)
+     */
+    public function removeBatch($id)
+    {
+        $skYudisium = SKYudisium::findOrFail($id);
+
+        $skYudisium->update([
+            'nomor_sk_batch' => null,
+            'prodi_id' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mahasiswa berhasil dikeluarkan dari batch',
+        ]);
+    }
+
+    /**
+     * Delete an entire batch (reset nomor_sk_batch for all records in batch)
+     */
+    public function destroyBatch($nomor)
+    {
+        $nomor = urldecode($nomor);
+
+        $count = SKYudisium::where('nomor_sk_batch', $nomor)->count();
+
+        if ($count === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Batch tidak ditemukan',
+            ], 404);
+        }
+
+        SKYudisium::where('nomor_sk_batch', $nomor)->update([
+            'nomor_sk_batch' => null,
+            'prodi_id' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Batch SK Yudisium berhasil dihapus (' . $count . ' mahasiswa dikembalikan)',
+        ]);
+    }
 }

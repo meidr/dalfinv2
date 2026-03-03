@@ -465,6 +465,50 @@ export const adminService = {
     return response;
   },
 
+  // SK Yudisium Batch
+  async getSKYudisiumBatch(params = {}) {
+    const response = await api.get("/admin/sk-yudisium-batch", { params });
+    return response.data;
+  },
+
+  async createSKYudisiumBatch(data) {
+    const response = await api.post("/admin/sk-yudisium-batch", data);
+    return response.data;
+  },
+
+  async getSKYudisiumBatchDetail(nomor, params = {}) {
+    const response = await api.get(
+      `/admin/sk-yudisium-batch/${encodeURIComponent(nomor)}`,
+      { params },
+    );
+    return response.data;
+  },
+
+  async assignSKYudisiumBatch(data) {
+    const response = await api.post("/admin/sk-yudisium-batch/assign", data);
+    return response.data;
+  },
+
+  async removeSKYudisiumBatch(id) {
+    const response = await api.delete(`/admin/sk-yudisium-batch/${id}/remove`);
+    return response.data;
+  },
+
+  async destroySKYudisiumBatch(nomor) {
+    const response = await api.delete(
+      `/admin/sk-yudisium-batch/${encodeURIComponent(nomor)}/destroy`,
+    );
+    return response.data;
+  },
+
+  async updateSKYudisiumBatch(nomor, data) {
+    const response = await api.put(
+      `/admin/sk-yudisium-batch/${encodeURIComponent(nomor)}/update`,
+      data,
+    );
+    return response.data;
+  },
+
   // Pengguna (Users)
   async getPengguna(params = {}) {
     const response = await api.get("/admin/users", { params });
