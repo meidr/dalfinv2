@@ -326,6 +326,143 @@
         </div>
       </section>
 
+      <!-- Upload Proposal Section (for disetujui status) -->
+      <section
+        v-if="skripsi?.status === 'disetujui'"
+        class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden hover:shadow-md transition-all"
+      >
+        <div
+          class="p-5 border-b border-border-light flex items-center justify-between"
+        >
+          <div>
+            <h3 class="text-lg font-bold text-text-main">
+              Upload Proposal Skripsi
+            </h3>
+            <p class="text-sm text-text-secondary">
+              Unggah dokumen proposal setelah judul disetujui
+            </p>
+          </div>
+          <span
+            class="px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800"
+          >
+            Judul Disetujui
+          </span>
+        </div>
+        <div class="p-5 space-y-4">
+          <!-- Info alert -->
+          <div
+            class="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border-l-4 border-blue-400"
+          >
+            <span class="material-symbols-outlined text-blue-600 mt-0.5"
+              >info</span
+            >
+            <div>
+              <p class="text-sm text-text-main">
+                Selamat! Judul skripsi Anda telah <strong>disetujui</strong>.
+                Langkah selanjutnya adalah mengupload dokumen proposal Anda.
+                Setelah proposal diperiksa dan disetujui oleh staff/admin,
+                status skripsi Anda akan berubah menjadi
+                <strong>Tahap Proposal</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Upload form -->
+          <div class="border border-dashed border-border-light rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="material-symbols-outlined text-primary text-xl"
+                >upload_file</span
+              >
+              <p class="text-sm font-bold text-text-main">
+                Unggah Dokumen Proposal
+              </p>
+            </div>
+            <div class="flex gap-3">
+              <input
+                type="file"
+                ref="proposalFileInput"
+                accept=".pdf,.doc,.docx"
+                class="flex-1 px-3 py-2 border border-border-light rounded-lg bg-background-light text-text-main text-sm dark:bg-background"
+              />
+              <button
+                @click="uploadProposal"
+                :disabled="uploadingProposal"
+                class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-bold disabled:opacity-50 flex items-center gap-2"
+              >
+                <span
+                  v-if="uploadingProposal"
+                  class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                ></span>
+                <span v-else class="material-symbols-outlined text-[18px]"
+                  >cloud_upload</span
+                >
+                {{ uploadingProposal ? "Mengunggah..." : "Unggah" }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Uploaded docs list -->
+          <div v-if="proposalDocs.length > 0" class="space-y-2">
+            <p
+              class="text-xs font-bold text-text-secondary uppercase tracking-wider"
+            >
+              Dokumen Proposal yang Diunggah
+            </p>
+            <div
+              v-for="doc in proposalDocs"
+              :key="doc.id"
+              class="flex items-center justify-between p-3 border border-border-light rounded-lg"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <span
+                  class="material-symbols-outlined text-xl"
+                  :class="
+                    doc.status === 'approved'
+                      ? 'text-green-600'
+                      : doc.status === 'rejected'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                  "
+                  >description</span
+                >
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-text-main truncate">
+                    {{ doc.nama_file }}
+                  </p>
+                  <p class="text-[10px] text-text-secondary">
+                    {{
+                      new Date(doc.created_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    }}
+                  </p>
+                </div>
+              </div>
+              <span
+                class="px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0"
+                :class="
+                  doc.status === 'approved'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                    : doc.status === 'rejected'
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                      : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                "
+              >
+                {{
+                  doc.status === "approved"
+                    ? "Disetujui"
+                    : doc.status === "rejected"
+                      ? "Ditolak"
+                      : "Menunggu"
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Ujian Skripsi Request Section -->
       <section
         v-if="
@@ -1357,6 +1494,11 @@ const uploadingRevisiProposal = ref(false);
 const revisiProposalFileInput = ref(null);
 const rejectedSkripsi = ref(null);
 
+// Proposal upload state (for disetujui status)
+const proposalDocs = ref([]);
+const uploadingProposal = ref(false);
+const proposalFileInput = ref(null);
+
 const eligibilityChecklist = computed(() => {
   if (!ujianEligibility.value) return [];
   const e = ujianEligibility.value;
@@ -1508,6 +1650,46 @@ const uploadRevisiProposal = async () => {
     );
   } finally {
     uploadingRevisiProposal.value = false;
+  }
+};
+
+// ---- PROPOSAL DOCS (DISETUJUI STATUS) ----
+const fetchProposalDocs = async () => {
+  if (!skripsi.value) return;
+  try {
+    const response = await mahasiswaService.getDokumen({ jenis: "proposal" });
+    if (response.success) {
+      proposalDocs.value = response.data || [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch proposal docs:", error);
+  }
+};
+
+const uploadProposal = async () => {
+  const fileInput = proposalFileInput.value;
+  if (!fileInput?.files?.length) {
+    alert("Pilih file terlebih dahulu");
+    return;
+  }
+  try {
+    uploadingProposal.value = true;
+    await mahasiswaService.uploadDokumen({
+      jenis: "proposal",
+      file: fileInput.files[0],
+    });
+    fileInput.value = "";
+    await fetchProposalDocs();
+    alert(
+      "Dokumen proposal berhasil diunggah. Menunggu persetujuan staff/admin.",
+    );
+  } catch (error) {
+    console.error("Failed to upload proposal:", error);
+    alert(
+      "Gagal mengunggah: " + (error.response?.data?.message || error.message),
+    );
+  } finally {
+    uploadingProposal.value = false;
   }
 };
 
@@ -1701,7 +1883,7 @@ const activeStageDescription = computed(() => {
     pengajuan:
       "Judul skripsi Anda sedang dalam proses review oleh admin. Mohon tunggu konfirmasi persetujuan.",
     disetujui:
-      "Selamat! Judul skripsi Anda telah disetujui. Langkah selanjutnya adalah melakukan bimbingan dengan dosen pembimbing.",
+      "Selamat! Judul skripsi Anda telah disetujui. Langkah selanjutnya adalah mengupload dokumen proposal Anda untuk diperiksa oleh staff/admin.",
     proposal:
       "Anda sedang dalam tahap proposal. Persiapkan materi proposal Anda untuk seminar proposal.",
     sempro: isLulusBersyaratSempro.value
@@ -1826,6 +2008,11 @@ onMounted(async () => {
       // Fetch revisi proposal docs if sempro lulus bersyarat
       if (res.data.skripsi?.status === "sempro") {
         fetchRevisiProposalDocs();
+      }
+
+      // Fetch proposal docs if status disetujui
+      if (res.data.skripsi?.status === "disetujui") {
+        fetchProposalDocs();
       }
     } else {
       // No active skripsi — check for rejected (ditolak, is_active=false) skripsi

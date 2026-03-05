@@ -347,11 +347,11 @@ class SkripsiController extends Controller
             ], 404);
         }
 
-        // Restrict proposal upload: only allowed when status is pengajuan or proposal
-        if ($request->jenis === 'proposal' && !in_array($skripsi->status, ['pengajuan', 'proposal'])) {
+        // Restrict proposal upload: only allowed when status is pengajuan, disetujui, or proposal
+        if ($request->jenis === 'proposal' && !in_array($skripsi->status, ['pengajuan', 'disetujui', 'proposal'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Upload dokumen proposal hanya diperbolehkan saat status Pengajuan atau Proposal'
+                'message' => 'Upload dokumen proposal hanya diperbolehkan saat status Pengajuan, Disetujui, atau Proposal'
             ], 422);
         }
 
@@ -400,27 +400,19 @@ class SkripsiController extends Controller
 
         // Auto-advance skripsi status when proposal is uploaded
         $needsVerification = false;
-        if ($request->jenis === 'proposal' && $skripsi->status === 'pengajuan') {
-            if ($mahasiswa->jenis_kelamin === 'P') {
-                // Perempuan: otomatis buat history pending (seperti staff edit)
-                // Admin tinggal approve untuk ubah status ke 'proposal'
-                $needsVerification = true;
+        if ($request->jenis === 'proposal' && in_array($skripsi->status, ['pengajuan', 'disetujui'])) {
+            // Create verification history for staff/admin approval
+            $needsVerification = true;
 
-                $skripsi->history()->create([
-                    'judul_lama' => $skripsi->judul,
-                    'judul_baru' => $skripsi->judul,
-                    'status_lama' => 'pengajuan',
-                    'status_baru' => 'proposal',
-                    'alasan' => 'Upload proposal oleh mahasiswi (verifikasi otomatis)',
-                    'verification_status' => 'pending',
-                    'updated_by' => $request->user()->id,
-                ]);
-            } else {
-                // Laki-laki: langsung advance ke status 'proposal'
-                $skripsi->status = 'proposal';
-                $skripsi->progress_percentage = 15;
-                $skripsi->save();
-            }
+            $skripsi->history()->create([
+                'judul_lama' => $skripsi->judul,
+                'judul_baru' => $skripsi->judul,
+                'status_lama' => $skripsi->status,
+                'status_baru' => 'proposal',
+                'alasan' => 'Upload proposal oleh mahasiswa (menunggu verifikasi)',
+                'verification_status' => 'pending',
+                'updated_by' => $request->user()->id,
+            ]);
         }
 
         $message = $needsVerification

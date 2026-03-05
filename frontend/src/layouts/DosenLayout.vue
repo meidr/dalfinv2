@@ -104,7 +104,7 @@
         </nav>
 
         <!-- Actions -->
-        <div class="flex items-center gap-4 md:gap-6 ml-auto">
+        <div class="flex items-center gap-4 md:gap-6 ml-auto md:ml-8">
           <!-- Dark Mode Toggle -->
           <button
             @click="toggleTheme"
