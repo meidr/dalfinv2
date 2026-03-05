@@ -201,7 +201,18 @@
                 class="px-6 py-4 text-text-secondary max-w-xs truncate"
                 :title="item.alasan"
               >
-                {{ item.alasan || "-" }}
+                <span
+                  v-if="
+                    item.alasan && item.alasan.includes('nilai ujian sidang')
+                  "
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800 mb-1"
+                >
+                  <span class="material-symbols-outlined text-[12px]"
+                    >edit_note</span
+                  >
+                  Perubahan Nilai Sidang
+                </span>
+                <span v-else>{{ item.alasan || "-" }}</span>
               </td>
               <td class="px-6 py-4 text-text-secondary">
                 {{ item.updated_by?.name || "System" }}

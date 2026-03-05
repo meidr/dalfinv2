@@ -302,22 +302,41 @@ class ChatController extends Controller
         if ($currentUser->role === 'dosen') {
             $dosen = $currentUser->dosen;
             $allowedMahasiswaUserIds = [];
+            $mahasiswaGenders = [];
 
             if ($dosen) {
-                // Get mahasiswa user_ids linked via pembimbing -> skripsi -> mahasiswa
-                $allowedMahasiswaUserIds = \App\Models\Pembimbing::where('dosen_id', $dosen->id)
+                // Get mahasiswa linked via pembimbing -> skripsi -> mahasiswa
+                $pembimbingRecords = \App\Models\Pembimbing::where('dosen_id', $dosen->id)
                     ->where('is_active', true)
                     ->with('skripsi.mahasiswa')
-                    ->get()
+                    ->get();
+
+                $allowedMahasiswaUserIds = $pembimbingRecords
                     ->pluck('skripsi.mahasiswa.user_id')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->toArray();
+
+                // Collect unique genders of active bimbingan mahasiswa
+                $mahasiswaGenders = $pembimbingRecords
+                    ->pluck('skripsi.mahasiswa.jenis_kelamin')
                     ->filter()
                     ->unique()
                     ->values()
                     ->toArray();
             }
 
-            $query->where(function ($q) use ($allowedMahasiswaUserIds) {
-                $q->where('role', 'admin')
+            $query->where(function ($q) use ($allowedMahasiswaUserIds, $mahasiswaGenders) {
+                // Admin/staff filtered by mahasiswa genders
+                $q->where(function ($q3) use ($mahasiswaGenders) {
+                    $q3->whereIn('role', ['admin', 'staff'])
+                        ->whereNotNull('jenis_kelamin');
+                    // If mahasiswa have specific genders, filter admin/staff to match
+                    if (!empty($mahasiswaGenders)) {
+                        $q3->whereIn('jenis_kelamin', $mahasiswaGenders);
+                    }
+                })
                     ->orWhere(function ($q2) use ($allowedMahasiswaUserIds) {
                         $q2->where('role', 'mahasiswa')
                             ->whereIn('id', $allowedMahasiswaUserIds);
@@ -343,18 +362,30 @@ class ChatController extends Controller
                     ->toArray();
             }
 
-            $query->where(function ($q) use ($allowedDosenUserIds) {
-                $q->where('role', 'admin')
+            $mhsGender = $mahasiswa?->jenis_kelamin;
+
+            $query->where(function ($q) use ($allowedDosenUserIds, $mhsGender) {
+                // Admin/staff filtered by matching gender (must have jenis_kelamin set)
+                $q->where(function ($q3) use ($mhsGender) {
+                    $q3->whereIn('role', ['admin', 'staff'])
+                        ->whereNotNull('jenis_kelamin');
+                    if ($mhsGender) {
+                        $q3->where('jenis_kelamin', $mhsGender);
+                    }
+                })
                     ->orWhere(function ($q2) use ($allowedDosenUserIds) {
                         $q2->where('role', 'dosen')
                             ->whereIn('id', $allowedDosenUserIds);
                     });
             });
         } elseif ($currentUser->role === 'staff') {
-            // Staff: chat with mahasiswa (matching gender) and admin/staff (NOT super_admin)
+            // Staff: chat with mahasiswa (matching gender) and admin/staff with jenis_kelamin (NOT super_admin)
             $staffGender = $currentUser->jenis_kelamin;
             $query->where(function ($q) use ($staffGender) {
-                $q->whereIn('role', ['admin', 'staff'])
+                $q->where(function ($q3) use ($staffGender) {
+                    $q3->whereIn('role', ['admin', 'staff'])
+                        ->whereNotNull('jenis_kelamin');
+                })
                     ->orWhere(function ($q2) use ($staffGender) {
                         $q2->where('role', 'mahasiswa');
                         if ($staffGender) {
@@ -365,8 +396,14 @@ class ChatController extends Controller
                     });
             });
         } else {
-            // Admin: can chat with everyone
-            $query->whereIn('role', ['admin', 'super_admin', 'dosen', 'mahasiswa', 'staff']);
+            // Admin: can chat with everyone except super_admin, hide admin/staff without jenis_kelamin
+            $query->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->whereIn('role', ['admin', 'staff'])
+                        ->whereNotNull('jenis_kelamin');
+                })
+                    ->orWhereIn('role', ['dosen', 'mahasiswa']);
+            });
         }
 
         if ($search) {

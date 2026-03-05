@@ -511,6 +511,8 @@ class SkripsiController extends Controller
                 ->count();
         }
 
+        $hasPembimbing2 = (bool) $pembimbing2;
+
         if ($pembimbing2) {
             $countPembimbing2 = Bimbingan::where('skripsi_id', $skripsi->id)
                 ->where('dosen_id', $pembimbing2->dosen_id)
@@ -530,8 +532,13 @@ class SkripsiController extends Controller
         // Already requested?
         $alreadyRequested = $skripsi->status === 'pengajuan_sidang';
 
-        $bimbinganMet = $countPembimbing1 >= $requirements['pembimbing_1']
-            && $countPembimbing2 >= $requirements['pembimbing_2'];
+        // Pembimbing 2 bimbingan is only required if pembimbing 2 exists
+        $bimbinganP1Met = $countPembimbing1 >= $requirements['pembimbing_1'];
+        $bimbinganP2Met = $hasPembimbing2
+            ? $countPembimbing2 >= $requirements['pembimbing_2']
+            : true;
+
+        $bimbinganMet = $bimbinganP1Met && $bimbinganP2Met;
 
         $eligible = $bimbinganMet && $hasNaskahFinal && $isCorrectStatus;
 
@@ -541,18 +548,19 @@ class SkripsiController extends Controller
                 'eligible' => $eligible,
                 'already_requested' => $alreadyRequested,
                 'is_correct_status' => $isCorrectStatus,
+                'has_pembimbing_2' => $hasPembimbing2,
                 'bimbingan' => [
                     'pembimbing_1' => [
                         'dosen' => $pembimbing1 ? $pembimbing1->dosen->nama : null,
                         'count' => $countPembimbing1,
                         'required' => (int) $requirements['pembimbing_1'],
-                        'met' => $countPembimbing1 >= $requirements['pembimbing_1'],
+                        'met' => $bimbinganP1Met,
                     ],
                     'pembimbing_2' => [
                         'dosen' => $pembimbing2 ? $pembimbing2->dosen->nama : null,
                         'count' => $countPembimbing2,
                         'required' => (int) $requirements['pembimbing_2'],
-                        'met' => $countPembimbing2 >= $requirements['pembimbing_2'],
+                        'met' => $bimbinganP2Met,
                     ],
                 ],
                 'naskah_final' => [
@@ -595,10 +603,10 @@ class SkripsiController extends Controller
         $pembimbing1 = $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first();
         $pembimbing2 = $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first();
 
-        if (!$pembimbing1 || !$pembimbing2) {
+        if (!$pembimbing1) {
             return response()->json([
                 'success' => false,
-                'message' => 'Dosen pembimbing belum lengkap'
+                'message' => 'Dosen pembimbing utama belum ditentukan'
             ], 422);
         }
 
@@ -607,16 +615,26 @@ class SkripsiController extends Controller
             ->where('status', 'approved')
             ->count();
 
-        $countP2 = Bimbingan::where('skripsi_id', $skripsi->id)
-            ->where('dosen_id', $pembimbing2->dosen_id)
-            ->where('status', 'approved')
-            ->count();
-
-        if ($countP1 < $requirements['pembimbing_1'] || $countP2 < $requirements['pembimbing_2']) {
+        if ($countP1 < $requirements['pembimbing_1']) {
             return response()->json([
                 'success' => false,
-                'message' => 'Jumlah bimbingan belum memenuhi syarat'
+                'message' => 'Jumlah bimbingan pembimbing 1 belum memenuhi syarat'
             ], 422);
+        }
+
+        // Only check pembimbing 2 bimbingan if pembimbing 2 exists
+        if ($pembimbing2) {
+            $countP2 = Bimbingan::where('skripsi_id', $skripsi->id)
+                ->where('dosen_id', $pembimbing2->dosen_id)
+                ->where('status', 'approved')
+                ->count();
+
+            if ($countP2 < $requirements['pembimbing_2']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jumlah bimbingan pembimbing 2 belum memenuhi syarat'
+                ], 422);
+            }
         }
 
         $hasNaskahFinal = $skripsi->dokumen

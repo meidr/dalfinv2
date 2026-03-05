@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Dokumen;
 use App\Models\Skripsi;
 use App\Models\SkripsiHistory;
+use App\Traits\GenderFilterable;
 use Illuminate\Http\Request;
 
 class SkripsiController extends Controller
 {
+    use GenderFilterable;
+
     /**
      * Display a listing of skripsi
      */
@@ -17,13 +20,9 @@ class SkripsiController extends Controller
     {
         $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen', 'tahunAkademik']);
 
-        // Staff: only see mahasiswa matching their gender
-        $user = $request->user();
-        if ($user->role === 'staff' && $user->jenis_kelamin) {
-            $query->whereHas('mahasiswa', function ($q) use ($user) {
-                $q->where('jenis_kelamin', $user->jenis_kelamin);
-            });
-        }
+        // Gender-based filtering (staff & admin see same-gender mahasiswa only)
+        $this->applyGenderFilter($query, $request);
+
 
         // Filters
         if ($request->filled('status')) {

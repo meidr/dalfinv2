@@ -319,6 +319,7 @@ Route::prefix('dosen')
         Route::get('/bimbingan', [DosenBimbinganController::class, 'index']);
         Route::get('/bimbingan/{skripsi}', [DosenBimbinganController::class, 'show']);
         Route::get('/bimbingan/{skripsi}/logs', [DosenBimbinganController::class, 'logs']);
+        Route::put('/bimbingan/log/bulk-status', [DosenBimbinganController::class, 'bulkUpdateStatus']);
         Route::put('/bimbingan/log/{bimbingan}/status', [DosenBimbinganController::class, 'updateStatus']);
 
         // Jadwal (Seminar & Ujian)

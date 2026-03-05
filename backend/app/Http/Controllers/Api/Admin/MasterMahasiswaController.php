@@ -5,18 +5,28 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Mahasiswa;
 use App\Models\User;
+use App\Traits\GenderFilterable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class MasterMahasiswaController extends Controller
 {
+    use GenderFilterable;
+
     /**
      * Display a listing of mahasiswa
      */
     public function index(Request $request)
     {
         $query = Mahasiswa::with(['prodi', 'user', 'tahun']);
+
+        // Gender-based filtering (direct on mahasiswa table)
+        $user = $request->user();
+        if ($user->role !== 'super_admin' && $user->jenis_kelamin) {
+            $query->where('jenis_kelamin', $user->jenis_kelamin);
+        }
+
 
         if ($request->filled('prodi_id')) {
             $query->where('prodi_id', $request->prodi_id);

@@ -14,12 +14,37 @@ class SkripsiVerificationController extends Controller
 {
     /**
      * List all pending verifications
+     * Staff/admin only see verifications matching their gender
+     * Super admin sees all
      */
     public function index(Request $request)
     {
         $query = SkripsiHistory::with(['skripsi.mahasiswa', 'updatedBy'])
             ->where('verification_status', 'pending')
             ->orderBy('created_at', 'desc');
+
+        // Gender-based filtering for non-super_admin
+        $user = $request->user();
+        if ($user->role !== 'super_admin') {
+            $gender = $user->jenis_kelamin;
+            if ($gender) {
+                // Only show verifications from staff of the same gender
+                $query->where(function ($q) use ($gender) {
+                    $q->whereHas('updatedBy', function ($uq) use ($gender) {
+                        $uq->where('jenis_kelamin', $gender);
+                    })
+                        // Also show verifications from users without gender set (legacy)
+                        ->orWhereHas('updatedBy', function ($uq) {
+                            $uq->whereNull('jenis_kelamin');
+                        });
+                });
+
+                // Also filter by mahasiswa gender (same gender only)
+                $query->whereHas('skripsi.mahasiswa', function ($mq) use ($gender) {
+                    $mq->where('jenis_kelamin', $gender);
+                });
+            }
+        }
 
         $pending = $query->paginate($request->get('per_page', 15));
 

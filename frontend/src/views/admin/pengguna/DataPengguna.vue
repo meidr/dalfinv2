@@ -66,6 +66,7 @@
             <option value="">Semua Role</option>
             <option v-if="isSuperAdmin" value="super_admin">Super Admin</option>
             <option value="admin">Admin</option>
+            <option value="staff">Staff</option>
             <option value="dosen">Dosen</option>
             <option value="mahasiswa">Mahasiswa</option>
           </select>
@@ -256,7 +257,7 @@
               {{
                 isEditing
                   ? `Edit akun ${selectedUser?.name}`
-                  : "Buat akun admin atau super admin baru"
+                  : "Buat akun admin, staff, atau super admin baru"
               }}
             </p>
           </div>
@@ -335,10 +336,23 @@
                 class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light text-sm"
               >
                 <option value="admin">Admin</option>
+                <option value="staff">Staff</option>
                 <option v-if="isSuperAdmin" value="super_admin">
                   Super Admin
                 </option>
-                <option v-if="isEditing" value="staff">Staff</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1.5"
+                >Jenis Kelamin</label
+              >
+              <select
+                v-model="userForm.jenis_kelamin"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light text-sm"
+              >
+                <option value="">-- Pilih --</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
               </select>
             </div>
             <div
@@ -460,6 +474,7 @@ const userForm = reactive({
   password: "",
   phone: "",
   role: "admin",
+  jenis_kelamin: "",
 });
 
 const pagination = reactive({
@@ -545,6 +560,7 @@ const openAddModal = () => {
     password: "",
     phone: "",
     role: "admin",
+    jenis_kelamin: "",
   });
   showUserModal.value = true;
 };
@@ -560,6 +576,7 @@ const openEditModal = (user) => {
     password: "",
     phone: user.phone || "",
     role: user.role,
+    jenis_kelamin: user.jenis_kelamin || "",
   });
   showUserModal.value = true;
 };
@@ -596,6 +613,7 @@ const saveUser = async () => {
         name: userForm.name,
         role: userForm.role,
         phone: userForm.phone,
+        jenis_kelamin: userForm.jenis_kelamin || null,
       };
       if (userForm.password) {
         data.password = userForm.password;
@@ -608,6 +626,7 @@ const saveUser = async () => {
         email: userForm.email,
         password: userForm.password,
         role: userForm.role,
+        jenis_kelamin: userForm.jenis_kelamin || null,
       });
     }
 

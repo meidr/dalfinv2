@@ -1502,23 +1502,27 @@ const proposalFileInput = ref(null);
 const eligibilityChecklist = computed(() => {
   if (!ujianEligibility.value) return [];
   const e = ujianEligibility.value;
-  return [
+  const items = [
     {
       label: `Bimbingan Pembimbing 1`,
       detail: `${e.bimbingan?.pembimbing_1?.count ?? 0} / ${e.bimbingan?.pembimbing_1?.required ?? 8} sesi (disetujui)`,
       met: e.bimbingan?.pembimbing_1?.met ?? false,
     },
-    {
+  ];
+  // Only show pembimbing 2 requirement if student has 2 advisors
+  if (e.has_pembimbing_2) {
+    items.push({
       label: `Bimbingan Pembimbing 2`,
       detail: `${e.bimbingan?.pembimbing_2?.count ?? 0} / ${e.bimbingan?.pembimbing_2?.required ?? 4} sesi (disetujui)`,
       met: e.bimbingan?.pembimbing_2?.met ?? false,
-    },
-    {
-      label: "Naskah Final",
-      detail: e.naskah_final?.uploaded ? "Sudah diunggah" : "Belum diunggah",
-      met: e.naskah_final?.uploaded ?? false,
-    },
-  ];
+    });
+  }
+  items.push({
+    label: "Naskah Final",
+    detail: e.naskah_final?.uploaded ? "Sudah diunggah" : "Belum diunggah",
+    met: e.naskah_final?.uploaded ?? false,
+  });
+  return items;
 });
 
 const checkUjianEligibility = async () => {

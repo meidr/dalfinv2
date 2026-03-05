@@ -47,6 +47,34 @@
       </div>
     </div>
 
+    <!-- Bulk Actions (Dosen only) -->
+    <div
+      v-if="isDosen && isActive && pendingCount > 0 && !loading"
+      class="flex items-center gap-3 p-4 bg-surface-light rounded-xl border border-border-light shadow-sm"
+    >
+      <span class="material-symbols-outlined text-[20px] text-text-secondary"
+        >checklist</span
+      >
+      <span class="text-sm font-medium text-text-secondary"
+        >{{ pendingCount }} log menunggu persetujuan</span
+      >
+      <div class="flex-1"></div>
+      <button
+        @click="openBulkConfirm('approved')"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition-colors shadow-sm"
+      >
+        <span class="material-symbols-outlined text-[16px]">check_circle</span>
+        Setujui Semua
+      </button>
+      <button
+        @click="openBulkConfirm('rejected')"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm"
+      >
+        <span class="material-symbols-outlined text-[16px]">cancel</span>
+        Tolak Semua
+      </button>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="animate-pulse flex flex-col gap-3">
       <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
@@ -305,6 +333,234 @@
         </div>
       </div>
     </div>
+
+    <!-- ===== PENGAJUAN UJIAN SKRIPSI (Mahasiswa Only) ===== -->
+    <section
+      v-if="
+        !isDosen &&
+        (skripsi?.status === 'bimbingan' ||
+          skripsi?.status === 'pengajuan_sidang' ||
+          skripsi?.status === 'pengajuan_sidang_tolak' ||
+          skripsi?.status === 'pengajuan_sidang_acc')
+      "
+      class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden"
+    >
+      <div
+        class="p-5 border-b border-border-light flex items-center justify-between"
+      >
+        <div>
+          <h3 class="text-lg font-bold text-text-main">
+            Pengajuan Ujian Skripsi
+          </h3>
+          <p class="text-sm text-text-secondary">
+            Ajukan ujian skripsi setelah memenuhi syarat bimbingan
+          </p>
+        </div>
+        <span
+          v-if="skripsi?.status === 'pengajuan_sidang'"
+          class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800"
+        >
+          Menunggu Persetujuan Dosen
+        </span>
+      </div>
+      <div class="p-5">
+        <!-- Already submitted -->
+        <div
+          v-if="skripsi?.status === 'pengajuan_sidang'"
+          class="flex items-center gap-3 p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border-l-4 border-yellow-400"
+        >
+          <span class="material-symbols-outlined text-yellow-600"
+            >pending_actions</span
+          >
+          <p class="text-sm text-text-main">
+            Pengajuan ujian skripsi Anda sedang menunggu persetujuan dosen
+            pembimbing utama.
+          </p>
+        </div>
+
+        <!-- Approved -->
+        <div
+          v-else-if="skripsi?.status === 'pengajuan_sidang_acc'"
+          class="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/10 rounded-lg border-l-4 border-green-400"
+        >
+          <span class="material-symbols-outlined text-green-600"
+            >check_circle</span
+          >
+          <p class="text-sm text-text-main">
+            Pengajuan ujian skripsi Anda telah <strong>disetujui</strong> oleh
+            dosen pembimbing. Menunggu admin menjadwalkan ujian.
+          </p>
+        </div>
+
+        <!-- Rejected -->
+        <div
+          v-else-if="skripsi?.status === 'pengajuan_sidang_tolak'"
+          class="flex flex-col gap-4"
+        >
+          <div
+            class="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border-l-4 border-red-400"
+          >
+            <span class="material-symbols-outlined text-red-600 mt-0.5"
+              >error</span
+            >
+            <div>
+              <p class="text-sm font-bold text-red-700 dark:text-red-400 mb-1">
+                Pengajuan Ujian Ditolak
+              </p>
+              <p
+                v-if="skripsi?.alasan_tolak_sidang"
+                class="text-sm text-text-main"
+              >
+                <strong>Alasan:</strong> {{ skripsi.alasan_tolak_sidang }}
+              </p>
+              <p v-else class="text-sm text-text-secondary italic">
+                Tidak ada alasan yang diberikan.
+              </p>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button
+              @click="submitUjianRequest"
+              :disabled="submittingUjian"
+              class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20 text-sm"
+            >
+              <span
+                v-if="submittingUjian"
+                class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+              ></span>
+              <span v-else class="material-symbols-outlined text-[20px]"
+                >refresh</span
+              >
+              {{ submittingUjian ? "Mengirim..." : "Ajukan Ulang" }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Eligibility Check -->
+        <div v-else>
+          <div
+            v-if="ujianEligibility === null"
+            class="flex items-center gap-3 text-text-secondary"
+          >
+            <span
+              class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"
+            ></span>
+            <span class="text-sm">Memeriksa kelayakan...</span>
+          </div>
+          <div v-else class="flex flex-col gap-4">
+            <!-- Checklist -->
+            <div class="space-y-3">
+              <div
+                v-for="(item, idx) in ujianChecklist"
+                :key="idx"
+                class="flex items-center gap-3 p-3 rounded-lg border"
+                :class="
+                  item.met
+                    ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
+                "
+              >
+                <span
+                  class="material-symbols-outlined text-[20px]"
+                  :class="item.met ? 'text-green-600' : 'text-red-500'"
+                  >{{ item.met ? "check_circle" : "cancel" }}</span
+                >
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-text-main">
+                    {{ item.label }}
+                  </p>
+                  <p class="text-xs text-text-secondary">{{ item.detail }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end pt-2">
+              <button
+                v-if="ujianEligibility?.eligible"
+                @click="showUjianConfirmModal = true"
+                class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20 text-sm"
+              >
+                <span class="material-symbols-outlined text-[20px]"
+                  >school</span
+                >
+                Ajukan Ujian Skripsi
+              </button>
+              <p v-else class="text-sm text-red-500 font-medium">
+                Anda belum memenuhi semua syarat untuk mengajukan ujian skripsi.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MODAL: KONFIRMASI UJIAN ===== -->
+    <div
+      v-if="showUjianConfirmModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        @click="showUjianConfirmModal = false"
+      ></div>
+      <div
+        class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-sm"
+      >
+        <div class="p-6 flex flex-col items-center gap-4 text-center">
+          <div
+            class="size-14 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-primary"
+          >
+            <span class="material-symbols-outlined text-[28px]">school</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-text-main">
+              Ajukan Ujian Skripsi?
+            </h3>
+            <p class="text-sm text-text-secondary mt-1">
+              Pengajuan akan dikirim ke dosen pembimbing utama untuk disetujui.
+            </p>
+          </div>
+          <div class="flex gap-3 w-full">
+            <button
+              @click="showUjianConfirmModal = false"
+              class="flex-1 px-4 py-2.5 rounded-lg text-text-secondary font-bold hover:bg-sidebar-light transition-colors text-sm border border-border-light"
+            >
+              Batal
+            </button>
+            <button
+              @click="submitUjianRequest"
+              :disabled="submittingUjian"
+              class="flex-1 px-4 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-blue-600 transition-colors shadow-sm text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <span
+                v-if="submittingUjian"
+                class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+              ></span>
+              {{ submittingUjian ? "Mengirim..." : "Ya, Ajukan" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ujian Toast -->
+    <Transition name="toast-slide">
+      <div
+        v-if="ujianToast.show"
+        class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg text-white text-sm font-bold"
+        :class="
+          ujianToast.type === 'success'
+            ? 'bg-green-600 shadow-green-600/30'
+            : 'bg-red-600 shadow-red-600/30'
+        "
+      >
+        <span class="material-symbols-outlined text-[20px]">{{
+          ujianToast.type === "success" ? "check_circle" : "error"
+        }}</span>
+        {{ ujianToast.message }}
+      </div>
+    </Transition>
 
     <!-- ===== MODAL: DETAIL BIMBINGAN ===== -->
     <div
@@ -657,6 +913,88 @@
         </div>
       </div>
     </div>
+
+    <!-- ===== MODAL: BULK CONFIRM ===== -->
+    <div
+      v-if="bulkConfirmModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        @click="bulkConfirmModal = false"
+      ></div>
+      <div
+        class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-sm"
+      >
+        <div class="p-6 flex flex-col items-center gap-4 text-center">
+          <div
+            class="size-14 rounded-full flex items-center justify-center"
+            :class="
+              bulkConfirmType === 'approved'
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-600'
+                : 'bg-red-100 dark:bg-red-900/30 text-red-600'
+            "
+          >
+            <span class="material-symbols-outlined text-[28px]">{{
+              bulkConfirmType === "approved" ? "check_circle" : "cancel"
+            }}</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-text-main">
+              {{
+                bulkConfirmType === "approved"
+                  ? "Setujui Semua?"
+                  : "Tolak Semua?"
+              }}
+            </h3>
+            <p class="text-sm text-text-secondary mt-1">
+              {{ pendingCount }} log bimbingan pending akan
+              {{ bulkConfirmType === "approved" ? "disetujui" : "ditolak" }}.
+            </p>
+          </div>
+          <div
+            v-if="bulkError"
+            class="w-full flex gap-2 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-800 text-sm text-red-700 dark:text-red-300"
+          >
+            <span class="material-symbols-outlined text-red-500 text-[18px]"
+              >error</span
+            >
+            {{ bulkError }}
+          </div>
+          <div class="flex gap-3 w-full">
+            <button
+              @click="bulkConfirmModal = false"
+              class="flex-1 px-4 py-2.5 rounded-lg text-text-secondary font-bold hover:bg-sidebar-light transition-colors text-sm border border-border-light"
+            >
+              Batal
+            </button>
+            <button
+              @click="executeBulkAction"
+              :disabled="bulkSubmitting"
+              class="flex-1 px-4 py-2.5 rounded-lg text-white font-bold transition-colors shadow-sm text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              :class="
+                bulkConfirmType === 'approved'
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-red-600 hover:bg-red-700'
+              "
+            >
+              <span
+                v-if="bulkSubmitting"
+                class="material-symbols-outlined text-[18px] animate-spin"
+                >progress_activity</span
+              >
+              {{
+                bulkSubmitting
+                  ? "Memproses..."
+                  : bulkConfirmType === "approved"
+                    ? "Setujui"
+                    : "Tolak"
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -758,6 +1096,37 @@ const form = ref({
 
 const pembimbingOptions = computed(() => skripsi.value?.pembimbing || []);
 
+// ---- Ujian eligibility state (mahasiswa) ----
+const ujianEligibility = ref(null);
+const showUjianConfirmModal = ref(false);
+const submittingUjian = ref(false);
+const ujianToast = ref({ show: false, message: "", type: "success" });
+
+const ujianChecklist = computed(() => {
+  if (!ujianEligibility.value) return [];
+  const e = ujianEligibility.value;
+  const items = [
+    {
+      label: "Bimbingan Pembimbing 1",
+      detail: `${e.bimbingan?.pembimbing_1?.count ?? 0} / ${e.bimbingan?.pembimbing_1?.required ?? 8} sesi (disetujui)`,
+      met: e.bimbingan?.pembimbing_1?.met ?? false,
+    },
+  ];
+  if (e.has_pembimbing_2) {
+    items.push({
+      label: "Bimbingan Pembimbing 2",
+      detail: `${e.bimbingan?.pembimbing_2?.count ?? 0} / ${e.bimbingan?.pembimbing_2?.required ?? 4} sesi (disetujui)`,
+      met: e.bimbingan?.pembimbing_2?.met ?? false,
+    });
+  }
+  items.push({
+    label: "Naskah Final",
+    detail: e.naskah_final?.uploaded ? "Sudah diunggah" : "Belum diunggah",
+    met: e.naskah_final?.uploaded ?? false,
+  });
+  return items;
+});
+
 // ---- Dosen action state ----
 const dosenActionModal = ref(false);
 const dosenActionType = ref("");
@@ -765,6 +1134,16 @@ const dosenActionTarget = ref(null);
 const dosenCatatan = ref("");
 const dosenSubmitting = ref(false);
 const dosenError = ref("");
+
+// ---- Bulk action state ----
+const bulkConfirmModal = ref(false);
+const bulkConfirmType = ref("");
+const bulkSubmitting = ref(false);
+const bulkError = ref("");
+
+const pendingCount = computed(
+  () => bimbinganList.value.filter((b) => b.status === "pending").length,
+);
 
 const dosenActionTitle = computed(() => {
   const map = {
@@ -883,12 +1262,68 @@ const fetchBimbingan = async () => {
     } else {
       const res = await mahasiswaService.getBimbinganLogs();
       if (res.success) bimbinganList.value = res.data;
+      // Also check ujian eligibility for mahasiswa
+      await checkUjianEligibility();
     }
   } catch (err) {
     console.error("Failed to fetch bimbingan:", err);
     bimbinganList.value = skripsi.value?.bimbingan || [];
   } finally {
     loading.value = false;
+  }
+};
+
+// ---- Ujian eligibility (mahasiswa) ----
+const checkUjianEligibility = async () => {
+  if (props.isDosen) return;
+  if (
+    ![
+      "bimbingan",
+      "pengajuan_sidang",
+      "pengajuan_sidang_tolak",
+      "pengajuan_sidang_acc",
+    ].includes(skripsi.value?.status)
+  )
+    return;
+  try {
+    const res = await mahasiswaService.checkUjianEligibility();
+    if (res.success) {
+      ujianEligibility.value = res.data;
+    }
+  } catch (err) {
+    console.error("Failed to check ujian eligibility:", err);
+  }
+};
+
+const submitUjianRequest = async () => {
+  submittingUjian.value = true;
+  try {
+    const res = await mahasiswaService.requestUjian();
+    if (res.success) {
+      showUjianConfirmModal.value = false;
+      // Update skripsi status locally
+      if (skripsi.value) {
+        skripsi.value.status = "pengajuan_sidang";
+      }
+      ujianToast.value = {
+        show: true,
+        message: "Pengajuan ujian skripsi berhasil dikirim!",
+        type: "success",
+      };
+      setTimeout(() => {
+        ujianToast.value.show = false;
+      }, 3000);
+    }
+  } catch (err) {
+    console.error("Failed to submit ujian request:", err);
+    const msg =
+      err.response?.data?.message || "Gagal mengajukan ujian skripsi.";
+    ujianToast.value = { show: true, message: msg, type: "error" };
+    setTimeout(() => {
+      ujianToast.value.show = false;
+    }, 4000);
+  } finally {
+    submittingUjian.value = false;
   }
 };
 
@@ -974,6 +1409,42 @@ const submitDosenAction = async () => {
   }
 };
 
+// ---- Bulk actions ----
+const openBulkConfirm = (type) => {
+  bulkConfirmType.value = type;
+  bulkError.value = "";
+  bulkConfirmModal.value = true;
+};
+
+const executeBulkAction = async () => {
+  bulkSubmitting.value = true;
+  bulkError.value = "";
+  try {
+    const pendingIds = bimbinganList.value
+      .filter((b) => b.status === "pending")
+      .map((b) => b.id);
+    if (!pendingIds.length) {
+      bulkError.value = "Tidak ada log pending untuk diproses.";
+      return;
+    }
+    const res = await dosenService.bulkUpdateBimbinganStatus(
+      pendingIds,
+      bulkConfirmType.value,
+    );
+    if (res.success) {
+      bulkConfirmModal.value = false;
+      await fetchBimbingan();
+    } else {
+      bulkError.value = res.message || "Gagal memproses bulk action.";
+    }
+  } catch (err) {
+    bulkError.value =
+      err.response?.data?.message || "Terjadi kesalahan saat memproses.";
+  } finally {
+    bulkSubmitting.value = false;
+  }
+};
+
 onMounted(fetchBimbingan);
 </script>
 
@@ -990,5 +1461,17 @@ onMounted(fetchBimbingan);
     opacity: 1;
     transform: translateY(0);
   }
+}
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: all 0.3s ease;
+}
+.toast-slide-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.toast-slide-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
 }
 </style>

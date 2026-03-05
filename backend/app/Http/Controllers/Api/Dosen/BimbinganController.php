@@ -156,6 +156,49 @@ class BimbinganController extends Controller
     }
 
     /**
+     * Bulk approve or reject bimbingan logs
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:bimbingan,id',
+            'status' => 'required|in:approved,rejected',
+        ]);
+
+        $dosen = $request->user()->dosen;
+        $updated = 0;
+
+        $bimbinganList = Bimbingan::with('skripsi.pembimbing')
+            ->whereIn('id', $request->ids)
+            ->where('status', 'pending')
+            ->get();
+
+        foreach ($bimbinganList as $bimbingan) {
+            // Verify dosen is pembimbing
+            $isPembimbing = $bimbingan->skripsi->pembimbing
+                ->where('dosen_id', $dosen->id)->isNotEmpty();
+
+            if (!$isPembimbing || !$bimbingan->skripsi->is_active) {
+                continue;
+            }
+
+            $bimbingan->status = $request->status;
+            $bimbingan->dosen_id = $dosen->id;
+            $bimbingan->save();
+            $updated++;
+        }
+
+        $statusLabel = $request->status === 'approved' ? 'disetujui' : 'ditolak';
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$updated} log bimbingan berhasil {$statusLabel}",
+            'updated_count' => $updated,
+        ]);
+    }
+
+    /**
      * List ujian skripsi requests pending dosen approval
      * Only shows requests where this dosen is pembimbing_1 (utama)
      */

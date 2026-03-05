@@ -46,6 +46,14 @@ export const dosenService = {
     return this.updateBimbinganStatus(bimbinganId, "rejected", catatanDosen);
   },
 
+  async bulkUpdateBimbinganStatus(ids, status) {
+    const response = await api.put("/dosen/bimbingan/log/bulk-status", {
+      ids,
+      status,
+    });
+    return response.data;
+  },
+
   async downloadOfficialPdf(skripsiId, type) {
     return api.get(`/dosen/bimbingan/${skripsiId}/pdf/${type}`, {
       responseType: "blob",

@@ -7,10 +7,13 @@ use App\Models\Skripsi;
 use App\Models\Seminar;
 use App\Models\Penguji;
 use App\Models\BeritaAcara;
+use App\Traits\GenderFilterable;
 use Illuminate\Http\Request;
 
 class SeminarController extends Controller
 {
+    use GenderFilterable;
+
     /**
      * List skripsi eligible for seminar proposal
      * Shows skripsi with status: pengajuan, proposal, sempro
@@ -22,6 +25,10 @@ class SeminarController extends Controller
         }])
             ->where('is_active', true)
             ->whereIn('status', ['pengajuan', 'proposal', 'sempro', 'bimbingan', 'penentuan_dospem', 'dospem']);
+
+        // Gender-based filtering
+        $this->applyGenderFilter($query, $request);
+
 
         // Search filter
         if ($request->filled('search')) {

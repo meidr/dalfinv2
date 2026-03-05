@@ -159,7 +159,7 @@
               <input
                 v-model="searchQuery"
                 @input="handleSearchInput"
-                @focus="showNewChat = true"
+                @focus="handleSearchFocus"
                 class="w-full pl-8 pr-3 py-2 rounded-lg bg-background-light dark:bg-background-dark border border-border-light text-[13px] text-text-main placeholder-gray-400 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none"
                 placeholder="Cari kontak..."
               />
@@ -167,10 +167,7 @@
           </div>
 
           <!-- New Chat Search Results -->
-          <div
-            v-if="showNewChat && searchQuery.length > 0"
-            class="flex-1 overflow-y-auto"
-          >
+          <div v-if="showNewChat" class="flex-1 overflow-y-auto">
             <div class="px-3 py-1.5">
               <p
                 class="text-[10px] font-bold text-text-secondary uppercase tracking-wider"
@@ -583,18 +580,33 @@ const sendMessage = async () => {
   }
 };
 
+const handleSearchFocus = () => {
+  showNewChat.value = true;
+  // Auto-load contacts if no results yet
+  if (searchResults.value.length === 0) {
+    loadContacts();
+  }
+};
+
+const loadContacts = async () => {
+  searchLoading.value = true;
+  try {
+    const res = await chatService.searchUsers(searchQuery.value || "");
+    if (res.success) searchResults.value = res.data;
+  } catch (err) {
+    /* silent */
+  } finally {
+    searchLoading.value = false;
+  }
+};
+
 const handleSearchInput = () => {
   clearTimeout(searchDebounce);
-  if (!searchQuery.value.trim()) {
-    searchResults.value = [];
-    showNewChat.value = false;
-    return;
-  }
   showNewChat.value = true;
   searchDebounce = setTimeout(async () => {
     searchLoading.value = true;
     try {
-      const res = await chatService.searchUsers(searchQuery.value);
+      const res = await chatService.searchUsers(searchQuery.value || "");
       if (res.success) searchResults.value = res.data;
     } catch (err) {
       /* silent */
