@@ -167,10 +167,34 @@ class ChatController extends Controller
             return response()->json(['success' => false, 'message' => 'Forbidden'], 403);
         }
 
-        $conversations = Conversation::with(['participants' => function ($q) {
+        $query = Conversation::with(['participants' => function ($q) {
             $q->select('users.id', 'users.name', 'users.email', 'users.role');
-        }, 'latestMessage'])
-            ->orderByDesc('updated_at')
+        }, 'latestMessage']);
+
+        // Filter by participant name
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('participants', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('dosen', function ($dq) use ($search) {
+                        $dq->where('nama', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('mahasiswa', function ($mq) use ($search) {
+                        $mq->where('nama', 'like', "%{$search}%")
+                            ->orWhere('nim', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->where('updated_at', '>=', $request->date_from . ' 00:00:00');
+        }
+        if ($request->filled('date_to')) {
+            $query->where('updated_at', '<=', $request->date_to . ' 23:59:59');
+        }
+
+        $conversations = $query->orderByDesc('updated_at')
             ->paginate(20)
             ->through(function ($conv) {
                 $participants = $conv->participants->map(function ($p) {

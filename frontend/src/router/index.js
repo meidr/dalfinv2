@@ -14,6 +14,7 @@ const routes = [
     path: "/login",
     name: "Login",
     component: Login,
+    meta: { public: true },
   },
   {
     path: "/verify/:token",
@@ -25,6 +26,7 @@ const routes = [
     path: "/admin",
     component: AdminLayout,
     redirect: "/admin/dashboard",
+    meta: { roles: ["admin", "super_admin", "staff"] },
     children: [
       {
         path: "dashboard",
@@ -201,6 +203,7 @@ const routes = [
     path: "/dosen",
     component: () => import("../layouts/DosenLayout.vue"),
     redirect: "/dosen/dashboard",
+    meta: { roles: ["dosen"] },
     children: [
       {
         path: "dashboard",
@@ -281,6 +284,7 @@ const routes = [
     path: "/mahasiswa",
     component: () => import("../layouts/MahasiswaLayout.vue"),
     redirect: "/mahasiswa/dashboard",
+    meta: { roles: ["mahasiswa"] },
     children: [
       {
         path: "dashboard",
@@ -420,42 +424,62 @@ let moduleSettingsFetched = false;
 router.beforeEach(async (to, from, next) => {
   startProgress();
 
-  // Fetch module settings once per session for authenticated users
-  if (!moduleSettingsFetched) {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    if (user) {
-      try {
-        const { useAuthStore } = await import("../stores/auth");
-        const { createPinia, setActivePinia } = await import("pinia");
-        const authStore = useAuthStore();
-        await authStore.fetchModuleSettings();
-        moduleSettingsFetched = true;
+  // Public routes (login, verify) — no auth needed
+  const isPublic = to.matched.some((record) => record.meta.public);
+  if (isPublic) return next();
 
-        // Block seminarhasil routes if module disabled
-        if (
-          !authStore.semhasEnabled &&
-          (to.name === "DataSeminarHasil" || to.name === "DetailSeminarHasil")
-        ) {
-          return next("/admin/dashboard");
-        }
-      } catch (e) {
-        // Silently continue if fetch fails
-        moduleSettingsFetched = true;
-      }
-    }
-  } else {
-    // Check on subsequent navigations too
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    if (user) {
-      const semhasEnabled = JSON.parse(
-        localStorage.getItem("semhas_enabled") ?? "true",
-      );
+  // Check authentication
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
+  if (!user) {
+    return next("/login");
+  }
+
+  // Role-based access control
+  const requiredRoles = to.matched
+    .filter((record) => record.meta.roles)
+    .flatMap((record) => record.meta.roles);
+
+  if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
+    // Redirect to user's own dashboard
+    const roleRedirects = {
+      admin: "/admin",
+      super_admin: "/admin",
+      staff: "/admin",
+      dosen: "/dosen",
+      mahasiswa: "/mahasiswa",
+    };
+    const redirectTo = roleRedirects[user.role] || "/login";
+    return next(redirectTo);
+  }
+
+  // Fetch module settings once per session
+  if (!moduleSettingsFetched) {
+    try {
+      const { useAuthStore } = await import("../stores/auth");
+      const authStore = useAuthStore();
+      await authStore.fetchModuleSettings();
+      moduleSettingsFetched = true;
+
+      // Block seminarhasil routes if module disabled
       if (
-        !semhasEnabled &&
+        !authStore.semhasEnabled &&
         (to.name === "DataSeminarHasil" || to.name === "DetailSeminarHasil")
       ) {
         return next("/admin/dashboard");
       }
+    } catch (e) {
+      moduleSettingsFetched = true;
+    }
+  } else {
+    const semhasEnabled = JSON.parse(
+      localStorage.getItem("semhas_enabled") ?? "true",
+    );
+    if (
+      !semhasEnabled &&
+      (to.name === "DataSeminarHasil" || to.name === "DetailSeminarHasil")
+    ) {
+      return next("/admin/dashboard");
     }
   }
 

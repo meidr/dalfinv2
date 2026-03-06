@@ -92,6 +92,46 @@
         </p>
       </section>
 
+      <!-- Lulus Congratulation Notice -->
+      <section
+        v-if="skripsi?.status === 'lulus'"
+        class="relative overflow-hidden bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-xl shadow-lg shadow-green-500/20 p-6 text-white"
+      >
+        <div class="absolute top-0 right-0 opacity-10 pointer-events-none">
+          <span class="material-symbols-outlined text-[180px] -mt-8 -mr-8"
+            >celebration</span
+          >
+        </div>
+        <div class="absolute bottom-0 left-0 opacity-10 pointer-events-none">
+          <span class="material-symbols-outlined text-[120px] -mb-6 -ml-6"
+            >emoji_events</span
+          >
+        </div>
+        <div class="relative z-10 flex items-start gap-4">
+          <div
+            class="size-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0"
+          >
+            <span class="material-symbols-outlined text-3xl">school</span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold mb-1">
+              🎉 Selamat, Anda Dinyatakan Lulus!
+            </h3>
+            <p class="text-white/90 text-sm leading-relaxed">
+              Selamat atas kelulusan ujian sidang skripsi Anda! Saat ini Anda
+              sedang menunggu proses pembuatan
+              <strong>Berita Acara Sidang</strong> dan
+              <strong>SK Yudisium Batch</strong> dari Admin. Dokumen tersebut
+              akan tersedia di halaman dokumen Anda setelah diterbitkan.
+            </p>
+            <div class="mt-3 flex items-center gap-2 text-white/70 text-xs">
+              <span class="material-symbols-outlined text-[16px]">info</span>
+              Harap bersabar menunggu proses administrasi selesai.
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Thesis Summary Card -->
       <section
         class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden transition-all hover:shadow-md"

@@ -283,7 +283,13 @@
                         : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600'
                     "
                   >
-                    {{ seminar.jenis === "sempro" ? "Sempro" : "Semhas" }}
+                    {{
+                      seminar.jenis === "sempro"
+                        ? "Sempro"
+                        : seminar.jenis === "semhas"
+                          ? "Semhas"
+                          : seminar.jenis
+                    }}
                   </span>
                   <span
                     class="px-2 py-1 rounded text-xs font-bold"
@@ -327,6 +333,93 @@
                   >groups</span
                 >
                 <p>Belum ada jadwal seminar</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidang Tab -->
+          <div v-else-if="activeTab === 'sidang'">
+            <div class="space-y-4">
+              <div
+                v-for="item in sidangItems"
+                :key="item._key"
+                class="p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-border-light"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <span
+                    class="px-2 py-1 rounded text-xs font-bold uppercase bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
+                  >
+                    Ujian Sidang
+                  </span>
+                  <span
+                    class="px-2 py-1 rounded text-xs font-bold"
+                    :class="getStatusClass(item.status)"
+                  >
+                    {{ item.status }}
+                  </span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p class="text-text-secondary text-xs">Tanggal</p>
+                    <p class="font-medium text-text-main">
+                      {{ formatDate(item.tanggal) }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-text-secondary text-xs">Waktu</p>
+                    <p class="font-medium text-text-main">
+                      {{ item.waktu || "-" }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-text-secondary text-xs">Ruangan</p>
+                    <p class="font-medium text-text-main">
+                      {{ item.ruangan || "-" }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-text-secondary text-xs">Nilai</p>
+                    <p class="font-medium text-text-main">
+                      {{ item.nilai ?? "-" }}
+                    </p>
+                  </div>
+                </div>
+                <!-- Penguji -->
+                <div
+                  v-if="item.penguji?.length > 0"
+                  class="mt-4 pt-3 border-t border-border-light"
+                >
+                  <p
+                    class="text-xs font-bold text-text-secondary uppercase tracking-wide mb-2"
+                  >
+                    Dosen Penguji
+                  </p>
+                  <div class="space-y-2">
+                    <div
+                      v-for="(p, idx) in item.penguji"
+                      :key="p.id"
+                      class="flex items-center gap-2 text-sm"
+                    >
+                      <div
+                        class="size-7 rounded-full bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center text-xs font-bold"
+                      >
+                        {{ idx + 1 }}
+                      </div>
+                      <span class="text-text-main font-medium">{{
+                        p.dosen?.nama || p.dosen?.full_name || "-"
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                v-if="sidangItems.length === 0"
+                class="text-center py-8 text-text-secondary"
+              >
+                <span class="material-symbols-outlined text-4xl mb-2 block"
+                  >gavel</span
+                >
+                <p>Belum ada jadwal ujian sidang</p>
               </div>
             </div>
           </div>
@@ -780,6 +873,7 @@ const editForm = reactive({
 const tabs = [
   { id: "bimbingan", label: "Bimbingan" },
   { id: "seminar", label: "Seminar" },
+  { id: "sidang", label: "Sidang" },
   { id: "dokumen", label: "Dokumen" },
   { id: "history", label: "Riwayat" },
 ];
@@ -790,10 +884,24 @@ const pembimbing = computed(() => {
 
 const filteredSeminars = computed(() => {
   const seminars = skripsi.value?.seminar || [];
-  if (!authStore.semhasEnabled) {
-    return seminars.filter((s) => s.jenis !== "semhas");
-  }
-  return seminars;
+  // Only include sempro and semhas (actual seminars) — everything else goes to Sidang tab
+  return seminars.filter((s) => s.jenis === "sempro" || s.jenis === "semhas");
+});
+
+// Combine non-seminar entries from seminar table + ujian entries for Sidang tab
+const sidangItems = computed(() => {
+  const items = [];
+  // Seminar entries that are NOT sempro or semhas (i.e. ujian/sidang data stored in seminar table)
+  const sidangFromSeminar = (skripsi.value?.seminar || []).filter(
+    (s) => s.jenis !== "sempro" && s.jenis !== "semhas",
+  );
+  sidangFromSeminar.forEach((s) =>
+    items.push({ ...s, _key: `seminar-${s.id}` }),
+  );
+  // Ujian entries from ujian table
+  const ujians = skripsi.value?.ujian || [];
+  ujians.forEach((u) => items.push({ ...u, _key: `ujian-${u.id}` }));
+  return items;
 });
 
 const revisiProposalDocs = computed(() => {

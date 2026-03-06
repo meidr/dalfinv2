@@ -10,6 +10,64 @@
         </p>
       </div>
     </div>
+    <!-- Filters -->
+    <div
+      class="bg-surface-light dark:bg-surface-light rounded-xl border border-border-light shadow-sm p-4"
+    >
+      <div class="flex flex-col md:flex-row gap-3 items-end">
+        <!-- Search Participant -->
+        <div class="flex-1 min-w-0">
+          <label class="block text-xs font-medium text-text-secondary mb-1"
+            >Cari Partisipan</label
+          >
+          <div class="relative">
+            <span
+              class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary text-[16px]"
+              >search</span
+            >
+            <input
+              v-model="filters.search"
+              @input="handleFilterChange"
+              type="text"
+              placeholder="Nama, NIM, atau email..."
+              class="w-full pl-8 pr-3 py-2 rounded-lg bg-background-light dark:bg-background-dark border border-border-light text-sm text-text-main placeholder-gray-400 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none"
+            />
+          </div>
+        </div>
+        <!-- Date From -->
+        <div class="w-full md:w-44">
+          <label class="block text-xs font-medium text-text-secondary mb-1"
+            >Dari Tanggal</label
+          >
+          <input
+            v-model="filters.date_from"
+            @change="applyFilters"
+            type="date"
+            class="w-full px-3 py-2 rounded-lg bg-background-light dark:bg-background-dark border border-border-light text-sm text-text-main focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none"
+          />
+        </div>
+        <!-- Date To -->
+        <div class="w-full md:w-44">
+          <label class="block text-xs font-medium text-text-secondary mb-1"
+            >Sampai Tanggal</label
+          >
+          <input
+            v-model="filters.date_to"
+            @change="applyFilters"
+            type="date"
+            class="w-full px-3 py-2 rounded-lg bg-background-light dark:bg-background-dark border border-border-light text-sm text-text-main focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none"
+          />
+        </div>
+        <!-- Reset -->
+        <button
+          @click="resetFilters"
+          class="px-4 py-2 rounded-lg border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light transition-colors flex items-center gap-1.5 whitespace-nowrap"
+        >
+          <span class="material-symbols-outlined text-[16px]">refresh</span>
+          Reset
+        </button>
+      </div>
+    </div>
 
     <!-- Conversations List -->
     <div
@@ -224,14 +282,26 @@ const pagination = reactive({
   last_page: 1,
 });
 
+const filters = reactive({
+  search: "",
+  date_from: "",
+  date_to: "",
+});
+let filterDebounce = null;
+
 const showDetailModal = ref(false);
 const selectedConversation = ref(null);
 const messages = ref([]);
 const loadingMessages = ref(false);
+
 const fetchConversations = async (page = 1) => {
   try {
     loading.value = true;
-    const response = await chatService.getAllConversations({ page }); // Fixed syntax
+    const params = { page };
+    if (filters.search) params.search = filters.search;
+    if (filters.date_from) params.date_from = filters.date_from;
+    if (filters.date_to) params.date_to = filters.date_to;
+    const response = await chatService.getAllConversations(params);
     if (response.success) {
       conversations.value = response.data.data;
       pagination.current_page = response.data.current_page;
@@ -242,6 +312,24 @@ const fetchConversations = async (page = 1) => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleFilterChange = () => {
+  clearTimeout(filterDebounce);
+  filterDebounce = setTimeout(() => {
+    fetchConversations(1);
+  }, 400);
+};
+
+const applyFilters = () => {
+  fetchConversations(1);
+};
+
+const resetFilters = () => {
+  filters.search = "";
+  filters.date_from = "";
+  filters.date_to = "";
+  fetchConversations(1);
 };
 
 const goToPage = (page) => {
