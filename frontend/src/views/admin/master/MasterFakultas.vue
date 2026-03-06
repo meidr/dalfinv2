@@ -195,30 +195,66 @@
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Dekan</label
               >
-              <select
-                v-model="form.dekan_id"
-                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
+              <Multiselect
+                v-model="selectedDekan"
+                :options="dosenList"
+                :custom-label="dosenLabel"
+                track-by="id"
+                placeholder="Cari dan pilih dosen..."
+                :allow-empty="true"
+                :show-labels="false"
+                :searchable="true"
               >
-                <option :value="null">-- Tidak Ada --</option>
-                <option v-for="d in dosenList" :key="d.id" :value="d.id">
-                  {{ d.full_name }} ({{ d.nip }})
-                </option>
-              </select>
+                <template #option="{ option }">
+                  <div>
+                    <div class="text-sm font-medium">
+                      {{ option.full_name || option.nama }}
+                    </div>
+                    <div class="text-xs text-gray-500">{{ option.nip }}</div>
+                  </div>
+                </template>
+                <template #singleLabel="{ option }">
+                  <span class="text-sm">{{
+                    option.full_name || option.nama
+                  }}</span>
+                </template>
+                <template #noResult>
+                  <span>Dosen tidak ditemukan</span>
+                </template>
+              </Multiselect>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Wakil Dekan</label
               >
-              <select
-                v-model="form.wakil_dekan_id"
-                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
+              <Multiselect
+                v-model="selectedWakilDekan"
+                :options="dosenList"
+                :custom-label="dosenLabel"
+                track-by="id"
+                placeholder="Cari dan pilih dosen..."
+                :allow-empty="true"
+                :show-labels="false"
+                :searchable="true"
               >
-                <option :value="null">-- Tidak Ada --</option>
-                <option v-for="d in dosenList" :key="d.id" :value="d.id">
-                  {{ d.full_name }} ({{ d.nip }})
-                </option>
-              </select>
+                <template #option="{ option }">
+                  <div>
+                    <div class="text-sm font-medium">
+                      {{ option.full_name || option.nama }}
+                    </div>
+                    <div class="text-xs text-gray-500">{{ option.nip }}</div>
+                  </div>
+                </template>
+                <template #singleLabel="{ option }">
+                  <span class="text-sm">{{
+                    option.full_name || option.nama
+                  }}</span>
+                </template>
+                <template #noResult>
+                  <span>Dosen tidak ditemukan</span>
+                </template>
+              </Multiselect>
             </div>
 
             <div class="flex items-center gap-2">
@@ -262,6 +298,8 @@
 import { ref, reactive, onMounted, watch } from "vue";
 import { useToast } from "vue-toastification";
 import Swal from "sweetalert2";
+import Multiselect from "vue-multiselect";
+import "vue-multiselect/dist/vue-multiselect.css";
 import adminService from "../../../services/adminService";
 
 const toast = useToast();
@@ -269,6 +307,8 @@ const loading = ref(false);
 const saving = ref(false);
 const items = ref([]);
 const dosenList = ref([]);
+const selectedDekan = ref(null);
+const selectedWakilDekan = ref(null);
 const showModal = ref(false);
 const isEditing = ref(false);
 const currentId = ref(null);
@@ -284,6 +324,10 @@ const form = reactive({
   wakil_dekan_id: null,
   is_active: true,
 });
+
+const dosenLabel = (dosen) => {
+  return `${dosen.full_name || dosen.nama} (${dosen.nip})`;
+};
 
 const fetchData = async () => {
   loading.value = true;
@@ -301,7 +345,7 @@ const fetchData = async () => {
 
 const fetchDosen = async () => {
   try {
-    const response = await adminService.getDosen({ active_only: true });
+    const response = await adminService.getDosen({ per_page: 9999 });
     if (response.success) {
       dosenList.value = response.data?.data || response.data || [];
     }
@@ -319,6 +363,12 @@ const openModal = (item = null) => {
     form.dekan_id = item.dekan_id;
     form.wakil_dekan_id = item.wakil_dekan_id;
     form.is_active = item.is_active;
+    selectedDekan.value = item.dekan_id
+      ? dosenList.value.find((d) => d.id === item.dekan_id) || null
+      : null;
+    selectedWakilDekan.value = item.wakil_dekan_id
+      ? dosenList.value.find((d) => d.id === item.wakil_dekan_id) || null
+      : null;
   } else {
     isEditing.value = false;
     currentId.value = null;
@@ -327,6 +377,8 @@ const openModal = (item = null) => {
     form.dekan_id = null;
     form.wakil_dekan_id = null;
     form.is_active = true;
+    selectedDekan.value = null;
+    selectedWakilDekan.value = null;
   }
   showModal.value = true;
 };
@@ -338,7 +390,11 @@ const closeModal = () => {
 const saveItem = async () => {
   saving.value = true;
   try {
-    const payload = { ...form };
+    const payload = {
+      ...form,
+      dekan_id: selectedDekan.value?.id || null,
+      wakil_dekan_id: selectedWakilDekan.value?.id || null,
+    };
     if (isEditing.value) {
       await adminService.updateFakultas(currentId.value, payload);
       toast.success("Fakultas berhasil diperbarui");
@@ -390,3 +446,96 @@ onMounted(() => {
   fetchDosen();
 });
 </script>
+
+<style>
+/* Vue Multiselect Custom Styles */
+.multiselect {
+  min-height: 42px;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.875rem;
+  color: var(--text-main) !important;
+}
+
+.multiselect__tags {
+  min-height: 42px;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 6px 40px 0 8px;
+  background: #fff !important;
+}
+
+.dark .multiselect__tags {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.multiselect__single {
+  color: var(--text-main) !important;
+  font-size: 0.875rem;
+  margin-bottom: 0;
+  padding: 2px 0;
+  background: transparent !important;
+}
+
+.multiselect__placeholder {
+  color: #9ca3af !important;
+  font-size: 0.875rem;
+  padding-top: 2px;
+}
+
+.multiselect__input {
+  color: var(--text-main) !important;
+  font-size: 0.875rem;
+  background: transparent !important;
+}
+
+.multiselect__content-wrapper {
+  border: 1px solid var(--border) !important;
+  border-radius: 0 0 0.5rem 0.5rem !important;
+  max-height: 250px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  background: #fff;
+}
+
+.dark .multiselect__content-wrapper {
+  background: var(--sidebar-light, #1e293b) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.multiselect__option {
+  padding: 8px 12px !important;
+  min-height: auto !important;
+  font-size: 0.875rem;
+  color: var(--text-main);
+}
+
+.multiselect__option--highlight {
+  background: #eff6ff !important;
+  color: #000 !important;
+}
+
+.dark .multiselect__option--highlight {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-main) !important;
+}
+
+.multiselect__option--selected {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+  font-weight: 600;
+}
+
+.dark .multiselect__option--selected {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+.multiselect--active {
+  box-shadow: 0 0 0 2px rgba(19, 127, 236, 0.2) !important;
+  border-color: var(--primary) !important;
+}
+
+.multiselect__select {
+  height: 40px;
+}
+</style>

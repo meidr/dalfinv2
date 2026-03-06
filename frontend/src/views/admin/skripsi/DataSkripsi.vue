@@ -922,33 +922,32 @@ const form = reactive({
   file_url: null,
 });
 
-const fetchMahasiswa = async () => {
+const fetchMahasiswa = async (search = "") => {
   try {
     const response = await adminService.getMahasiswa({
-      per_page: 100,
-      status: "aktif",
+      per_page: 30,
+      search: search,
     });
     if (response.success) {
       mahasiswaList.value = response.data.data || response.data;
-      // filteredMahasiswa.value = mahasiswaList.value.slice(0, 10); // Don't show initially
-      filteredMahasiswa.value = [];
+      filteredMahasiswa.value = search ? mahasiswaList.value : [];
     }
   } catch (error) {
     console.error("Failed to fetch mahasiswa:", error);
   }
 };
 
+let mahasiswaSearchTimeout = null;
 const filterMahasiswa = () => {
-  const search = mahasiswaSearch.value.toLowerCase();
+  const search = mahasiswaSearch.value.trim();
   if (!search) {
-    filteredMahasiswa.value = []; // Hide list if search is empty
+    filteredMahasiswa.value = [];
     return;
   }
-  filteredMahasiswa.value = mahasiswaList.value
-    .filter(
-      (m) => m.nama.toLowerCase().includes(search) || m.nim.includes(search),
-    )
-    .slice(0, 10);
+  clearTimeout(mahasiswaSearchTimeout);
+  mahasiswaSearchTimeout = setTimeout(() => {
+    fetchMahasiswa(search);
+  }, 300);
 };
 
 const selectMahasiswa = (mhs) => {
@@ -999,7 +998,6 @@ const openAddModal = () => {
   selectedMahasiswa.value = null;
   mahasiswaSearch.value = "";
   showMahasiswaDropdown.value = false;
-  fetchMahasiswa();
   showModal.value = true;
 };
 

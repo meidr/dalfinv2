@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mahasiswa;
+use App\Models\Prodi;
+use App\Models\Tahun;
 use App\Models\User;
+use App\Services\MahasiswaService;
 use App\Traits\GenderFilterable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class MasterMahasiswaController extends Controller
 {
@@ -61,7 +65,7 @@ class MasterMahasiswaController extends Controller
         $request->validate([
             'nim' => 'required|string|unique:mahasiswa,nim',
             'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'nullable|email',
             'prodi_id' => 'required|exists:prodi,id',
             'tahun_id' => 'required|exists:tahuns,id',
             'semester' => 'nullable|integer',
@@ -74,8 +78,9 @@ class MasterMahasiswaController extends Controller
         // Create user account
         $user = User::create([
             'name' => $request->nama,
+            'username' => $request->nim,
             'email' => $request->email,
-            'password' => Hash::make($request->password ?? $request->nim), // Default password = NIM
+            'password' => Hash::make($request->password ?? $request->nim),
             'role' => 'mahasiswa',
             'is_active' => true,
         ]);
@@ -268,15 +273,16 @@ class MasterMahasiswaController extends Controller
                     $failed++;
                     continue;
                 }
-                if (User::where('email', $email)->exists()) {
-                    $errors[] = "Baris {$row}: Email '{$email}' sudah terdaftar";
+                if (User::where('username', $nim)->exists()) {
+                    $errors[] = "Baris {$row}: NIM '{$nim}' sudah terdaftar sebagai user";
                     $failed++;
                     continue;
                 }
 
                 $user = User::create([
                     'name' => $nama,
-                    'email' => $email,
+                    'username' => $nim,
+                    'email' => $email ?: null,
                     'password' => Hash::make('password'),
                     'role' => 'mahasiswa',
                     'is_active' => true,
@@ -316,6 +322,287 @@ class MasterMahasiswaController extends Controller
                 'success_count' => $success,
                 'failed_count' => $failed,
                 'errors' => array_slice($errors, 0, 20),
+            ],
+        ]);
+    }
+
+    /**
+     * Preview sync data from external API (MahasiswaService::mahasiswaSkripsi)
+     */
+    public function syncPreview()
+    {
+        set_time_limit(0);
+
+        try {
+            $apiData = MahasiswaService::mahasiswaSkripsi();
+
+            if (empty($apiData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data dari API atau koneksi gagal.',
+                ], 422);
+            }
+
+            // Get all existing NIMs for fast lookup
+            $existingMahasiswa = Mahasiswa::with(['prodi', 'tahun', 'user'])
+                ->get()
+                ->keyBy('nim');
+
+            // Get existing prodi and tahun by kode
+            $existingProdi = Prodi::all()->keyBy('kode');
+            $existingTahun = Tahun::all()->keyBy('kode');
+
+            $newRecords = [];
+            $updateRecords = [];
+            $unchangedRecords = [];
+            $missingProdi = [];
+            $missingTahun = [];
+
+            foreach ($apiData as $item) {
+                $nim = trim($item['nim'] ?? '');
+                if (!$nim) continue;
+
+                $nama = trim($item['nama'] ?? '');
+                $email = trim($item['email'] ?? '');
+                $jenisKelamin = trim($item['jenis_kelamin'] ?? '');
+                $prodiKode = trim($item['kode_prodi'] ?? $item['prodi_kode'] ?? '');
+                $prodiNama = trim($item['nama_prodi'] ?? $item['prodi_nama'] ?? '');
+                $tahunKode = trim($item['th_akademik_kode'] ?? '');
+                $tahunNama = trim($item['th_akademik_nama'] ?? $tahunKode);
+                $tahunSemester = trim($item['th_akademik_semester'] ?? '');
+
+                // Check missing prodi
+                if ($prodiKode && !isset($existingProdi[$prodiKode]) && !isset($missingProdi[$prodiKode])) {
+                    $missingProdi[$prodiKode] = [
+                        'kode' => $prodiKode,
+                        'nama' => $prodiNama ?: $prodiKode,
+                    ];
+                }
+
+                // Check missing tahun
+                if ($tahunKode && !isset($existingTahun[$tahunKode]) && !isset($missingTahun[$tahunKode])) {
+                    $missingTahun[$tahunKode] = [
+                        'kode' => $tahunKode,
+                        'nama' => $tahunNama ?: $tahunKode,
+                        'semester' => $tahunSemester,
+                    ];
+                }
+
+                if (isset($existingMahasiswa[$nim])) {
+                    $existing = $existingMahasiswa[$nim];
+                    $changes = [];
+
+                    if ($nama && $nama !== $existing->nama) {
+                        $changes[] = ['field' => 'nama', 'old' => $existing->nama, 'new' => $nama];
+                    }
+                    if ($jenisKelamin && $jenisKelamin !== $existing->jenis_kelamin) {
+                        $changes[] = ['field' => 'jenis_kelamin', 'old' => $existing->jenis_kelamin, 'new' => $jenisKelamin];
+                    }
+                    if ($prodiKode && $existing->prodi && $prodiKode !== $existing->prodi->kode) {
+                        $changes[] = ['field' => 'prodi', 'old' => $existing->prodi->kode . ' - ' . $existing->prodi->nama, 'new' => $prodiKode . ' - ' . $prodiNama];
+                    }
+                    if ($tahunKode && $existing->tahun && $tahunKode !== $existing->tahun->kode) {
+                        $changes[] = ['field' => 'tahun', 'old' => $existing->tahun->kode . ' - ' . $existing->tahun->name, 'new' => $tahunKode . ' - ' . $tahunNama];
+                    }
+
+                    if (count($changes) > 0) {
+                        $updateRecords[] = [
+                            'nim' => $nim,
+                            'nama' => $nama ?: $existing->nama,
+                            'prodi_kode' => $prodiKode,
+                            'prodi_nama' => $prodiNama,
+                            'tahun_kode' => $tahunKode,
+                            'tahun_nama' => $tahunNama,
+                            'tahun_semester' => $tahunSemester,
+                            'jenis_kelamin' => $jenisKelamin,
+                            'email' => $email,
+                            'changes' => $changes,
+                        ];
+                    } else {
+                        $unchangedRecords[] = [
+                            'nim' => $nim,
+                            'nama' => $existing->nama,
+                        ];
+                    }
+                } else {
+                    $newRecords[] = [
+                        'nim' => $nim,
+                        'nama' => $nama,
+                        'prodi_kode' => $prodiKode,
+                        'prodi_nama' => $prodiNama,
+                        'tahun_kode' => $tahunKode,
+                        'tahun_nama' => $tahunNama,
+                        'tahun_semester' => $tahunSemester,
+                        'jenis_kelamin' => $jenisKelamin,
+                        'email' => $email,
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_api' => count($apiData),
+                    'new' => $newRecords,
+                    'update' => $updateRecords,
+                    'unchanged' => $unchangedRecords,
+                    'new_count' => count($newRecords),
+                    'update_count' => count($updateRecords),
+                    'unchanged_count' => count($unchangedRecords),
+                    'missing_prodi' => array_values($missingProdi),
+                    'missing_tahun' => array_values($missingTahun),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Sync preview failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data dari API: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Execute sync from external API data
+     */
+    public function syncExecute(Request $request)
+    {
+        set_time_limit(0);
+
+        $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.nim' => 'required|string',
+            'items.*.nama' => 'required|string',
+            'items.*.action' => 'required|in:create,update',
+        ]);
+
+        $items = $request->input('items');
+        $successCount = 0;
+        $failedCount = 0;
+        $errors = [];
+
+        // Build lookup caches for prodi and tahun by kode
+        $prodiCache = Prodi::all()->keyBy('kode');
+        $tahunCache = Tahun::all()->keyBy('kode');
+
+        // Process in chunks to avoid memory and timeout issues
+        $chunks = array_chunk($items, 200);
+
+        foreach ($chunks as $chunk) {
+            DB::beginTransaction();
+            try {
+                foreach ($chunk as $item) {
+                    try {
+                        $nim = trim($item['nim']);
+                        $nama = trim($item['nama']);
+                        $email = trim($item['email'] ?? '');
+                        $jenisKelamin = trim($item['jenis_kelamin'] ?? '') ?: null;
+                        $prodiKode = trim($item['prodi_kode'] ?? '');
+                        $prodiNama = trim($item['prodi_nama'] ?? '');
+                        $tahunKode = trim($item['tahun_kode'] ?? '');
+                        $tahunNama = trim($item['tahun_nama'] ?? '');
+                        $tahunSemester = trim($item['tahun_semester'] ?? '');
+
+                        // Resolve prodi — auto-create if missing
+                        $prodiId = null;
+                        if ($prodiKode) {
+                            if (!isset($prodiCache[$prodiKode])) {
+                                $newProdi = Prodi::create([
+                                    'kode' => $prodiKode,
+                                    'nama' => $prodiNama ?: $prodiKode,
+                                    'is_active' => true,
+                                ]);
+                                $prodiCache[$prodiKode] = $newProdi;
+                            }
+                            $prodiId = $prodiCache[$prodiKode]->id;
+                        }
+
+                        // Resolve tahun — auto-create if missing
+                        $tahunId = null;
+                        if ($tahunKode) {
+                            if (!isset($tahunCache[$tahunKode])) {
+                                $newTahun = Tahun::create([
+                                    'kode' => $tahunKode,
+                                    'name' => $tahunNama ?: $tahunKode,
+                                    'semester' => $tahunSemester ?: null,
+                                    'is_active' => true,
+                                ]);
+                                $tahunCache[$tahunKode] = $newTahun;
+                            }
+                            $tahunId = $tahunCache[$tahunKode]->id;
+                        }
+
+                        if ($item['action'] === 'create') {
+                            // Create User
+                            if (!User::where('username', $nim)->exists()) {
+                                $user = User::create([
+                                    'name' => $nama,
+                                    'username' => $nim,
+                                    'email' => $email ?: null,
+                                    'password' => Hash::make($nim),
+                                    'role' => 'mahasiswa',
+                                    'is_active' => true,
+                                ]);
+
+                                Mahasiswa::create([
+                                    'user_id' => $user->id,
+                                    'nim' => $nim,
+                                    'nama' => $nama,
+                                    'jenis_kelamin' => $jenisKelamin,
+                                    'prodi_id' => $prodiId,
+                                    'tahun_id' => $tahunId,
+                                ]);
+
+                                $successCount++;
+                            } else {
+                                $errors[] = "NIM {$nim}: User sudah terdaftar.";
+                                $failedCount++;
+                            }
+                        } elseif ($item['action'] === 'update') {
+                            $mahasiswa = Mahasiswa::where('nim', $nim)->first();
+                            if (!$mahasiswa) {
+                                $errors[] = "NIM {$nim}: Data mahasiswa tidak ditemukan.";
+                                $failedCount++;
+                                continue;
+                            }
+
+                            if ($nama) $mahasiswa->nama = $nama;
+                            if ($jenisKelamin) $mahasiswa->jenis_kelamin = $jenisKelamin;
+                            if ($prodiId) $mahasiswa->prodi_id = $prodiId;
+                            if ($tahunId) $mahasiswa->tahun_id = $tahunId;
+                            $mahasiswa->save();
+
+                            // Update user name
+                            if ($nama && $mahasiswa->user) {
+                                $mahasiswa->user->name = $nama;
+                                $mahasiswa->user->save();
+                            }
+
+                            $successCount++;
+                        }
+                    } catch (\Exception $e) {
+                        $nim = $item['nim'] ?? '?';
+                        $errors[] = "NIM {$nim}: " . $e->getMessage();
+                        $failedCount++;
+                    }
+                }
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Sync chunk failed: ' . $e->getMessage());
+                $errors[] = 'Chunk gagal: ' . $e->getMessage();
+                $failedCount += count($chunk);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Sinkronisasi selesai: {$successCount} berhasil, {$failedCount} gagal.",
+            'data' => [
+                'success_count' => $successCount,
+                'failed_count' => $failedCount,
+                'errors' => array_slice($errors, 0, 50),
             ],
         ]);
     }

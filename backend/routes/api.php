@@ -139,11 +139,15 @@ Route::prefix('admin')
             Route::delete('mahasiswa/{mahasiswa}', [MasterMahasiswaController::class, 'destroy']);
             Route::get('mahasiswa-template', [MasterMahasiswaController::class, 'downloadTemplate']);
             Route::post('mahasiswa-import', [MasterMahasiswaController::class, 'import']);
+            Route::get('mahasiswa-sync-preview', [MasterMahasiswaController::class, 'syncPreview']);
+            Route::post('mahasiswa-sync-execute', [MasterMahasiswaController::class, 'syncExecute']);
             Route::post('dosen', [MasterDosenController::class, 'store']);
             Route::put('dosen/{dosen}', [MasterDosenController::class, 'update']);
             Route::delete('dosen/{dosen}', [MasterDosenController::class, 'destroy']);
             Route::get('dosen-template', [MasterDosenController::class, 'downloadTemplate']);
             Route::post('dosen-import', [MasterDosenController::class, 'import']);
+            Route::get('dosen-sync-preview', [MasterDosenController::class, 'syncPreview']);
+            Route::post('dosen-sync-execute', [MasterDosenController::class, 'syncExecute']);
 
             // User Management
             Route::get('/users', [AdminUserController::class, 'index']);

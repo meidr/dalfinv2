@@ -31,11 +31,11 @@ export const useAuthStore = defineStore("auth", {
   },
 
   actions: {
-    async login(email, password) {
+    async login(username, password) {
       this.loading = true;
       this.error = null;
       try {
-        const result = await authService.login(email, password);
+        const result = await authService.login(username, password);
         if (result.success) {
           this.user = result.data.user;
         }

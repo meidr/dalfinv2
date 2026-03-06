@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'simkeu' => [
+        'base_url' => env('SIMKEU_URL', 'http://localhost/api/'),
+        'api_key' => env('SIMKEU_API_KEY'),
+    ],
+
 ];

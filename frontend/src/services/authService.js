@@ -4,7 +4,7 @@ export const authService = {
   /**
    * Login with email/NIM/NIP and password
    */
-  async login(email, password) {
+  async login(username, password) {
     // Fetch CSRF token first
     try {
       await api.get("/sanctum/csrf-cookie", { baseURL: "" });
@@ -13,7 +13,7 @@ export const authService = {
       console.error("CSRF Cookie fetch failed:", e);
     }
 
-    const response = await api.post("/auth/login", { email, password });
+    const response = await api.post("/auth/login", { username, password });
     if (response.data.success) {
       // No token to store for cookie-based auth
       // localStorage.setItem("auth_token", response.data.data.token);

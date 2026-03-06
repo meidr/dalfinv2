@@ -142,6 +142,16 @@ export const adminService = {
     return response.data;
   },
 
+  async syncMahasiswaPreview() {
+    const response = await api.get("/admin/mahasiswa-sync-preview");
+    return response.data;
+  },
+
+  async syncMahasiswaExecute(data) {
+    const response = await api.post("/admin/mahasiswa-sync-execute", data);
+    return response.data;
+  },
+
   // Master Dosen
   async getDosen(params = {}) {
     const response = await api.get("/admin/dosen", { params });
@@ -180,6 +190,20 @@ export const adminService = {
     formData.append("file", file);
     const response = await api.post("/admin/dosen-import", formData, {
       headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  async syncDosenPreview() {
+    const response = await api.get("/admin/dosen-sync-preview", {
+      timeout: 120000,
+    });
+    return response.data;
+  },
+
+  async syncDosenExecute(data) {
+    const response = await api.post("/admin/dosen-sync-execute", data, {
+      timeout: 120000,
     });
     return response.data;
   },

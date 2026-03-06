@@ -18,12 +18,12 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|string',
+            'username' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        // Attempt to authenticate
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
+        // Attempt to authenticate via username
+        if (Auth::attempt(['username' => $request->username, 'password' => $request->password], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             $user = Auth::user();
@@ -31,7 +31,7 @@ class AuthController extends Controller
             ActivityLog::create([
                 'user_id' => $user->id,
                 'action' => 'login',
-                'description' => "Login sebagai {$user->role}: {$user->name} ({$user->email})",
+                'description' => "Login sebagai {$user->role}: {$user->name} ({$user->username})",
                 'detail' => "{$user->name} berhasil login ke sistem sebagai " . $this->translateRole($user->role),
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
@@ -44,7 +44,7 @@ class AuthController extends Controller
                 $request->session()->regenerateToken();
 
                 throw ValidationException::withMessages([
-                    'email' => ['Akun Anda tidak aktif. Silakan hubungi administrator.'],
+                    'username' => ['Akun Anda tidak aktif. Silakan hubungi administrator.'],
                 ]);
             }
 
@@ -60,59 +60,8 @@ class AuthController extends Controller
             ]);
         }
 
-        // Check if email exists but password wrong (optional, but keeping logic similar to before)
-        // Or check alternate login methods (NIM/NIP) manually if Auth::attempt only checks 'email' field.
-        // NOTE: Auth::attempt expects 'email' key in the array to match the database column 'email'.
-        // If we want to support NIM/NIP, we need to find the user first or adjust the credentials.
-
-        // Let's handle the custom logic:
-        // We need to find the user first to determine the actual 'email' (username) for Auth::attempt
-        // OR we can manually login using Auth::login($user).
-
-        $user = User::where('email', $request->email)
-            ->orWhereHas('mahasiswa', function ($query) use ($request) {
-                $query->where('nim', $request->email);
-            })
-            ->orWhereHas('dosen', function ($query) use ($request) {
-                $query->where('nip', $request->email);
-            })
-            ->first();
-
-        if ($user && Hash::check($request->password, $user->password)) {
-            Auth::login($user, $request->boolean('remember'));
-            $request->session()->regenerate();
-            User::where('id', $user->id)->update(['last_login_at' => now()]);
-            ActivityLog::create([
-                'user_id' => $user->id,
-                'action' => 'login',
-                'description' => "Login sebagai {$user->role}: {$user->name} ({$user->email})",
-                'detail' => "{$user->name} berhasil login ke sistem sebagai " . $this->translateRole($user->role),
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
-
-            if (!$user->is_active) {
-                Auth::guard('web')->logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-                throw ValidationException::withMessages([
-                    'email' => ['Akun Anda tidak aktif. Silakan hubungi administrator.'],
-                ]);
-            }
-
-            $user->load($user->role === 'mahasiswa' ? ['mahasiswa.prodi', 'mahasiswa.tahun'] : ($user->role === 'dosen' ? 'dosen.prodi' : []));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Login berhasil',
-                'data' => [
-                    'user' => $user,
-                ]
-            ]);
-        }
-
         throw ValidationException::withMessages([
-            'email' => ['Kredensial yang diberikan tidak valid.'],
+            'username' => ['Username atau password salah.'],
         ]);
     }
 
