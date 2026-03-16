@@ -521,20 +521,29 @@
               </select>
             </div>
             <!-- Dosen -->
-            <div>
+            <div ref="dosenFieldRef">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Dosen <span class="text-red-500">*</span></label
               >
               <div class="relative">
                 <input
                   v-model="dosenSearch"
-                  @input="debouncedSearchDosen"
+                  @input="onDosenInput"
                   @focus="showDosenDropdown = true"
                   placeholder="Cari nama/NIP dosen..."
+                  autocomplete="off"
                   class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
                 />
                 <div
-                  v-if="selectedDosen"
+                  v-if="loadingDosen"
+                  class="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  <div
+                    class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"
+                  ></div>
+                </div>
+                <div
+                  v-else-if="selectedDosen"
                   class="absolute right-3 top-1/2 -translate-y-1/2"
                 >
                   <button
@@ -550,13 +559,13 @@
               </div>
               <div
                 v-if="showDosenDropdown && dosenOptions.length > 0"
-                class="mt-1 max-h-40 overflow-y-auto bg-white dark:bg-surface-light border border-border-light rounded-lg shadow-lg z-10 relative"
+                class="mt-1 max-h-40 overflow-y-auto bg-white dark:bg-surface-light border border-border-light rounded-lg shadow-lg z-50 relative"
               >
                 <button
                   v-for="d in dosenOptions"
                   :key="d.id"
                   type="button"
-                  @click="selectDosen(d)"
+                  @mousedown.prevent="selectDosen(d)"
                   class="w-full px-3 py-2 text-left text-sm hover:bg-sidebar-light/50 transition-colors flex items-center gap-2"
                 >
                   <div>
@@ -569,6 +578,17 @@
                   </div>
                 </button>
               </div>
+              <p
+                v-if="
+                  showDosenDropdown &&
+                  dosenSearch.length >= 2 &&
+                  dosenOptions.length === 0 &&
+                  !loadingDosen
+                "
+                class="text-text-secondary text-xs mt-1"
+              >
+                Tidak ada dosen ditemukan
+              </p>
             </div>
             <!-- Dates -->
             <div class="grid grid-cols-2 gap-4">
@@ -644,7 +664,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue";
 import { useToast } from "vue-toastification";
 import Swal from "sweetalert2";
 import adminService from "../../../services/adminService";
@@ -815,28 +835,63 @@ const dosenSearch = ref("");
 const dosenOptions = ref([]);
 const selectedDosen = ref(null);
 const showDosenDropdown = ref(false);
+const loadingDosen = ref(false);
+const dosenFieldRef = ref(null);
 let dosenSearchTimeout = null;
 
 const searchDosenApi = async () => {
   if (!dosenSearch.value || dosenSearch.value.length < 2) {
     dosenOptions.value = [];
+    loadingDosen.value = false;
     return;
   }
+  loadingDosen.value = true;
   try {
     const response = await adminService.getDosen({
       search: dosenSearch.value,
       per_page: 10,
     });
-    dosenOptions.value = response.data?.data || response.data || [];
+    const items = response.data?.data || response.data || [];
+    dosenOptions.value = Array.isArray(items) ? items : [];
+    showDosenDropdown.value = true;
   } catch (e) {
-    console.error(e);
+    console.error("Dosen search error:", e);
+    dosenOptions.value = [];
+  } finally {
+    loadingDosen.value = false;
   }
+};
+
+const onDosenInput = () => {
+  // If user edits the field after selecting, clear the selection
+  if (selectedDosen.value) {
+    selectedDosen.value = null;
+    pejabatForm.dosen_id = "";
+  }
+  showDosenDropdown.value = true;
+  clearTimeout(dosenSearchTimeout);
+  dosenSearchTimeout = setTimeout(searchDosenApi, 300);
 };
 
 const debouncedSearchDosen = () => {
   clearTimeout(dosenSearchTimeout);
   dosenSearchTimeout = setTimeout(searchDosenApi, 300);
 };
+
+// Click outside handler for dosen dropdown
+const handleClickOutside = (event) => {
+  if (dosenFieldRef.value && !dosenFieldRef.value.contains(event.target)) {
+    showDosenDropdown.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 
 const debouncedSearchPejabat = () => {
   clearTimeout(searchPejabatTimeout);
