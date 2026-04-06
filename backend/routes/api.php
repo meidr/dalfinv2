@@ -128,12 +128,30 @@ Route::prefix('admin')
         Route::get('dosen', [MasterDosenController::class, 'index']);
         Route::get('dosen/{dosen}', [MasterDosenController::class, 'show']);
 
-        // Master Data (Admin & Super Admin Only)
+        // Master Data - Read Only (accessible by admin, super_admin, staff)
+        Route::get('fakultas', [MasterFakultasController::class, 'index']);
+        Route::get('fakultas/{fakultas}', [MasterFakultasController::class, 'show']);
+        Route::get('prodi', [MasterProdiController::class, 'index']);
+        Route::get('prodi/{prodi}', [MasterProdiController::class, 'show']);
+        Route::get('tahun', [MasterTahunController::class, 'index']);
+        Route::get('tahun/{tahun}', [MasterTahunController::class, 'show']);
+        Route::get('jabatan', [MasterJabatanController::class, 'index']);
+        Route::get('jabatan/{jabatan}', [MasterJabatanController::class, 'show']);
+
+        // Master Data - Write Operations (Admin & Super Admin Only)
         Route::middleware(['role:admin,super_admin'])->group(function () {
-            Route::apiResource('fakultas', MasterFakultasController::class);
-            Route::apiResource('prodi', MasterProdiController::class);
-            Route::apiResource('tahun', MasterTahunController::class);
-            Route::apiResource('jabatan', MasterJabatanController::class);
+            Route::post('fakultas', [MasterFakultasController::class, 'store']);
+            Route::put('fakultas/{fakultas}', [MasterFakultasController::class, 'update']);
+            Route::delete('fakultas/{fakultas}', [MasterFakultasController::class, 'destroy']);
+            Route::post('prodi', [MasterProdiController::class, 'store']);
+            Route::put('prodi/{prodi}', [MasterProdiController::class, 'update']);
+            Route::delete('prodi/{prodi}', [MasterProdiController::class, 'destroy']);
+            Route::post('tahun', [MasterTahunController::class, 'store']);
+            Route::put('tahun/{tahun}', [MasterTahunController::class, 'update']);
+            Route::delete('tahun/{tahun}', [MasterTahunController::class, 'destroy']);
+            Route::post('jabatan', [MasterJabatanController::class, 'store']);
+            Route::put('jabatan/{jabatan}', [MasterJabatanController::class, 'update']);
+            Route::delete('jabatan/{jabatan}', [MasterJabatanController::class, 'destroy']);
             Route::post('mahasiswa', [MasterMahasiswaController::class, 'store']);
             Route::put('mahasiswa/{mahasiswa}', [MasterMahasiswaController::class, 'update']);
             Route::delete('mahasiswa/{mahasiswa}', [MasterMahasiswaController::class, 'destroy']);

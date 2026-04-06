@@ -89,6 +89,7 @@
           >
             <tr>
               <th class="px-6 py-4">User</th>
+              <th class="px-6 py-4">Username</th>
               <th class="px-6 py-4">Email</th>
               <th class="px-6 py-4">Role</th>
               <th class="px-6 py-4">Status</th>
@@ -98,7 +99,7 @@
           </thead>
           <tbody class="divide-y divide-border-light">
             <tr v-if="penggunaList.length === 0">
-              <td colspan="6" class="p-12 text-center text-text-secondary">
+              <td colspan="7" class="p-12 text-center text-text-secondary">
                 Tidak ada data pengguna
               </td>
             </tr>
@@ -117,6 +118,9 @@
                   </div>
                   <span class="font-bold text-text-main">{{ user.name }}</span>
                 </div>
+              </td>
+              <td class="px-6 py-4 text-text-secondary">
+                {{ user.username || "-" }}
               </td>
               <td class="px-6 py-4 text-text-secondary">{{ user.email }}</td>
               <td class="px-6 py-4">

@@ -130,19 +130,60 @@
           <select
             v-model="filterStatus"
             @change="fetchSkripsi"
-            class="px-4 py-2.5 bg-surface-light border border-border-light rounded-lg text-text-secondary text-sm focus:ring-1 focus:ring-primary"
+            class="px-4 py-2.5 bg-surface-light dark:bg-background border border-border-light rounded-lg text-text-secondary text-sm focus:ring-1 focus:ring-primary"
           >
-            <option value="">Semua Status</option>
-            <option value="proposal">Proposal</option>
-            <option value="sempro">Seminar Proposal</option>
-            <option value="penentuan_dospem">Penentuan Dospem</option>
-            <option value="bimbingan">Bimbingan</option>
-            <option v-if="authStore.semhasEnabled" value="semhas">
+            <option value="" class="dark:bg-background dark:text-text-main">
+              Semua Status
+            </option>
+            <option
+              value="proposal"
+              class="dark:bg-background dark:text-text-main"
+            >
+              Proposal
+            </option>
+            <option
+              value="sempro"
+              class="dark:bg-background dark:text-text-main"
+            >
+              Seminar Proposal
+            </option>
+            <option
+              value="penentuan_dospem"
+              class="dark:bg-background dark:text-text-main"
+            >
+              Penentuan Dospem
+            </option>
+            <option
+              value="bimbingan"
+              class="dark:bg-background dark:text-text-main"
+            >
+              Bimbingan
+            </option>
+            <option
+              v-if="authStore.semhasEnabled"
+              value="semhas"
+              class="dark:bg-background dark:text-text-main"
+            >
               Seminar Hasil
             </option>
-            <option value="sidang">Sidang</option>
-            <option value="revisi">Revisi</option>
-            <option value="lulus">Lulus</option>
+            <option
+              value="sidang"
+              class="dark:bg-background dark:text-text-main"
+            >
+              Sidang
+            </option>
+            <option
+              value="revisi"
+              class="dark:bg-background dark:text-text-main"
+            >
+              Revisi
+            </option>
+            <option
+              value="lulus"
+              class="dark:bg-background dark:text-text-main"
+            >
+              Lulus
+            </option>
           </select>
           <button
             @click="openAddModal"
@@ -504,19 +545,71 @@
               ></textarea>
             </div>
 
-            <div>
+            <div class="relative" ref="formTahunDropdownRef">
               <label class="block text-sm font-medium text-text-main mb-1"
                 >Tahun Akademik</label
               >
-              <select
-                v-model="form.th_akademik_id"
-                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+              <button
+                type="button"
+                @click="formTahunDropdownOpen = !formTahunDropdownOpen"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main text-left flex items-center justify-between transition-colors text-sm"
               >
-                <option value="">Pilih Tahun Akademik</option>
-                <option v-for="t in tahunList" :key="t.id" :value="t.id">
-                  {{ t.name }}
-                </option>
-              </select>
+                <span>{{ getFormTahunLabel(form.th_akademik_id) }}</span>
+                <span
+                  class="material-symbols-outlined text-[18px] text-text-secondary transition-transform"
+                  :class="{ 'rotate-180': formTahunDropdownOpen }"
+                  >expand_more</span
+                >
+              </button>
+              <Transition name="dropdown-fade">
+                <div
+                  v-if="formTahunDropdownOpen"
+                  class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-xl z-20 py-1 max-h-60 overflow-y-auto"
+                >
+                  <button
+                    type="button"
+                    @click="
+                      form.th_akademik_id = '';
+                      formTahunDropdownOpen = false;
+                    "
+                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                    :class="
+                      !form.th_akademik_id
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                    "
+                  >
+                    Pilih Tahun Akademik
+                    <span
+                      v-if="!form.th_akademik_id"
+                      class="material-symbols-outlined text-[16px] text-primary"
+                      >check</span
+                    >
+                  </button>
+                  <button
+                    v-for="t in tahunList"
+                    :key="t.id"
+                    type="button"
+                    @click="
+                      form.th_akademik_id = t.id;
+                      formTahunDropdownOpen = false;
+                    "
+                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
+                    :class="
+                      form.th_akademik_id === t.id
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
+                    "
+                  >
+                    {{ t.name }}
+                    <span
+                      v-if="form.th_akademik_id === t.id"
+                      class="material-symbols-outlined text-[16px] text-primary"
+                      >check</span
+                    >
+                  </button>
+                </div>
+              </Transition>
             </div>
 
             <div v-if="isEditing">
@@ -765,8 +858,10 @@ const isEditing = ref(false);
 const deleteItem = ref(null);
 const formStatusDropdownOpen = ref(false);
 const formActiveDropdownOpen = ref(false);
+const formTahunDropdownOpen = ref(false);
 const formStatusDropdownRef = ref(null);
 const formActiveDropdownRef = ref(null);
+const formTahunDropdownRef = ref(null);
 
 const formStatusOptionsList = [
   { value: "pengajuan", label: "Pengajuan" },
@@ -791,6 +886,12 @@ const getFormStatusLabel = (value) => {
   return found ? found.label : value;
 };
 
+const getFormTahunLabel = (value) => {
+  if (!value) return "Pilih Tahun Akademik";
+  const found = tahunList.value.find((t) => t.id === value);
+  return found ? found.name : value;
+};
+
 const handleFormDropdownClickOutside = (e) => {
   if (
     formStatusDropdownRef.value &&
@@ -803,6 +904,12 @@ const handleFormDropdownClickOutside = (e) => {
     !formActiveDropdownRef.value.contains(e.target)
   ) {
     formActiveDropdownOpen.value = false;
+  }
+  if (
+    formTahunDropdownRef.value &&
+    !formTahunDropdownRef.value.contains(e.target)
+  ) {
+    formTahunDropdownOpen.value = false;
   }
 };
 
@@ -1243,5 +1350,9 @@ onBeforeUnmount(() => {
 .dropdown-fade-leave-to {
   opacity: 0;
   transform: translateY(-4px);
+}
+
+:global(.dark) select {
+  color-scheme: dark;
 }
 </style>

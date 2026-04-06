@@ -299,16 +299,19 @@ class SKYudisiumController extends Controller
         // Get batch info from first record
         $batchInfo = $assigned->first();
 
-        // Get mahasiswa SK terbit (has sk_yudisium but not assigned to any batch)
+        // Get mahasiswa siap yudisium (lulus sidang, either no SK Yudisium yet OR SK without batch)
         $unassignedQuery = Seminar::with([
             'skripsi.mahasiswa.prodi',
             'skripsi.skYudisium',
         ])->where('jenis', 'sidang')
             ->where('status', 'selesai')
             ->whereIn('hasil', ['lulus', 'lulus_revisi'])
-            ->whereHas('skripsi.skYudisium', function ($q) {
-                $q->whereNull('nomor_sk_batch')
-                    ->orWhere('nomor_sk_batch', '');
+            ->where(function ($q) {
+                $q->whereDoesntHave('skripsi.skYudisium')
+                    ->orWhereHas('skripsi.skYudisium', function ($sq) {
+                        $sq->whereNull('nomor_sk_batch')
+                            ->orWhere('nomor_sk_batch', '');
+                    });
             });
 
         if ($request->filled('search')) {
