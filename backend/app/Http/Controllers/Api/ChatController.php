@@ -85,6 +85,55 @@ class ChatController extends Controller
             ], 422);
         }
 
+        // Validate chat role restrictions
+        $currentUser = $request->user();
+        $otherUser = User::find($otherUserId);
+        if ($otherUser) {
+            // Staff can only chat with admin and other staff (same gender)
+            if ($currentUser->role === 'staff') {
+                if (!in_array($otherUser->role, ['admin', 'staff'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Staff hanya dapat mengirim pesan ke admin dan staff lainnya.',
+                    ], 403);
+                }
+                if (
+                    $currentUser->jenis_kelamin && $otherUser->jenis_kelamin
+                    && $currentUser->jenis_kelamin !== $otherUser->jenis_kelamin
+                ) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda hanya dapat mengirim pesan ke pengguna dengan jenis kelamin yang sama.',
+                    ], 403);
+                }
+            }
+            // Admin can only chat with staff (same gender)
+            elseif ($currentUser->role === 'admin') {
+                if ($otherUser->role !== 'staff') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Admin hanya dapat mengirim pesan ke staff.',
+                    ], 403);
+                }
+                if (
+                    $currentUser->jenis_kelamin && $otherUser->jenis_kelamin
+                    && $currentUser->jenis_kelamin !== $otherUser->jenis_kelamin
+                ) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda hanya dapat mengirim pesan ke pengguna dengan jenis kelamin yang sama.',
+                    ], 403);
+                }
+            }
+            // Mahasiswa cannot chat with staff
+            elseif ($currentUser->role === 'mahasiswa' && $otherUser->role === 'staff') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mahasiswa tidak dapat mengirim pesan ke staff.',
+                ], 403);
+            }
+        }
+
         $conversation = Conversation::getOrCreate($userId, $otherUserId);
 
         // Load participants
@@ -389,9 +438,9 @@ class ChatController extends Controller
             $mhsGender = $mahasiswa?->jenis_kelamin;
 
             $query->where(function ($q) use ($allowedDosenUserIds, $mhsGender) {
-                // Admin/staff filtered by matching gender (must have jenis_kelamin set)
+                // Admin filtered by matching gender (must have jenis_kelamin set)
                 $q->where(function ($q3) use ($mhsGender) {
-                    $q3->whereIn('role', ['admin', 'staff'])
+                    $q3->where('role', 'admin')
                         ->whereNotNull('jenis_kelamin');
                     if ($mhsGender) {
                         $q3->where('jenis_kelamin', $mhsGender);
@@ -403,30 +452,24 @@ class ChatController extends Controller
                     });
             });
         } elseif ($currentUser->role === 'staff') {
-            // Staff: chat with mahasiswa (matching gender) and admin/staff with jenis_kelamin (NOT super_admin)
+            // Staff: can only chat with admin and other staff of the same gender
             $staffGender = $currentUser->jenis_kelamin;
             $query->where(function ($q) use ($staffGender) {
-                $q->where(function ($q3) use ($staffGender) {
-                    $q3->whereIn('role', ['admin', 'staff'])
-                        ->whereNotNull('jenis_kelamin');
-                })
-                    ->orWhere(function ($q2) use ($staffGender) {
-                        $q2->where('role', 'mahasiswa');
-                        if ($staffGender) {
-                            $q2->whereHas('mahasiswa', function ($mq) use ($staffGender) {
-                                $mq->where('jenis_kelamin', $staffGender);
-                            });
-                        }
-                    });
+                $q->whereIn('role', ['admin', 'staff'])
+                    ->whereNotNull('jenis_kelamin');
+                if ($staffGender) {
+                    $q->where('jenis_kelamin', $staffGender);
+                }
             });
         } else {
-            // Admin: can chat with everyone except super_admin, hide admin/staff without jenis_kelamin
-            $query->where(function ($q) {
-                $q->where(function ($q2) {
-                    $q2->whereIn('role', ['admin', 'staff'])
-                        ->whereNotNull('jenis_kelamin');
-                })
-                    ->orWhereIn('role', ['dosen', 'mahasiswa']);
+            // Admin: can only chat with staff of the same gender
+            $adminGender = $currentUser->jenis_kelamin;
+            $query->where(function ($q) use ($adminGender) {
+                $q->where('role', 'staff')
+                    ->whereNotNull('jenis_kelamin');
+                if ($adminGender) {
+                    $q->where('jenis_kelamin', $adminGender);
+                }
             });
         }
 

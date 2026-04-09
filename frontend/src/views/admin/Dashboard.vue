@@ -138,19 +138,27 @@
                 <div
                   class="w-full rounded-t-md relative transition-all duration-300"
                   :class="item.color"
-                  :style="{ height: item.height + '%' }"
+                  :style="{
+                    height: item.height + '%',
+                    minHeight: item.count > 0 ? '12px' : '0px',
+                  }"
                 >
                   <div
-                    class="absolute -top-8 left-1/2 -translate-x-1/2 bg-text-main text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0"
+                    class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 whitespace-nowrap"
                   >
                     {{ item.count }}
                   </div>
                 </div>
-                <p
-                  class="text-[10px] text-text-secondary font-bold group-hover:text-primary transition-colors"
+                <span
+                  class="text-[11px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors"
                 >
                   {{ item.label }}
-                </p>
+                </span>
+                <span
+                  class="text-[10px] font-bold text-gray-700 dark:text-gray-300 -mt-2"
+                >
+                  {{ item.count }}
+                </span>
               </div>
             </div>
           </div>

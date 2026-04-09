@@ -53,7 +53,9 @@
                 {{
                   user.role === "super_admin"
                     ? "Super Administrator"
-                    : "Administrator"
+                    : user.role === "staff"
+                      ? "Staff"
+                      : "Administrator"
                 }}
               </span>
             </div>

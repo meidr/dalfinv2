@@ -342,7 +342,9 @@ const getAvatarColor = (name) => {
 
 const getRoleLabel = (role) => {
   const labels = {
+    super_admin: "Super Administrator",
     admin: "Administrator",
+    staff: "Staff",
     dosen: "Dosen",
     mahasiswa: "Mahasiswa",
   };

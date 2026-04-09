@@ -298,6 +298,7 @@ const displayRole = computed(() => {
   const role = authStore.user?.role;
   if (role === "super_admin") return "Super Administrator";
   if (role === "admin") return "Administrator";
+  if (role === "staff") return "Staff";
   return role || "";
 });
 

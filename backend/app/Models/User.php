@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'role',
         'jenis_kelamin',
+        'prodi_id',
         'avatar',
         'phone',
         'address',
@@ -109,5 +110,13 @@ class User extends Authenticatable
     public function dosen()
     {
         return $this->hasOne(Dosen::class);
+    }
+
+    /**
+     * Get associated prodi (for staff/admin users)
+     */
+    public function prodi()
+    {
+        return $this->belongsTo(Prodi::class);
     }
 }

@@ -359,6 +359,23 @@
                 <option value="P">Perempuan</option>
               </select>
             </div>
+            <div v-if="userForm.role === 'staff' || userForm.role === 'admin'">
+              <label class="block text-sm font-medium text-text-main mb-1.5"
+                >Program Studi</label
+              >
+              <select
+                v-model="userForm.prodi_id"
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-surface-light text-sm"
+              >
+                <option value="">-- Pilih Prodi --</option>
+                <option v-for="p in prodiList" :key="p.id" :value="p.id">
+                  {{ p.nama }}
+                </option>
+              </select>
+              <p class="text-xs text-text-secondary mt-1">
+                Prodi menentukan mahasiswa yang dapat diakses staff ini.
+              </p>
+            </div>
             <div
               v-if="formError"
               class="p-3 bg-red-50 border border-red-200 rounded-lg"
@@ -479,7 +496,10 @@ const userForm = reactive({
   phone: "",
   role: "admin",
   jenis_kelamin: "",
+  prodi_id: "",
 });
+
+const prodiList = ref([]);
 
 const pagination = reactive({
   current_page: 1,
@@ -565,6 +585,7 @@ const openAddModal = () => {
     phone: "",
     role: "admin",
     jenis_kelamin: "",
+    prodi_id: "",
   });
   showUserModal.value = true;
 };
@@ -581,6 +602,7 @@ const openEditModal = (user) => {
     phone: user.phone || "",
     role: user.role,
     jenis_kelamin: user.jenis_kelamin || "",
+    prodi_id: user.prodi_id || "",
   });
   showUserModal.value = true;
 };
@@ -618,6 +640,7 @@ const saveUser = async () => {
         role: userForm.role,
         phone: userForm.phone,
         jenis_kelamin: userForm.jenis_kelamin || null,
+        prodi_id: userForm.prodi_id || null,
       };
       if (userForm.password) {
         data.password = userForm.password;
@@ -631,6 +654,7 @@ const saveUser = async () => {
         password: userForm.password,
         role: userForm.role,
         jenis_kelamin: userForm.jenis_kelamin || null,
+        prodi_id: userForm.prodi_id || null,
       });
     }
 
@@ -758,7 +782,19 @@ const formatLastLogin = (date) => {
   );
 };
 
+const fetchProdiList = async () => {
+  try {
+    const response = await adminService.getProdi();
+    if (response.success) {
+      prodiList.value = response.data.data || response.data;
+    }
+  } catch (error) {
+    console.error("Failed to fetch prodi:", error);
+  }
+};
+
 onMounted(() => {
   fetchPengguna();
+  fetchProdiList();
 });
 </script>

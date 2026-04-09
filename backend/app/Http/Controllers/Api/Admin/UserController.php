@@ -75,6 +75,7 @@ class UserController extends Controller
             'password' => 'required|string|min:6',
             'role' => 'required|string|in:admin,super_admin,staff',
             'jenis_kelamin' => 'nullable|string|in:L,P',
+            'prodi_id' => 'nullable|exists:prodi,id',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -99,7 +100,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         // Prevent self-modification
-        if ($user->id === auth()->id()) {
+        if ($user->id === $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tidak dapat mengubah akun sendiri'
@@ -128,6 +129,7 @@ class UserController extends Controller
             'password' => 'sometimes|nullable|string|min:6',
             'phone' => 'sometimes|nullable|string|max:20',
             'jenis_kelamin' => 'nullable|string|in:L,P',
+            'prodi_id' => 'nullable|exists:prodi,id',
         ]);
 
         // Hash password if provided
@@ -154,7 +156,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         // Prevent self-blocking
-        if ($user->id === auth()->id()) {
+        if ($user->id === $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tidak dapat memblokir akun sendiri'

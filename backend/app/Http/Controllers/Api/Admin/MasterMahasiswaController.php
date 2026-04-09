@@ -31,6 +31,11 @@ class MasterMahasiswaController extends Controller
             $query->where('jenis_kelamin', $user->jenis_kelamin);
         }
 
+        // Prodi-based filtering for staff users
+        if ($user->role === 'staff' && $user->prodi_id) {
+            $query->where('prodi_id', $user->prodi_id);
+        }
+
 
         if ($request->filled('prodi_id')) {
             $query->where('prodi_id', $request->prodi_id);
