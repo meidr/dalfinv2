@@ -75,7 +75,7 @@
           class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3 overflow-hidden"
         >
           <div
-            class="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-500"
+            class="h-full bg-linear-to-r from-primary to-blue-400 rounded-full transition-all duration-500"
             :style="{ width: `${skripsi.progress_percentage || 0}%` }"
           ></div>
         </div>
@@ -1076,7 +1076,7 @@ const getFileUrl = (path) => {
   if (path.startsWith("http")) return path;
   const baseUrl =
     import.meta.env.VITE_API_URL?.replace("/api", "") ||
-    "http://localhost:8000";
+    "https://dalfinapp.uiidalwa.web.id";
   return `${baseUrl}/storage/${path}`;
 };
 

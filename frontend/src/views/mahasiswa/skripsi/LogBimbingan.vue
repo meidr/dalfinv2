@@ -1214,7 +1214,7 @@ const getFileUrl = (path) => {
   if (path.startsWith("http")) return path;
   const baseUrl =
     import.meta.env.VITE_API_URL?.replace("/api", "") ||
-    "http://localhost:8000";
+    "https://dalfinapp.uiidalwa.web.id";
   return `${baseUrl}/storage/${path}`;
 };
 

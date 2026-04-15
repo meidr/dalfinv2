@@ -1,16 +1,31 @@
 import axios from "axios";
 import NProgress from "nprogress";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const BASE_URL = "https://dalfinapp.uiidalwa.web.id";
+
+// Helper ambil cookie
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return decodeURIComponent(parts.pop().split(";").shift());
+  }
+  return null;
+}
 
 // Create axios instance
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: BASE_URL + "/api",
   headers: {
     Accept: "application/json",
   },
   withCredentials: true,
 });
+
+// 🔥 WAJIB untuk Sanctum
+api.defaults.withCredentials = true;
+api.defaults.xsrfCookieName = "XSRF-TOKEN";
+api.defaults.xsrfHeaderName = "X-XSRF-TOKEN";
 
 // NProgress configuration
 NProgress.configure({ showSpinner: false });
@@ -40,47 +55,49 @@ export const stopProgress = () => {
   }
 };
 
-// Request interceptor to start progress bar and add auth token
+// 🔥 REQUEST INTERCEPTOR (FIX UTAMA ADA DI SINI)
 api.interceptors.request.use(
   (config) => {
-    if (!config.skipProgress) {
-      startProgress();
+    if (!config.skipProgress) startProgress();
+
+    // 🔥 Ambil CSRF token manual
+    const xsrfToken = getCookie("XSRF-TOKEN");
+    if (xsrfToken) {
+      config.headers["X-XSRF-TOKEN"] = xsrfToken;
     }
-    // If we have a token (e.g. from impersonation), use it
+
+    // Optional Bearer token
     const token = localStorage.getItem("auth_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => {
-    if (!error.config?.skipProgress) {
-      stopProgress();
-    }
+    stopProgress();
     return Promise.reject(error);
-  },
+  }
 );
 
-// Response interceptor to handle errors and stop progress bar
+// RESPONSE INTERCEPTOR
 api.interceptors.response.use(
   (response) => {
-    if (!response.config?.skipProgress) {
-      stopProgress();
-    }
+    if (!response.config?.skipProgress) stopProgress();
     return response;
   },
   (error) => {
-    if (!error.config?.skipProgress) {
-      stopProgress();
-    }
+    if (!error.config?.skipProgress) stopProgress();
+
     if (error.response?.status === 401) {
-      // Token expired or invalid
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user");
       window.location.href = "/login";
     }
+
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;
+export const BASE_URL_API = BASE_URL;

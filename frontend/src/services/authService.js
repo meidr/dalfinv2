@@ -1,85 +1,79 @@
-import api from "./api";
+import api, { BASE_URL_API } from "./api";
 
 export const authService = {
-  /**
-   * Login with email/NIM/NIP and password
-   */
   async login(username, password) {
-    // Fetch CSRF token first
     try {
-      await api.get("/sanctum/csrf-cookie", { baseURL: "" });
-      console.log("CSRF Cookie fetch successful. Cookies:", document.cookie);
+      // 🔥 FIX: HARUS KE DOMAIN BACKEND (BUKAN FRONTEND)
+      await api.get("/sanctum/csrf-cookie", {
+        baseURL: BASE_URL_API,
+        withCredentials: true,
+      });
+
+      console.log("CSRF OK:", document.cookie);
     } catch (e) {
-      console.error("CSRF Cookie fetch failed:", e);
+      console.error("CSRF ERROR:", e);
+      throw e;
     }
 
-    const response = await api.post("/auth/login", { username, password });
+    const response = await api.post(
+      "/auth/login",
+      { username, password },
+      {
+        withCredentials: true,
+      }
+    );
+
     if (response.data.success) {
-      // No token to store for cookie-based auth
-      // localStorage.setItem("auth_token", response.data.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.data.user));
     }
+
     return response.data;
   },
 
-  /**
-   * Logout current user
-   */
   async logout() {
     try {
-      await api.post("/auth/logout");
+      await api.post("/auth/logout", {}, { withCredentials: true });
     } finally {
-      // localStorage.removeItem("auth_token");
       localStorage.removeItem("user");
     }
   },
 
-  /**
-   * Get current user profile
-   */
   async getUser() {
-    const response = await api.get("/auth/user");
-    return response.data;
-  },
-
-  /**
-   * Update profile
-   */
-  async updateProfile(data) {
-    const response = await api.put("/auth/profile", data);
-    return response.data;
-  },
-
-  /**
-   * Change password
-   */
-  async changePassword(currentPassword, password, passwordConfirmation) {
-    const response = await api.put("/auth/password", {
-      current_password: currentPassword,
-      password: password,
-      password_confirmation: passwordConfirmation,
+    const response = await api.get("/auth/user", {
+      withCredentials: true,
     });
     return response.data;
   },
 
-  /**
-   * Check if user is logged in
-   */
-  isAuthenticated() {
-    return !!localStorage.getItem("auth_token");
+  async updateProfile(data) {
+    const response = await api.put("/auth/profile", data, {
+      withCredentials: true,
+    });
+    return response.data;
   },
 
-  /**
-   * Get stored user
-   */
+  async changePassword(currentPassword, password, passwordConfirmation) {
+    const response = await api.put(
+      "/auth/password",
+      {
+        current_password: currentPassword,
+        password,
+        password_confirmation: passwordConfirmation,
+      },
+      { withCredentials: true }
+    );
+    return response.data;
+  },
+
+  isAuthenticated() {
+    return !!localStorage.getItem("user");
+  },
+
   getStoredUser() {
     const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : null;
   },
 
-  /**
-   * Get user role
-   */
   getRole() {
     const user = this.getStoredUser();
     return user?.role || null;
