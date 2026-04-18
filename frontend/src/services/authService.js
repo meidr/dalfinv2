@@ -9,7 +9,6 @@ export const authService = {
         withCredentials: true,
       });
 
-      console.log("CSRF OK:", document.cookie);
     } catch (e) {
       console.error("CSRF ERROR:", e);
       throw e;
