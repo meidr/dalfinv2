@@ -38,7 +38,7 @@ class Dokumen extends Model
         if (!$this->path) {
             return null;
         }
-        return asset('storage/' . $this->path);
+        return url('/api/file/' . $this->path);
     }
 
     const JENIS_PROPOSAL = 'proposal';

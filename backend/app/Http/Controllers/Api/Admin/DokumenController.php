@@ -216,4 +216,20 @@ class DokumenController extends Controller
 
         return $disk->download($dokumen->path, $dokumen->nama_file);
     }
+
+    /**
+     * View/stream document inline (bypasses nginx symlink 403 issues)
+     */
+    public function view(Dokumen $dokumen)
+    {
+        if (!$dokumen->path || !Storage::disk('public')->exists($dokumen->path)) {
+            abort(404, 'File tidak ditemukan');
+        }
+
+        $mimeType = Storage::disk('public')->mimeType($dokumen->path) ?: 'application/octet-stream';
+
+        return Storage::disk('public')->response($dokumen->path, $dokumen->nama_file, [
+            'Content-Type' => $mimeType,
+        ]);
+    }
 }

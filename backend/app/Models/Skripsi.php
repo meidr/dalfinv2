@@ -44,7 +44,7 @@ class Skripsi extends Model
         if (!$this->file_skripsi) {
             return null;
         }
-        return asset('storage/' . $this->file_skripsi);
+        return url('/api/file/' . $this->file_skripsi);
     }
 
     /**

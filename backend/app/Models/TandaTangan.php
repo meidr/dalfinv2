@@ -27,7 +27,7 @@ class TandaTangan extends Model
     public function getTtdUrlAttribute()
     {
         if (!$this->ttd) return null;
-        return asset('storage/' . $this->ttd);
+        return url('/api/file/' . $this->ttd);
     }
 
     protected $appends = ['ttd_url'];

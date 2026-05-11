@@ -61,10 +61,14 @@ use App\Http\Controllers\Api\Admin\JabatanPejabatController;
 use App\Http\Controllers\Api\Admin\TandaTanganController;
 use App\Http\Controllers\Api\PublicConfigController;
 use App\Http\Controllers\Api\VerifyDocumentController;
+use App\Http\Controllers\Api\FileController;
 
 // Public Document Verification (no auth needed)
 Route::get('/verify/{token}', [VerifyDocumentController::class, 'verify']);
 Route::get('/verify/{token}/pdf', [VerifyDocumentController::class, 'pdf']);
+
+// Public file serving (streams files through PHP to bypass nginx symlink 403 issues)
+Route::get('/file/{path}', [FileController::class, 'serve'])->where('path', '.*');
 
 Route::prefix('tes')->group(function () {
     Route::get('/pembimbing', [AdminPembimbingController::class, 'index']);
@@ -200,6 +204,7 @@ Route::prefix('admin')
         // Dokumen Management
         Route::apiResource('dokumen', AdminDokumenController::class);
         Route::get('/dokumen/{dokumen}/download', [AdminDokumenController::class, 'download']);
+        Route::get('/dokumen/{dokumen}/view', [AdminDokumenController::class, 'view']);
 
         // PDF Generation
         Route::match(['get', 'post'], '/pdf/sk-tugas/{skripsi}', [AdminPdfController::class, 'skTugas']);

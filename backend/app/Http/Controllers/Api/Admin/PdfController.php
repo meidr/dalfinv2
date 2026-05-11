@@ -729,7 +729,7 @@ class PdfController extends Controller
         }
 
         // Build verification URL
-        $frontendUrl = rtrim(config('app.frontend_url', config('app.url', 'http://localhost:5173')), '/');
+        $frontendUrl = rtrim(env('FRONTEND_URL', config('app.frontend_url', 'http://localhost:5173')), '/');
         $verifyUrl = $frontendUrl . '/verify/' . $docToken->token;
 
         // Generate QR code as base64 PNG

@@ -1077,7 +1077,7 @@ const getFileUrl = (path) => {
   const baseUrl =
     import.meta.env.VITE_API_URL?.replace("/api", "") ||
     "https://dalfinapp.uiidalwa.web.id";
-  return `${baseUrl}/storage/${path}`;
+  return `${baseUrl}/api/file/${path}`;
 };
 
 const formatFileSize = (bytes) => {
