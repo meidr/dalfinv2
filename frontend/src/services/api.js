@@ -1,7 +1,11 @@
 import axios from "axios";
 import NProgress from "nprogress";
 
-const BASE_URL = "https://dalfinapp.uiidalwa.web.id";
+// Ambil dari environment variable
+// Dev: VITE_API_URL="/api" → baseURL="/api" (lewat Vite proxy ke localhost:8000)
+// Prod: VITE_API_URL="https://dalfinapp.uiidalwa.web.id/api" → baseURL="https://..."
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+const BASE_URL = API_URL.replace(/\/api$/, "");
 
 // Helper ambil cookie
 function getCookie(name) {
@@ -15,7 +19,7 @@ function getCookie(name) {
 
 // Create axios instance
 const api = axios.create({
-  baseURL: BASE_URL + "/api",
+  baseURL: API_URL,
   headers: {
     Accept: "application/json",
   },

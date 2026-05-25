@@ -244,13 +244,13 @@ const loading = ref(true);
 const error = ref(false);
 const doc = ref(null);
 
-const API_URL = import.meta.env.VITE_API_URL || "https://dalfinapp.uiidalwa.web.id/api";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 const _rawApi = import.meta.env.VITE_API_URL || "";
 const BACKEND_URL = _rawApi.startsWith("http")
   ? _rawApi.replace(/\/api\/?$/, "")
   : import.meta.env.DEV
     ? "http://localhost:8000"
-    : "https://dalfinapp.uiidalwa.web.id";
+    : "";
 const logoUrl = `${BACKEND_URL}/images/DALFIN-LOGO.png`;
 
 const pdfUrl = computed(() => {

@@ -1635,8 +1635,7 @@ const getFileUrl = (path) => {
   if (!path) return "#";
   if (path.startsWith("http")) return path;
   const baseUrl =
-    import.meta.env.VITE_API_URL?.replace("/api", "") ||
-    "https://dalfinapp.uiidalwa.web.id";
+    import.meta.env.VITE_API_URL?.replace("/api", "") || "";
   return `${baseUrl}/api/file/${path}`;
 };
 
