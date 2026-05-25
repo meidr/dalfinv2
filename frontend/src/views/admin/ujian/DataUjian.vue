@@ -1263,7 +1263,7 @@
                     p.dosen?.full_name || "-"
                   }}</span>
                   <span
-                    class="text-[10px] text-text-secondary bg-gray-100 px-1.5 py-0.5 rounded"
+                    class="text-[10px] text-text-secondary bg-background-light border border-border-light px-1.5 py-0.5 rounded"
                     >{{
                       p.jenis === "pembimbing_1"
                         ? "Pembimbing 1"
@@ -1295,7 +1295,7 @@
                     p.dosen?.full_name || "-"
                   }}</span>
                   <span
-                    class="text-[10px] text-text-secondary bg-gray-100 px-1.5 py-0.5 rounded"
+                    class="text-[10px] text-text-secondary bg-background-light border border-border-light px-1.5 py-0.5 rounded"
                     >{{ getPeranLabel(p.peran) }}</span
                   >
                 </div>
@@ -1307,7 +1307,7 @@
                 detailUjian.penguji?.length &&
                 detailUjian.penguji.some((p) => p.nilai !== null)
               "
-              class="bg-gray-50 rounded-lg p-4 space-y-3"
+              class="bg-background-light border border-border-light rounded-lg p-4 space-y-3"
             >
               <p
                 class="text-xs text-text-secondary font-bold uppercase tracking-wider"
@@ -1318,7 +1318,7 @@
                 <div
                   v-for="p in detailUjian.penguji"
                   :key="p.id"
-                  class="bg-white dark:bg-white/5 rounded-lg px-3 py-3 border border-border-light"
+                  class="bg-surface-light rounded-lg px-3 py-3 border border-border-light"
                 >
                   <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2">
@@ -1333,7 +1333,7 @@
                         p.dosen?.full_name || "-"
                       }}</span>
                       <span
-                        class="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-text-secondary"
+                        class="text-[9px] px-1.5 py-0.5 rounded bg-background-light border border-border-light text-text-secondary"
                         >{{ getPeranLabel(p.peran) }}</span
                       >
                     </div>
@@ -1342,7 +1342,7 @@
                     }}</span>
                   </div>
                   <div class="grid grid-cols-4 gap-2 text-center">
-                    <div class="bg-gray-50 dark:bg-white/5 rounded px-2 py-1">
+                    <div class="bg-background-light border border-border-light rounded px-2 py-1">
                       <p class="text-[9px] text-text-secondary font-medium">
                         MT
                       </p>
@@ -1350,7 +1350,7 @@
                         {{ p.nilai_mt ?? "-" }}
                       </p>
                     </div>
-                    <div class="bg-gray-50 dark:bg-white/5 rounded px-2 py-1">
+                    <div class="bg-background-light border border-border-light rounded px-2 py-1">
                       <p class="text-[9px] text-text-secondary font-medium">
                         MS
                       </p>
@@ -1358,7 +1358,7 @@
                         {{ p.nilai_ms ?? "-" }}
                       </p>
                     </div>
-                    <div class="bg-gray-50 dark:bg-white/5 rounded px-2 py-1">
+                    <div class="bg-background-light border border-border-light rounded px-2 py-1">
                       <p class="text-[9px] text-text-secondary font-medium">
                         PM
                       </p>
@@ -1366,7 +1366,7 @@
                         {{ p.nilai_pm ?? "-" }}
                       </p>
                     </div>
-                    <div class="bg-gray-50 dark:bg-white/5 rounded px-2 py-1">
+                    <div class="bg-background-light border border-border-light rounded px-2 py-1">
                       <p class="text-[9px] text-text-secondary font-medium">
                         PI
                       </p>

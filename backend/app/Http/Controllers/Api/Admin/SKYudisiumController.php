@@ -7,11 +7,18 @@ use Illuminate\Http\Request;
 use App\Models\Seminar;
 use App\Models\Skripsi;
 use App\Models\SKYudisium;
+use App\Models\Prodi;
+use App\Services\NomorSuratService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class SKYudisiumController extends Controller
 {
+    public function __construct(private ?NomorSuratService $nomorSuratService = null)
+    {
+        $this->nomorSuratService ??= app(NomorSuratService::class);
+    }
+
     public function index(Request $request)
     {
         // Get seminars (ujian) that are completed with 'lulus' status
@@ -110,7 +117,7 @@ class SKYudisiumController extends Controller
     {
         $validated = $request->validate([
             'skripsi_id' => 'required|exists:skripsi,id',
-            'nomor_sk' => 'required|string',
+            'nomor_sk' => 'nullable|string',
             'tanggal' => 'required|date',
             'ipk' => 'required|numeric|min:0|max:4',
             'predikat' => 'required|string|in:memuaskan,sangat_memuaskan,cum_laude',
@@ -127,10 +134,12 @@ class SKYudisiumController extends Controller
         }
 
         $skYudisium = DB::transaction(function () use ($skripsi, $validated) {
+            $nomorSk = $this->nomorSuratService->generateForSkripsi('sk_yudisium', $skripsi, Carbon::parse($validated['tanggal']));
+
             // Create SK Yudisium record
             $skYudisium = SKYudisium::create([
                 'skripsi_id' => $skripsi->id,
-                'nomor_sk' => $validated['nomor_sk'],
+                'nomor_sk' => $nomorSk,
                 'tanggal_terbit' => $validated['tanggal'],
                 'tanggal_yudisium' => $validated['tanggal'],
                 'predikat' => $validated['predikat'],
@@ -261,12 +270,19 @@ class SKYudisiumController extends Controller
     public function storeBatch(Request $request)
     {
         $validated = $request->validate([
-            'nomor_sk_batch' => 'required|string|max:255',
+            'nomor_sk_batch' => 'nullable|string|max:255',
             'th_akademik_id' => 'required|exists:tahuns,id',
             'prodi_id' => 'nullable|exists:prodi,id',
             'tanggal_terbit' => 'required|date',
             'tanggal_yudisium' => 'required|date',
         ]);
+
+        $prodi = isset($validated['prodi_id']) ? Prodi::with('fakultas')->find($validated['prodi_id']) : null;
+        $validated['nomor_sk_batch'] = $this->nomorSuratService->generateForProdi(
+            'sk_yudisium',
+            $prodi,
+            Carbon::parse($validated['tanggal_terbit'])
+        );
 
         // Check if batch already exists
         $exists = SKYudisium::where('nomor_sk_batch', $validated['nomor_sk_batch'])->exists();
@@ -408,7 +424,7 @@ class SKYudisiumController extends Controller
     public function assignBatch(Request $request)
     {
         $validated = $request->validate([
-            'nomor_sk_batch' => 'required|string',
+            'nomor_sk_batch' => 'nullable|string',
             'th_akademik_id' => 'required|exists:tahuns,id',
             'prodi_id' => 'nullable|exists:prodi,id',
             'tanggal_terbit' => 'required|date',
@@ -419,6 +435,12 @@ class SKYudisiumController extends Controller
 
         $created = DB::transaction(function () use ($validated) {
             $records = [];
+            $firstSkripsi = Skripsi::with('mahasiswa.prodi.fakultas')->findOrFail($validated['skripsi_ids'][0]);
+            $validated['nomor_sk_batch'] = $validated['nomor_sk_batch'] ?: $this->nomorSuratService->generateForSkripsi(
+                'sk_yudisium',
+                $firstSkripsi,
+                Carbon::parse($validated['tanggal_terbit'])
+            );
 
             foreach ($validated['skripsi_ids'] as $skripsiId) {
                 $skripsi = Skripsi::findOrFail($skripsiId);
@@ -430,6 +452,12 @@ class SKYudisiumController extends Controller
                 }
 
                 if ($existingSk) {
+                    $this->nomorSuratService->ensureSkYudisiumNumber(
+                        $existingSk,
+                        $skripsi,
+                        Carbon::parse($validated['tanggal_terbit'])
+                    );
+
                     // Update existing record that has no batch
                     $existingSk->update([
                         'nomor_sk_batch' => $validated['nomor_sk_batch'],
@@ -440,10 +468,16 @@ class SKYudisiumController extends Controller
                     ]);
                     $sk = $existingSk;
                 } else {
+                    $nomorSk = $this->nomorSuratService->generateForSkripsi(
+                        'sk_yudisium',
+                        $skripsi,
+                        Carbon::parse($validated['tanggal_terbit'])
+                    );
+
                     // Create new record
                     $sk = SKYudisium::create([
                         'skripsi_id' => $skripsi->id,
-                        'nomor_sk' => 'SK-' . strtoupper(uniqid()),
+                        'nomor_sk' => $nomorSk,
                         'nomor_sk_batch' => $validated['nomor_sk_batch'],
                         'th_akademik_id' => $validated['th_akademik_id'],
                         'prodi_id' => $validated['prodi_id'] ?? null,

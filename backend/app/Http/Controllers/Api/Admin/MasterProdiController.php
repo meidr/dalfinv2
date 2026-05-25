@@ -39,12 +39,15 @@ class MasterProdiController extends Controller
     {
         $request->validate([
             'kode' => 'required|string|unique:prodi,kode',
+            'alias' => 'nullable|string|max:50',
             'nama' => 'required|string',
             'jenjang' => 'required|string',
             'fakultas_id' => 'nullable|exists:fakultas,id',
         ]);
 
-        $prodi = Prodi::create($request->all());
+        $data = $request->all();
+        $data['alias'] = $data['alias'] ?: $data['kode'];
+        $prodi = Prodi::create($data);
         $prodi->load('fakultas');
 
         return response()->json([
@@ -58,13 +61,16 @@ class MasterProdiController extends Controller
     {
         $request->validate([
             'kode' => 'required|string|unique:prodi,kode,' . $id,
+            'alias' => 'nullable|string|max:50',
             'nama' => 'required|string',
             'jenjang' => 'required|string',
             'fakultas_id' => 'nullable|exists:fakultas,id',
         ]);
 
         $prodi = Prodi::findOrFail($id);
-        $prodi->update($request->all());
+        $data = $request->all();
+        $data['alias'] = $data['alias'] ?: $data['kode'];
+        $prodi->update($data);
         $prodi->load('fakultas');
 
         return response()->json([

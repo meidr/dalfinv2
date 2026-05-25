@@ -621,10 +621,21 @@
                   class="w-full px-3 py-2 border border-border-light rounded-lg text-sm bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   :disabled="isLocked"
                 >
-                  <option value="">Pilih Hasil</option>
-                  <option value="lulus">Lulus</option>
-                  <option value="lulus_bersyarat">Lulus Bersyarat</option>
-                  <option value="tidak_lulus">Tidak Lulus</option>
+                  <option class="bg-white text-gray-900" value="">
+                    Pilih Hasil
+                  </option>
+                  <option class="bg-white text-gray-900" value="lulus">
+                    Lulus
+                  </option>
+                  <option
+                    class="bg-white text-gray-900"
+                    value="lulus_bersyarat"
+                  >
+                    Lulus Bersyarat
+                  </option>
+                  <option class="bg-white text-gray-900" value="tidak_lulus">
+                    Tidak Lulus
+                  </option>
                 </select>
               </div>
               <div>
@@ -1138,10 +1149,18 @@
                 class="w-full px-3 py-2 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               >
-                <option value="">Pilih Peran</option>
-                <option value="ketua">Ketua</option>
-                <option value="penguji_1">Penguji 1</option>
-                <option value="penguji_2">Penguji 2</option>
+                <option class="bg-white text-gray-900" value="">
+                  Pilih Peran
+                </option>
+                <option class="bg-white text-gray-900" value="ketua">
+                  Ketua
+                </option>
+                <option class="bg-white text-gray-900" value="penguji_1">
+                  Penguji 1
+                </option>
+                <option class="bg-white text-gray-900" value="penguji_2">
+                  Penguji 2
+                </option>
               </select>
             </div>
             <div class="flex gap-3 pt-4">

@@ -39,6 +39,7 @@ use App\Http\Controllers\Api\Admin\MasterMahasiswaController;
 use App\Http\Controllers\Api\Admin\MasterDosenController;
 use App\Http\Controllers\Api\Admin\SeminarController as AdminSeminarController;
 use App\Http\Controllers\Api\Admin\DokumenController as AdminDokumenController;
+use App\Http\Controllers\Api\Admin\DokumenResmiController as AdminDokumenResmiController;
 use App\Http\Controllers\Api\Admin\PdfController as AdminPdfController;
 use App\Http\Controllers\Api\Admin\BimbinganController as AdminBimbinganController;
 use App\Http\Controllers\Api\Admin\UjianController as AdminUjianController;
@@ -56,6 +57,7 @@ use App\Http\Controllers\Api\Admin\MasterProdiController;
 use App\Http\Controllers\Api\Admin\MasterTahunController;
 use App\Http\Controllers\Api\Admin\MasterJabatanController;
 use App\Http\Controllers\Api\Admin\MasterFakultasController;
+use App\Http\Controllers\Api\Admin\NomorSuratController;
 use App\Http\Controllers\Api\Admin\PeriodeJabatanController;
 use App\Http\Controllers\Api\Admin\JabatanPejabatController;
 use App\Http\Controllers\Api\Admin\TandaTanganController;
@@ -171,6 +173,10 @@ Route::prefix('admin')
             Route::get('dosen-sync-preview', [MasterDosenController::class, 'syncPreview']);
             Route::post('dosen-sync-execute', [MasterDosenController::class, 'syncExecute']);
 
+            // Nomor Surat
+            Route::get('nomor-surat', [NomorSuratController::class, 'index']);
+            Route::put('nomor-surat/{nomorSurat}', [NomorSuratController::class, 'update']);
+
             // User Management
             Route::get('/users', [AdminUserController::class, 'index']);
             Route::get('/users/{user}', [AdminUserController::class, 'show']);
@@ -202,6 +208,7 @@ Route::prefix('admin')
         Route::delete('/seminar-hasil/{seminar}/penguji/{penguji}', [AdminSeminarHasilController::class, 'removePenguji']);
 
         // Dokumen Management
+        Route::get('/dokumen-resmi', [AdminDokumenResmiController::class, 'index']);
         Route::apiResource('dokumen', AdminDokumenController::class);
         Route::get('/dokumen/{dokumen}/download', [AdminDokumenController::class, 'download']);
         Route::get('/dokumen/{dokumen}/view', [AdminDokumenController::class, 'view']);

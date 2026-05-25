@@ -8,6 +8,7 @@ use App\Models\Seminar;
 use App\Models\Bimbingan;
 use App\Models\NotaBimbingan;
 use App\Models\Configuration;
+use App\Services\NomorSuratService;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -435,6 +436,7 @@ class BimbinganController extends Controller
         if (!$skTugas) {
             return response()->json(['success' => false, 'message' => 'SK Tugas belum diterbitkan'], 404);
         }
+        app(NomorSuratService::class)->ensureSkTugasNumber($skTugas, $skripsi, $skTugas->tanggal_terbit);
 
         $pdf = Pdf::loadView('pdf.sk-tugas', [
             'skripsi' => $skripsi,
@@ -457,8 +459,9 @@ class BimbinganController extends Controller
         ]);
 
         $nota = $skripsi->notaBimbingan;
+        $nomorSuratService = app(NomorSuratService::class);
         if (!$nota) {
-            $nomor = 'NB/' . date('Y') . '/' . str_pad($skripsi->id, 4, '0', STR_PAD_LEFT);
+            $nomor = $nomorSuratService->generateForSkripsi('nota_bimbingan', $skripsi);
             $nota = NotaBimbingan::create([
                 'skripsi_id' => $skripsi->id,
                 'nomor' => $nomor,
@@ -466,6 +469,7 @@ class BimbinganController extends Controller
                 'total_bimbingan' => $skripsi->bimbingan->count(),
             ]);
         }
+        $nomorSuratService->ensureNotaBimbinganNumber($nota, $skripsi, $nota->tanggal_terbit);
 
         $pdf = Pdf::loadView('pdf.nota-bimbingan', [
             'skripsi' => $skripsi,
@@ -495,6 +499,7 @@ class BimbinganController extends Controller
     {
         $prodi = $skripsi->mahasiswa->prodi;
         $fakultas = $prodi->fakultas ?? null;
+        app(NomorSuratService::class)->ensureSeminarSkPengujiNumber($seminar);
 
         $pdf = Pdf::loadView('pdf.sk-penguji', [
             'seminar' => $seminar,
@@ -504,6 +509,7 @@ class BimbinganController extends Controller
             'prodi_lengkap' => $prodi->nama ?? '',
             'fakultas' => $fakultas->nama_fakultas ?? '-',
             'institution' => "Universitas Islam Internasional Darullughah Wadda'wah",
+            'nomor_sk_penguji' => $seminar->nomor_sk_penguji,
             'city' => 'Bangil',
             'kaprodi' => $this->resolveKaprodi($prodi),
             'dekan' => $this->resolveDekan($fakultas),
@@ -526,6 +532,7 @@ class BimbinganController extends Controller
         if (!$beritaAcara) {
             return response()->json(['success' => false, 'message' => "Berita Acara {$label} belum dibuat"], 404);
         }
+        app(NomorSuratService::class)->ensureBeritaAcaraNumber($beritaAcara, $seminar, $beritaAcara->tanggal);
 
         $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
 

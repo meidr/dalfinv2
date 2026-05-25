@@ -296,6 +296,11 @@ export const adminService = {
     return response.data;
   },
 
+  async getDokumenResmi(params = {}) {
+    const response = await api.get("/admin/dokumen-resmi", { params });
+    return response.data;
+  },
+
   // PDF Generation
   async getSkTugasPdf(skripsiId) {
     const response = await api.get(`/admin/pdf/sk-tugas/${skripsiId}`, {
@@ -723,6 +728,17 @@ export const adminService = {
 
   async deleteProdi(id) {
     const response = await api.delete(`/admin/prodi/${id}`);
+    return response.data;
+  },
+
+  // Nomor Surat
+  async getNomorSuratTemplates() {
+    const response = await api.get("/admin/nomor-surat");
+    return response.data;
+  },
+
+  async updateNomorSuratTemplate(id, data) {
+    const response = await api.put(`/admin/nomor-surat/${id}`, data);
     return response.data;
   },
 

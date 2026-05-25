@@ -548,7 +548,6 @@
       <div
         v-if="showSyncModal"
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        @click.self="closeSyncModal"
       >
         <div
           class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
@@ -1548,6 +1547,15 @@ const executeSyncAll = async () => {
 };
 
 const closeSyncModal = () => {
+  if (
+    syncStep.value === 2 &&
+    !window.confirm(
+      "Proses sinkronisasi sedang berjalan. Jika modal ditutup, proses harus diulang dari awal. Tutup modal?",
+    )
+  ) {
+    return;
+  }
+
   showSyncModal.value = false;
   syncStep.value = 0;
   syncPreviewData.value = null;

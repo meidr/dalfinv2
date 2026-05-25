@@ -1,12 +1,16 @@
 <template>
   <aside
     :class="[
-      'flex flex-col border-r border-border-light bg-sidebar-light shrink-0 overflow-y-auto h-full fixed lg:static z-20 transition-all duration-300 scrollbar-elegant',
+      'flex flex-col border-r border-border-light bg-sidebar-light shrink-0 overflow-hidden h-full fixed lg:static z-20 transition-all duration-300',
       isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       isCollapsed ? 'w-20' : 'w-72',
     ]"
   >
-    <div class="flex flex-col gap-4 p-4 min-h-full">
+    <SimpleBar
+      class="admin-sidebar-scroll h-full min-h-0"
+      data-simplebar-auto-hide="false"
+    >
+      <div class="flex flex-col gap-4 p-4 min-h-full">
       <div
         :class="[
           'flex items-center gap-3 px-2 py-4 transition-all',
@@ -316,6 +320,45 @@
             </p>
           </router-link>
 
+          <router-link
+            v-if="!isStaff"
+            to="/admin/nomor-surat"
+            active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >tag</span
+            >
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Nomor Surat
+            </p>
+          </router-link>
+
+          <router-link
+            to="/admin/dokumen"
+            active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
+              isCollapsed ? 'justify-center' : '',
+            ]"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >folder_copy</span
+            >
+            <p
+              v-show="!isCollapsed"
+              class="text-sm font-medium whitespace-nowrap"
+            >
+              Dokumen
+            </p>
+          </router-link>
+
           <!-- Master Data Dropdown -->
           <div v-if="!isStaff" class="flex flex-col gap-1">
             <button
@@ -573,13 +616,15 @@
           </p>
         </button>
       </div>
-    </div>
+      </div>
+    </SimpleBar>
   </aside>
 </template>
 
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
+import SimpleBar from "simplebar-vue";
 import { useAuthStore } from "../../stores/auth";
 
 const props = defineProps({

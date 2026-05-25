@@ -15,9 +15,14 @@
       class="flex flex-1 flex-col h-full bg-background-light overflow-hidden w-full"
     >
       <Header @toggle-sidebar="toggleSidebar" />
-      <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
-        <router-view />
-      </div>
+      <SimpleBar
+        class="admin-main-scroll flex-1 min-h-0"
+        data-simplebar-auto-hide="false"
+      >
+        <div class="p-4 md:p-8">
+          <router-view />
+        </div>
+      </SimpleBar>
     </main>
     <ChatWidget />
   </div>
@@ -25,6 +30,7 @@
 
 <script setup>
 import { ref } from "vue";
+import SimpleBar from "simplebar-vue";
 import Sidebar from "../components/admin/Sidebar.vue";
 import Header from "../components/admin/Header.vue";
 import ChatWidget from "../components/ChatWidget.vue";

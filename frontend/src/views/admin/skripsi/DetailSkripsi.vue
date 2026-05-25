@@ -426,6 +426,82 @@
 
           <!-- Dokumen Tab -->
           <div v-else-if="activeTab === 'dokumen'">
+            <!-- Official Documents -->
+            <div class="mb-6">
+              <h4 class="font-bold text-text-main mb-3">Dokumen Resmi</h4>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div
+                  v-for="doc in officialDocuments"
+                  :key="doc.type"
+                  class="flex items-center gap-4 p-4 rounded-xl border transition-colors"
+                  :class="
+                    doc.available
+                      ? 'bg-gray-50 dark:bg-white/5 border-border-light hover:border-primary/40'
+                      : 'bg-gray-50/60 dark:bg-white/[0.03] border-border-light opacity-75'
+                  "
+                >
+                  <div
+                    class="size-11 rounded-lg flex items-center justify-center shrink-0"
+                    :class="
+                      doc.available
+                        ? doc.iconClass
+                        : 'bg-gray-100 dark:bg-white/5 text-text-secondary'
+                    "
+                  >
+                    <span class="material-symbols-outlined">{{
+                      doc.available ? doc.icon : "lock"
+                    }}</span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <p class="font-bold text-text-main text-sm">
+                        {{ doc.label }}
+                      </p>
+                      <span
+                        v-if="!doc.available"
+                        class="px-2 py-0.5 rounded-full bg-gray-200 dark:bg-white/10 text-text-secondary text-[10px] font-bold uppercase"
+                      >
+                        Locked
+                      </span>
+                    </div>
+                    <p class="text-xs text-text-secondary mt-0.5">
+                      {{ doc.subtitle }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button
+                      @click="previewOfficialDocument(doc)"
+                      :disabled="!doc.available || previewingOfficial === doc.type"
+                      class="size-9 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-primary hover:border-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-text-secondary disabled:hover:border-border-light"
+                      title="Lihat"
+                    >
+                      <span
+                        v-if="previewingOfficial === doc.type"
+                        class="animate-spin rounded-full h-4 w-4 border-b-2 border-current"
+                      ></span>
+                      <span v-else class="material-symbols-outlined text-[18px]"
+                        >visibility</span
+                      >
+                    </button>
+                    <button
+                      @click="downloadOfficialDocument(doc)"
+                      :disabled="!doc.available || downloadingOfficial === doc.type"
+                      class="size-9 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-green-600 hover:border-green-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-text-secondary disabled:hover:border-border-light"
+                      title="Unduh"
+                    >
+                      <span
+                        v-if="downloadingOfficial === doc.type"
+                        class="animate-spin rounded-full h-4 w-4 border-b-2 border-current"
+                      ></span>
+                      <span v-else class="material-symbols-outlined text-[18px]"
+                        >download</span
+                      >
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- File Skripsi -->
             <div v-if="skripsi.file_skripsi" class="mb-6">
               <h4 class="font-bold text-text-main mb-3">File Skripsi</h4>
@@ -839,6 +915,8 @@ const activeTab = ref("bimbingan");
 const approvingRevisiProposal = ref(null);
 const statusDropdownOpen = ref(false);
 const statusDropdownRef = ref(null);
+const downloadingOfficial = ref(null);
+const previewingOfficial = ref(null);
 
 const statusOptions = [
   { value: "pengajuan", label: "Pengajuan" },
@@ -902,6 +980,210 @@ const sidangItems = computed(() => {
   const ujians = skripsi.value?.ujian || [];
   ujians.forEach((u) => items.push({ ...u, _key: `ujian-${u.id}` }));
   return items;
+});
+
+const semproSeminar = computed(() =>
+  (skripsi.value?.seminar || []).find((s) => s.jenis === "sempro"),
+);
+
+const semhasSeminar = computed(() =>
+  (skripsi.value?.seminar || []).find((s) => s.jenis === "semhas"),
+);
+
+const sidangSeminar = computed(() =>
+  (skripsi.value?.seminar || []).find((s) => s.jenis === "sidang"),
+);
+
+const getBeritaAcara = (item) => item?.berita_acara || item?.beritaAcara;
+
+const statusRank = {
+  pengajuan: 10,
+  disetujui: 20,
+  proposal: 30,
+  sempro: 40,
+  penentuan_dospem: 50,
+  dospem: 60,
+  bimbingan: 70,
+  pengajuan_sidang: 80,
+  pengajuan_sidang_tolak: 80,
+  pengajuan_sidang_acc: 85,
+  semhas: 90,
+  sidang: 100,
+  revisi: 110,
+  lulus: 120,
+};
+
+const statusAtLeast = (requiredStatus) => {
+  const current = skripsi.value?.status;
+  return (statusRank[current] || 0) >= (statusRank[requiredStatus] || 0);
+};
+
+const officialDocuments = computed(() => {
+  const s = skripsi.value;
+  if (!s) return [];
+
+  const sempro = semproSeminar.value;
+  const semhas = semhasSeminar.value;
+  const sidang = sidangSeminar.value || sidangItems.value[0];
+  const semproBeritaAcara = getBeritaAcara(sempro);
+  const semhasBeritaAcara = getBeritaAcara(semhas);
+  const sidangBeritaAcara = getBeritaAcara(sidang);
+  const canSkTugas = statusAtLeast("dospem");
+  const canNota = statusAtLeast("bimbingan");
+  const canSempro = statusAtLeast("sempro");
+  const canSemhas = statusAtLeast("semhas");
+  const canSidang = statusAtLeast("sidang");
+  const canYudisium = statusAtLeast("lulus");
+
+  const docs = [
+    {
+      type: "sk-tugas",
+      label: "SK Tugas Pembimbing",
+      icon: "assignment_turned_in",
+      iconClass: "bg-red-50 dark:bg-red-900/20 text-red-500",
+      available: canSkTugas && (!!s.sk_tugas || pembimbing.value.length > 0),
+      subtitle: !canSkTugas
+        ? "Locked - belum sampai tahap penetapan pembimbing"
+        : s.sk_tugas
+        ? "Diterbitkan " +
+          formatDateTime(s.sk_tugas.tanggal_terbit || s.sk_tugas.created_at)
+        : pembimbing.value.length > 0
+          ? "Siap diterbitkan"
+          : "Locked - pembimbing belum ditetapkan",
+    },
+    {
+      type: "nota-bimbingan",
+      label: "Nota Bimbingan Skripsi",
+      icon: "sticky_note_2",
+      iconClass: "bg-blue-50 dark:bg-blue-900/20 text-blue-500",
+      available: canNota,
+      subtitle: !canNota
+        ? "Locked - belum sampai tahap bimbingan"
+        : s.nota_bimbingan
+        ? "Diterbitkan " +
+          formatDateTime(
+            s.nota_bimbingan.tanggal_terbit || s.nota_bimbingan.created_at,
+          )
+        : skTugasAvailable
+          ? "Siap diterbitkan"
+          : "Locked - belum masuk tahap bimbingan",
+    },
+    {
+      type: "sk-penguji-sempro",
+      label: "SK Penguji Seminar Proposal",
+      icon: "gavel",
+      iconClass: "bg-purple-50 dark:bg-purple-900/20 text-purple-500",
+      available: canSempro && !!sempro?.penguji?.length,
+      seminarId: sempro?.id,
+      subtitle: !canSempro
+        ? "Locked - belum sampai tahap seminar proposal"
+        : sempro
+        ? sempro.penguji?.length
+          ? `${sempro.penguji.length} penguji ditetapkan`
+          : "Locked - penguji sempro belum ditetapkan"
+        : "Locked - belum sampai tahap seminar proposal",
+    },
+    {
+      type: "berita-acara-sempro",
+      label: "Berita Acara Seminar Proposal",
+      icon: "article",
+      iconClass: "bg-amber-50 dark:bg-amber-900/20 text-amber-600",
+      available: canSempro && !!semproBeritaAcara,
+      seminarId: sempro?.id,
+      subtitle: !canSempro
+        ? "Locked - belum sampai tahap seminar proposal"
+        : semproBeritaAcara
+        ? "Diterbitkan " + formatDateTime(semproBeritaAcara.created_at)
+        : sempro
+          ? "Locked - berita acara belum dibuat"
+          : "Locked - belum sampai tahap seminar proposal",
+    },
+    {
+      type: "sk-penguji-semhas",
+      label: "SK Penguji Seminar Hasil",
+      icon: "gavel",
+      iconClass: "bg-orange-50 dark:bg-orange-900/20 text-orange-500",
+      available: authStore.semhasEnabled && canSemhas && !!semhas?.penguji?.length,
+      seminarId: semhas?.id,
+      subtitle: !authStore.semhasEnabled
+        ? "Locked - modul seminar hasil nonaktif"
+        : !canSemhas
+          ? "Locked - belum sampai tahap seminar hasil"
+        : semhas
+          ? semhas.penguji?.length
+            ? `${semhas.penguji.length} penguji ditetapkan`
+            : "Locked - penguji semhas belum ditetapkan"
+          : "Locked - belum sampai tahap seminar hasil",
+    },
+    {
+      type: "berita-acara-semhas",
+      label: "Berita Acara Seminar Hasil",
+      icon: "article",
+      iconClass: "bg-teal-50 dark:bg-teal-900/20 text-teal-600",
+      available: authStore.semhasEnabled && canSemhas && !!semhasBeritaAcara,
+      seminarId: semhas?.id,
+      subtitle: !authStore.semhasEnabled
+        ? "Locked - modul seminar hasil nonaktif"
+        : !canSemhas
+          ? "Locked - belum sampai tahap seminar hasil"
+        : semhasBeritaAcara
+          ? "Diterbitkan " + formatDateTime(semhasBeritaAcara.created_at)
+          : semhas
+            ? "Locked - berita acara belum dibuat"
+            : "Locked - belum sampai tahap seminar hasil",
+    },
+    {
+      type: "sk-penguji-sidang",
+      label: "SK Penguji Sidang Skripsi",
+      icon: "gavel",
+      iconClass: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500",
+      available: canSidang && !!sidang?.penguji?.length,
+      seminarId: sidang?.id,
+      subtitle: !canSidang
+        ? "Locked - belum sampai tahap sidang"
+        : sidang
+        ? sidang.penguji?.length
+          ? `${sidang.penguji.length} penguji ditetapkan`
+          : "Locked - penguji sidang belum ditetapkan"
+        : "Locked - belum sampai tahap sidang",
+    },
+    {
+      type: "berita-acara-sidang",
+      label: "Berita Acara Sidang Skripsi",
+      icon: "article",
+      iconClass: "bg-rose-50 dark:bg-rose-900/20 text-rose-600",
+      available: canSidang && !!sidangBeritaAcara,
+      seminarId: sidang?.id,
+      subtitle: !canSidang
+        ? "Locked - belum sampai tahap sidang"
+        : sidangBeritaAcara
+        ? "Diterbitkan " + formatDateTime(sidangBeritaAcara.created_at)
+        : sidang
+          ? "Locked - berita acara belum dibuat"
+          : "Locked - belum sampai tahap sidang",
+    },
+    {
+      type: "sk-yudisium",
+      label: "SK Yudisium",
+      icon: "school",
+      iconClass: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600",
+      available: canYudisium && !!s.sk_yudisium,
+      subtitle: !canYudisium
+        ? "Locked - belum sampai tahap yudisium"
+        : s.sk_yudisium
+        ? "Diterbitkan " +
+          formatDateTime(
+            s.sk_yudisium.tanggal_terbit || s.sk_yudisium.created_at,
+          )
+        : "Locked - belum lulus/yudisium",
+    },
+  ];
+
+  return docs.filter(
+    (doc) =>
+      authStore.semhasEnabled ||
+      !["sk-penguji-semhas", "berita-acara-semhas"].includes(doc.type),
+  );
 });
 
 const revisiProposalDocs = computed(() => {
@@ -977,6 +1259,88 @@ const saveStatus = async () => {
     );
   } finally {
     saving.value = false;
+  }
+};
+
+const getOfficialPdfResponse = (doc) => {
+  switch (doc.type) {
+    case "sk-tugas":
+      return adminService.getSkTugasPdf(skripsi.value.id);
+    case "nota-bimbingan":
+      return adminService.getNotaBimbinganPdf(skripsi.value.id);
+    case "sk-penguji-sempro":
+    case "sk-penguji-semhas":
+    case "sk-penguji-sidang":
+      return adminService.getSkPengujiPdf(doc.seminarId);
+    case "berita-acara-sempro":
+    case "berita-acara-semhas":
+    case "berita-acara-sidang":
+      return adminService.getBeritaAcaraPdf(doc.seminarId);
+    case "sk-yudisium":
+      return adminService.generateSKYudisiumPdf(skripsi.value.id);
+    default:
+      throw new Error("Jenis dokumen tidak dikenal");
+  }
+};
+
+const getOfficialFileName = (type) => {
+  const nim = skripsi.value?.mahasiswa?.nim || "mahasiswa";
+  const names = {
+    "sk-tugas": `SK_Tugas_${nim}.pdf`,
+    "nota-bimbingan": `Nota_Bimbingan_${nim}.pdf`,
+    "sk-penguji-sempro": `SK_Penguji_Sempro_${nim}.pdf`,
+    "berita-acara-sempro": `Berita_Acara_Sempro_${nim}.pdf`,
+    "sk-penguji-semhas": `SK_Penguji_Semhas_${nim}.pdf`,
+    "berita-acara-semhas": `Berita_Acara_Semhas_${nim}.pdf`,
+    "sk-penguji-sidang": `SK_Penguji_Sidang_${nim}.pdf`,
+    "berita-acara-sidang": `Berita_Acara_Sidang_${nim}.pdf`,
+    "sk-yudisium": `SK_Yudisium_${nim}.pdf`,
+  };
+  return names[type] || "Dokumen.pdf";
+};
+
+const previewOfficialDocument = async (doc) => {
+  if (!doc.available) return;
+  try {
+    previewingOfficial.value = doc.type;
+    const response = await getOfficialPdfResponse(doc);
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, "_blank");
+    setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+  } catch (error) {
+    console.error("Failed to preview official document:", error);
+    alert(
+      "Gagal membuka dokumen: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    previewingOfficial.value = null;
+  }
+};
+
+const downloadOfficialDocument = async (doc) => {
+  if (!doc.available) return;
+  try {
+    downloadingOfficial.value = doc.type;
+    const response = await getOfficialPdfResponse(doc);
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = getOfficialFileName(doc.type);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to download official document:", error);
+    alert(
+      "Gagal mengunduh dokumen: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    downloadingOfficial.value = null;
   }
 };
 

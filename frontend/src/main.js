@@ -3,6 +3,7 @@ import { createPinia } from "pinia";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import "nprogress/nprogress.css";
+import "simplebar-vue/dist/simplebar.min.css";
 import "./style.css";
 import App from "./App.vue";
 import router from "./router";

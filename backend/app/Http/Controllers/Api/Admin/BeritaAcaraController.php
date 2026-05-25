@@ -6,11 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Seminar;
 use App\Models\BeritaAcara;
+use App\Services\NomorSuratService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class BeritaAcaraController extends Controller
 {
+    public function __construct(private ?NomorSuratService $nomorSuratService = null)
+    {
+        $this->nomorSuratService ??= app(NomorSuratService::class);
+    }
+
     public function index(Request $request)
     {
         $query = Seminar::with([
@@ -72,20 +78,18 @@ class BeritaAcaraController extends Controller
         // Check if already generated — just re-download PDF
         $seminar->load('beritaAcara');
         if ($seminar->beritaAcara) {
+            $this->nomorSuratService->ensureBeritaAcaraNumber(
+                $seminar->beritaAcara,
+                $seminar,
+                $seminar->beritaAcara->tanggal
+            );
             return $this->downloadPdf($request, $seminar);
         }
 
-        // Generate a unique nomor BA
-        $year = now()->year;
-        $romanMonth = $this->getRomanMonth();
-        $count = BeritaAcara::whereYear('created_at', $year)->count() + 1;
-        $nomor = sprintf('BA/%03d/%s/%d', $count, $romanMonth, $year);
-
-        // Ensure nomor is truly unique (increment if collision)
-        while (BeritaAcara::where('nomor', $nomor)->exists()) {
-            $count++;
-            $nomor = sprintf('BA/%03d/%s/%d', $count, $romanMonth, $year);
-        }
+        $nomor = $this->nomorSuratService->generateForSeminar(
+            NomorSuratService::keyForBeritaAcara($seminar->jenis),
+            $seminar
+        );
 
         // Create berita acara record
         $beritaAcara = BeritaAcara::create([
@@ -199,25 +203,4 @@ class BeritaAcaraController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    /**
-     * Get Roman numeral month
-     */
-    private function getRomanMonth(): string
-    {
-        $months = [
-            1 => 'I',
-            2 => 'II',
-            3 => 'III',
-            4 => 'IV',
-            5 => 'V',
-            6 => 'VI',
-            7 => 'VII',
-            8 => 'VIII',
-            9 => 'IX',
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII'
-        ];
-        return $months[now()->month];
-    }
 }

@@ -14,6 +14,7 @@ class Seminar extends Model
     protected $fillable = [
         'skripsi_id',
         'jenis',
+        'nomor_sk_penguji',
         'tanggal',
         'waktu',
         'ruangan',

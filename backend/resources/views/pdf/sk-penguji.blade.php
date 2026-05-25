@@ -179,6 +179,7 @@
 
     <div class="judul">
         <h3 style="text-align: center;margin-top: 7px;">SURAT &nbsp; KEPUTUSAN</h3>
+        <p style="margin-top: 2px;">Nomor: {{ $nomor_sk_penguji ?? $seminar->nomor_sk_penguji ?? '-' }}</p>
         <p style="margin-top: 2px;">TENTANG</p>
         <p style="margin-top: 2px;"><strong>PENUNJUKAN TIM PENGUJI {{ $seminar->jenis === 'sempro' ? 'SEMINAR PROPOSAL' : ($seminar->jenis === 'semhas' ? 'SEMINAR HASIL' : 'SIDANG SKRIPSI') }}</strong></p>
         <p style="margin-top: 2px;">TAHUN AKADEMIK {{ $tahun_ajaran ?? '-' }}</p>

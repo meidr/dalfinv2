@@ -380,75 +380,6 @@
             </p>
           </div>
           <form @submit.prevent="assignPembimbing" class="p-6 space-y-5">
-            <div class="relative" ref="bidangDropdownRef">
-              <label class="block text-sm font-medium text-text-main mb-1"
-                >Filter Bidang Keahlian</label
-              >
-              <button
-                type="button"
-                @click="bidangDropdownOpen = !bidangDropdownOpen"
-                class="w-full px-3 py-2.5 border border-border-light rounded-lg bg-white dark:bg-white/5 text-text-main text-left flex items-center justify-between transition-colors text-sm"
-              >
-                <span>{{ selectedBidang || "Semua Bidang" }}</span>
-                <span
-                  class="material-symbols-outlined text-[18px] text-text-secondary transition-transform"
-                  :class="{ 'rotate-180': bidangDropdownOpen }"
-                  >expand_more</span
-                >
-              </button>
-              <Transition name="dropdown-fade">
-                <div
-                  v-if="bidangDropdownOpen"
-                  class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-sidebar-light border border-border-light rounded-lg shadow-xl z-30 py-1 max-h-60 overflow-y-auto"
-                >
-                  <button
-                    type="button"
-                    @click="
-                      selectedBidang = '';
-                      bidangDropdownOpen = false;
-                      filterDosenByBidang();
-                    "
-                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
-                    :class="
-                      !selectedBidang
-                        ? 'bg-primary/10 text-primary font-bold'
-                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
-                    "
-                  >
-                    Semua Bidang
-                    <span
-                      v-if="!selectedBidang"
-                      class="material-symbols-outlined text-[16px] text-primary"
-                      >check</span
-                    >
-                  </button>
-                  <button
-                    v-for="bidang in bidangList"
-                    :key="bidang"
-                    type="button"
-                    @click="
-                      selectedBidang = bidang;
-                      bidangDropdownOpen = false;
-                      filterDosenByBidang();
-                    "
-                    class="w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between"
-                    :class="
-                      selectedBidang === bidang
-                        ? 'bg-primary/10 text-primary font-bold'
-                        : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
-                    "
-                  >
-                    {{ bidang }}
-                    <span
-                      v-if="selectedBidang === bidang"
-                      class="material-symbols-outlined text-[16px] text-primary"
-                      >check</span
-                    >
-                  </button>
-                </div>
-              </Transition>
-            </div>
-
             <!-- Pembimbing 1 -->
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
@@ -610,15 +541,11 @@ const loading = ref(true);
 const saving = ref(false);
 const skripsiList = ref([]);
 const dosenList = ref([]);
-const bidangList = ref([]);
 const showAssignModal = ref(false);
 const selectedSkripsi = ref(null);
-const selectedBidang = ref("");
 const isEditMode = ref(false);
 const selectedPembimbing1 = ref(null);
 const selectedPembimbing2 = ref(null);
-const bidangDropdownOpen = ref(false);
-const bidangDropdownRef = ref(null);
 const filterDropdownOpen = ref(false);
 const filterDropdownRef = ref(null);
 
@@ -634,9 +561,6 @@ const filterPembimbingLabel = computed(() => {
 });
 
 const handleDropdownClickOutside = (e) => {
-  if (bidangDropdownRef.value && !bidangDropdownRef.value.contains(e.target)) {
-    bidangDropdownOpen.value = false;
-  }
   if (filterDropdownRef.value && !filterDropdownRef.value.contains(e.target)) {
     filterDropdownOpen.value = false;
   }
@@ -677,20 +601,9 @@ const fetchStats = async () => {
   }
 };
 
-// Filter dosen by bidang keahlian and exclude full kuota from selectable
 const filteredDosenList = computed(() => {
-  let list = dosenList.value;
-  if (selectedBidang.value) {
-    list = list.filter(
-      (d) =>
-        d.bidang_keahlian &&
-        d.bidang_keahlian
-          .toLowerCase()
-          .includes(selectedBidang.value.toLowerCase()),
-    );
-  }
   // Sort: available first, then full kuota
-  return [...list].sort((a, b) => {
+  return [...dosenList.value].sort((a, b) => {
     if (a.is_available && !b.is_available) return -1;
     if (!a.is_available && b.is_available) return 1;
     return 0;
@@ -750,27 +663,9 @@ const fetchAvailableDosen = async () => {
       dosenList.value = Array.isArray(response.data)
         ? response.data
         : Object.values(response.data);
-      bidangList.value = response.bidang_list || [];
     }
   } catch (error) {
     console.error("Failed to fetch available dosen:", error);
-  }
-};
-
-const filterDosenByBidang = () => {
-  // Bidang filtering is handled reactively via computed property
-  // Reset selected if they no longer match filter
-  if (selectedPembimbing1.value && selectedBidang.value) {
-    const match = filteredDosenList.value.find(
-      (d) => d.id === selectedPembimbing1.value.id,
-    );
-    if (!match) selectedPembimbing1.value = null;
-  }
-  if (selectedPembimbing2.value && selectedBidang.value) {
-    const match = filteredDosenList.value.find(
-      (d) => d.id === selectedPembimbing2.value.id,
-    );
-    if (!match) selectedPembimbing2.value = null;
   }
 };
 
@@ -785,7 +680,6 @@ const openAssignModal = async (item) => {
   selectedSkripsi.value = item;
   selectedPembimbing1.value = null;
   selectedPembimbing2.value = null;
-  selectedBidang.value = "";
   isEditMode.value = item.pembimbing && item.pembimbing.length > 0;
   showAssignModal.value = true;
   await fetchAvailableDosen();

@@ -7,6 +7,7 @@ use App\Models\Seminar;
 use App\Models\Penguji;
 use App\Models\BeritaAcara;
 use App\Models\PerbaikanProposal;
+use App\Services\NomorSuratService;
 use Illuminate\Http\Request;
 
 class SeminarNilaiController extends Controller
@@ -174,11 +175,10 @@ class SeminarNilaiController extends Controller
 
                 // Auto-create or update BeritaAcara
                 if (!$seminar->beritaAcara) {
-                    $baNomor = 'BA-' . strtoupper($seminar->jenis) . '-' . $seminar->id . '-' . now()->format('YmdHis');
-                    // Ensure unique nomor
-                    while (BeritaAcara::where('nomor', $baNomor)->exists()) {
-                        $baNomor = 'BA-' . strtoupper($seminar->jenis) . '-' . $seminar->id . '-' . now()->format('YmdHis') . '-' . rand(100, 999);
-                    }
+                    $baNomor = app(NomorSuratService::class)->generateForSeminar(
+                        NomorSuratService::keyForBeritaAcara($seminar->jenis),
+                        $seminar
+                    );
                     BeritaAcara::create([
                         'jenis' => 'seminar',
                         'seminar_id' => $seminar->id,
@@ -187,6 +187,12 @@ class SeminarNilaiController extends Controller
                         'hasil' => $updateData['hasil'] ?? ($ketuaHasil ?? 'lulus'),
                         'catatan' => null,
                     ]);
+                } else {
+                    app(NomorSuratService::class)->ensureBeritaAcaraNumber(
+                        $seminar->beritaAcara,
+                        $seminar,
+                        $seminar->beritaAcara->tanggal
+                    );
                 }
 
                 // Update skripsi status to penentuan_dospem only if sempro and lulus/lulus_revisi

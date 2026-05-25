@@ -12,6 +12,7 @@ use App\Models\Seminar;
 use App\Models\Prodi;
 use App\Models\Configuration;
 use App\Models\DocumentToken;
+use App\Services\NomorSuratService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -22,6 +23,11 @@ use chillerlan\QRCode\QROptions;
 
 class PdfController extends Controller
 {
+    public function __construct(private ?NomorSuratService $nomorSuratService = null)
+    {
+        $this->nomorSuratService ??= app(NomorSuratService::class);
+    }
+
     /**
      * Generate SK Tugas Pembimbing PDF
      */
@@ -32,7 +38,7 @@ class PdfController extends Controller
         // Get or create SK Tugas
         $skTugas = $skripsi->skTugas;
         if (!$skTugas) {
-            $nomor = 'SK/' . date('Y') . '/' . str_pad($skripsi->id, 4, '0', STR_PAD_LEFT);
+            $nomor = $this->nomorSuratService->generateForSkripsi('sk_tugas', $skripsi);
             $skTugas = SKTugas::create([
                 'skripsi_id' => $skripsi->id,
                 'nomor_sk' => $nomor,
@@ -40,6 +46,7 @@ class PdfController extends Controller
                 'file_sk' => null,
             ]);
         }
+        $this->nomorSuratService->ensureSkTugasNumber($skTugas, $skripsi, $skTugas->tanggal_terbit);
 
         // Auto-resolve KAPRODI for this mahasiswa's prodi
         $prodi = $skripsi->mahasiswa->prodi;
@@ -229,7 +236,7 @@ class PdfController extends Controller
         // Get or create Nota Bimbingan
         $nota = $skripsi->notaBimbingan;
         if (!$nota) {
-            $nomor = 'NB/' . date('Y') . '/' . str_pad($skripsi->id, 4, '0', STR_PAD_LEFT);
+            $nomor = $this->nomorSuratService->generateForSkripsi('nota_bimbingan', $skripsi);
             $nota = NotaBimbingan::create([
                 'skripsi_id' => $skripsi->id,
                 'nomor' => $nomor,
@@ -237,6 +244,7 @@ class PdfController extends Controller
                 'total_bimbingan' => $skripsi->bimbingan->count(),
             ]);
         }
+        $this->nomorSuratService->ensureNotaBimbinganNumber($nota, $skripsi, $nota->tanggal_terbit);
 
         // QR Signature
         $signatureMode = $this->getSignatureMode($request);
@@ -288,6 +296,7 @@ class PdfController extends Controller
                 'message' => 'Berita acara belum dibuat untuk seminar ini'
             ], 404);
         }
+        $this->nomorSuratService->ensureBeritaAcaraNumber($beritaAcara, $seminar, $beritaAcara->tanggal);
 
         $jenisLabel = $seminar->jenis === 'sempro' ? 'Seminar Proposal' : ($seminar->jenis === 'semhas' ? 'Seminar Hasil' : 'Sidang Skripsi');
         $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
@@ -336,7 +345,8 @@ class PdfController extends Controller
         $skripsi->load(['mahasiswa.prodi', 'pembimbing.dosen']);
 
         $skTugas = $skripsi->skTugas ?? (object)[
-            'nomor' => 'SK/' . date('Y') . '/' . str_pad($skripsi->id, 4, '0', STR_PAD_LEFT),
+            'nomor_sk' => 'DRAFT',
+            'nomor' => 'DRAFT',
             'tanggal_terbit' => now(),
         ];
 
@@ -363,6 +373,7 @@ class PdfController extends Controller
         $fakultas = $prodi->fakultas ?? null;
         $kaprodi = $this->resolveKaprodi($prodi);
         $dekan = $this->resolveDekan($fakultas);
+        $this->nomorSuratService->ensureSeminarSkPengujiNumber($seminar);
 
         // QR Signature
         $signatureMode = $this->getSignatureMode($request);
@@ -373,7 +384,7 @@ class PdfController extends Controller
                 $request,
                 'sk_penguji',
                 $seminar->id,
-                '-',
+                $seminar->nomor_sk_penguji ?? '-',
                 $dekan['name'],
                 $dekan['position'],
                 "SK_Penguji_{$nim}.pdf"
@@ -391,6 +402,7 @@ class PdfController extends Controller
             'dekan' => $dekan,
             'city' => 'Bangil',
             'institution' => "Universitas Islam Internasional Darullughah Wadda'wah",
+            'nomor_sk_penguji' => $seminar->nomor_sk_penguji,
             'signatureMode' => $signatureMode,
             'qrData' => $qrData,
         ];
@@ -619,6 +631,7 @@ class PdfController extends Controller
                 'message' => 'SK Yudisium belum diterbitkan untuk skripsi ini'
             ], 404);
         }
+        $this->nomorSuratService->ensureSkYudisiumNumber($skYudisium, $skripsi, $skYudisium->tanggal_terbit);
 
         // Get the ujian seminar for tanggal ujian
         $ujian = Seminar::where('skripsi_id', $skripsi->id)
@@ -804,6 +817,17 @@ class PdfController extends Controller
         }
 
         $items = $query->orderBy('tanggal', 'desc')->get();
+        $items->each(function ($item) {
+            $skripsi = $item->skripsi;
+            $skYudisium = $skripsi?->skYudisium;
+            if ($skripsi && $skYudisium) {
+                $this->nomorSuratService->ensureSkYudisiumNumber(
+                    $skYudisium,
+                    $skripsi,
+                    $skYudisium->tanggal_terbit
+                );
+            }
+        });
 
         // Resolve prodi & fakultas names
         $prodiName = '';
@@ -869,7 +893,8 @@ class PdfController extends Controller
         $qrDataDekan = null;
 
         if ($signatureMode === 'qr' && $dekan) {
-            $nomorSurat = $nomorSkBatch ?: ('RY-' . date('Y') . '-' . str_pad($items->count(), 3, '0', STR_PAD_LEFT));
+            $nomorSurat = $nomorSkBatch
+                ?: ($items->first()?->skripsi?->skYudisium?->nomor_sk ?? '-');
             $qrDataDekan = $this->generateQrToken(
                 $request,
                 'sk_yudisium',

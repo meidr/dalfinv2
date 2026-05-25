@@ -601,7 +601,18 @@
                         : 'text-text-main hover:bg-gray-100 dark:hover:bg-white/10'
                     "
                   >
-                    {{ t.name }}
+                    <span class="flex flex-col">
+                      <span>{{ t.name }}</span>
+                      <span
+                        v-if="t.semester"
+                        class="text-xs font-normal text-text-secondary"
+                        :class="
+                          form.th_akademik_id === t.id ? 'text-primary/80' : ''
+                        "
+                      >
+                        Semester {{ t.semester }}
+                      </span>
+                    </span>
                     <span
                       v-if="form.th_akademik_id === t.id"
                       class="material-symbols-outlined text-[16px] text-primary"
@@ -889,7 +900,8 @@ const getFormStatusLabel = (value) => {
 const getFormTahunLabel = (value) => {
   if (!value) return "Pilih Tahun Akademik";
   const found = tahunList.value.find((t) => t.id === value);
-  return found ? found.name : value;
+  if (!found) return value;
+  return found.semester ? `${found.name} - Semester ${found.semester}` : found.name;
 };
 
 const handleFormDropdownClickOutside = (e) => {

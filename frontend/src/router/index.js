@@ -125,6 +125,19 @@ const routes = [
           import("../views/admin/skyudisium/DetailSKYudisiumBatch.vue"),
       },
       {
+        path: "nomor-surat",
+        name: "DataNomorSurat",
+        component: () =>
+          import("../views/admin/nomorsurat/DataNomorSurat.vue"),
+        meta: { roles: ["admin", "super_admin"] },
+      },
+      {
+        path: "dokumen",
+        name: "DataDokumenResmi",
+        component: () => import("../views/admin/dokumen/DataDokumen.vue"),
+        meta: { roles: ["admin", "super_admin", "staff"] },
+      },
+      {
         path: "master/mahasiswa",
         name: "MasterMahasiswa",
         component: () => import("../views/admin/master/MasterMahasiswa.vue"),
@@ -436,9 +449,10 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // Role-based access control
-  const requiredRoles = to.matched
-    .filter((record) => record.meta.roles)
-    .flatMap((record) => record.meta.roles);
+  const roleRecord = [...to.matched]
+    .reverse()
+    .find((record) => record.meta.roles);
+  const requiredRoles = roleRecord?.meta.roles || [];
 
   if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
     // Redirect to user's own dashboard

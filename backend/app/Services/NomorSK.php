@@ -11,4 +11,9 @@ class NomorSK
     {
         return "SK-" . $jenisSk . "-" . $tahun . "-" . $prodi;
     }
+
+    // ini rencananya pakai API, tapi api belum ready jadi pakai static gini aja dulu
+    public static function getNomorSk(){
+        return 6;
+    }
 }

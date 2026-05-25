@@ -7,6 +7,7 @@ use App\Models\Skripsi;
 use App\Models\Seminar;
 use App\Models\Penguji;
 use App\Models\BeritaAcara;
+use App\Services\NomorSuratService;
 use App\Traits\GenderFilterable;
 use Illuminate\Http\Request;
 
@@ -189,16 +190,22 @@ class SeminarHasilController extends Controller
     {
         $existing = $seminar->beritaAcara;
         $request->validate([
-            'nomor' => 'required|string|unique:berita_acara,nomor' . ($existing ? ',' . $existing->id : ''),
+            'nomor' => 'nullable|string|unique:berita_acara,nomor' . ($existing ? ',' . $existing->id : ''),
             'hasil' => 'required|in:lulus,lulus_bersyarat,tidak_lulus,mengulang',
             'catatan' => 'nullable|string',
         ]);
+
+        $nomor = $existing?->nomor
+            ?: ($request->nomor ?: app(NomorSuratService::class)->generateForSeminar(
+                NomorSuratService::keyForBeritaAcara($seminar->jenis),
+                $seminar
+            ));
 
         $beritaAcara = BeritaAcara::updateOrCreate(
             ['seminar_id' => $seminar->id],
             [
                 'jenis' => 'seminar',
-                'nomor' => $request->nomor,
+                'nomor' => $nomor,
                 'tanggal' => now(),
                 'hasil' => $request->hasil,
                 'catatan' => $request->catatan,

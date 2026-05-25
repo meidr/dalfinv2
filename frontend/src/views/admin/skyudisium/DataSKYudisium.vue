@@ -308,9 +308,11 @@
                 v-model="batchForm.nomor_sk_batch"
                 type="text"
                 class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="Contoh: 001/SK-YUD/2026"
-                required
+                placeholder="Otomatis dari template Nomor Surat"
               />
+              <p class="text-xs text-text-secondary mt-1">
+                Kosongkan untuk memakai template Nomor Surat.
+              </p>
             </div>
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
@@ -323,7 +325,7 @@
               >
                 <option value="">Pilih Tahun Akademik</option>
                 <option v-for="t in tahunList" :key="t.id" :value="t.id">
-                  {{ t.name }}
+                  {{ formatTahunOption(t) }}
                 </option>
               </select>
             </div>
@@ -445,7 +447,7 @@
           >
             <option value="">Semua Tahun</option>
             <option v-for="t in tahunList" :key="t.id" :value="t.name">
-              {{ t.name }}
+              {{ formatTahunOption(t) }}
             </option>
           </select>
           <select
@@ -651,8 +653,11 @@
                 v-model="yudisiumForm.nomor_sk"
                 type="text"
                 class="w-full px-3 py-2 border border-border-light dark:border-white/10 rounded-lg bg-white dark:bg-surface-light text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                required
+                placeholder="Otomatis dari template Nomor Surat"
               />
+              <p class="text-xs text-text-secondary mt-1">
+                Nomor akan dibuat dari template Nomor Surat saat diproses.
+              </p>
             </div>
             <div>
               <label class="block text-sm font-medium text-text-main mb-1"
@@ -765,6 +770,13 @@ const batchForm = reactive({
 });
 
 const currentYear = computed(() => new Date().getFullYear());
+
+const formatTahunOption = (tahun) => {
+  if (!tahun) return "-";
+  return tahun.semester
+    ? `${tahun.name} - Semester ${tahun.semester}`
+    : tahun.name;
+};
 
 const filteredProdiList = computed(() => {
   if (!filterFakultas.value) return prodiList.value;
@@ -1112,18 +1124,20 @@ const goToBatchPage = (page) => {
 const submitBatch = async () => {
   try {
     savingBatch.value = true;
-    await adminService.createSKYudisiumBatch({
+    const response = await adminService.createSKYudisiumBatch({
       nomor_sk_batch: batchForm.nomor_sk_batch,
       th_akademik_id: batchForm.th_akademik_id,
       prodi_id: batchForm.prodi_id || null,
       tanggal_terbit: batchForm.tanggal_terbit,
       tanggal_yudisium: batchForm.tanggal_yudisium,
     });
+    const nomorBatch =
+      response.data?.nomor_sk_batch || batchForm.nomor_sk_batch;
     showBatchModal.value = false;
     // Navigate to the batch detail page so admin can assign mahasiswa
     router.push({
       name: "DetailSKYudisiumBatch",
-      params: { nomor: encodeURIComponent(batchForm.nomor_sk_batch) },
+      params: { nomor: encodeURIComponent(nomorBatch) },
       query: {
         th_akademik_id: batchForm.th_akademik_id,
         prodi_id: batchForm.prodi_id || null,

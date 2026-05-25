@@ -71,6 +71,7 @@
           >
             <tr>
               <th class="px-6 py-4">Kode</th>
+              <th class="px-6 py-4">Alias</th>
               <th class="px-6 py-4">Nama Prodi</th>
               <th class="px-6 py-4">Jenjang</th>
               <th class="px-6 py-4">Fakultas</th>
@@ -81,7 +82,7 @@
           <tbody class="divide-y divide-border-light">
             <tr v-if="items.length === 0">
               <td
-                colspan="6"
+                colspan="7"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data ditemukan
@@ -95,6 +96,9 @@
             >
               <td class="px-6 py-4 text-text-main">
                 {{ item.kode }}
+              </td>
+              <td class="px-6 py-4 text-text-secondary">
+                {{ item.alias || "-" }}
               </td>
               <td class="px-6 py-4 text-text-main font-medium">
                 {{ item.nama }}
@@ -174,6 +178,18 @@
                 v-model="form.kode"
                 type="text"
                 required
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-1"
+                >Alias Prodi</label
+              >
+              <input
+                v-model="form.alias"
+                type="text"
+                placeholder="Contoh: PAI"
                 class="w-full px-3 py-2.5 border border-border-light rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background-light text-text-main dark:bg-background"
               />
             </div>
@@ -280,6 +296,7 @@ const filters = reactive({
 
 const form = reactive({
   kode: "",
+  alias: "",
   nama: "",
   jenjang: "S1",
   fakultas_id: null,
@@ -316,6 +333,7 @@ const openModal = (item = null) => {
     isEditing.value = true;
     currentId.value = item.id;
     form.kode = item.kode;
+    form.alias = item.alias || "";
     form.nama = item.nama;
     form.jenjang = item.jenjang;
     form.fakultas_id = item.fakultas_id;
@@ -324,6 +342,7 @@ const openModal = (item = null) => {
     isEditing.value = false;
     currentId.value = null;
     form.kode = "";
+    form.alias = "";
     form.nama = "";
     form.jenjang = "S1";
     form.fakultas_id = null;

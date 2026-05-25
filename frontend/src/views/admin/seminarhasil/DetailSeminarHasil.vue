@@ -153,7 +153,7 @@
                 <div
                   v-for="p in seminar.skripsi.pembimbing"
                   :key="p.id"
-                  class="flex items-center gap-3 p-2 bg-gray-50 dark:bg-background rounded-lg"
+                  class="flex items-center gap-3 p-2 bg-background-light border border-border-light rounded-lg"
                 >
                   <div
                     class="size-8 rounded-full flex items-center justify-center text-xs font-bold"
