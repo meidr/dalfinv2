@@ -13,6 +13,7 @@ use App\Models\Prodi;
 use App\Models\Configuration;
 use App\Models\DocumentToken;
 use App\Services\NomorSuratService;
+use App\Traits\GenderFilterable;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -23,6 +24,8 @@ use chillerlan\QRCode\QROptions;
 
 class PdfController extends Controller
 {
+    use GenderFilterable;
+
     public function __construct(private ?NomorSuratService $nomorSuratService = null)
     {
         $this->nomorSuratService ??= app(NomorSuratService::class);
@@ -424,6 +427,8 @@ class PdfController extends Controller
             'penguji.dosen'
         ])->where('jenis', 'sidang');
 
+        $this->applyGenderFilter($query, $request, 'skripsi.mahasiswa');
+
         // Apply filters
         if ($request->filled('prodi_id')) {
             $query->whereHas('skripsi.mahasiswa', function ($q) use ($request) {
@@ -480,6 +485,14 @@ class PdfController extends Controller
         // Filter by specific date
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
+        }
+
+        if (!$request->filled('tanggal') && $request->filled('tanggal_mulai')) {
+            $query->whereDate('tanggal', '>=', $request->tanggal_mulai);
+        }
+
+        if (!$request->filled('tanggal') && $request->filled('tanggal_selesai')) {
+            $query->whereDate('tanggal', '<=', $request->tanggal_selesai);
         }
 
         // Filter by pembimbing name

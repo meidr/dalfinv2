@@ -550,61 +550,6 @@
               </div>
             </div>
 
-            <!-- Other Dokumen -->
-            <div v-if="skripsi.dokumen?.length > 0">
-              <h4 class="font-bold text-text-main mb-3">Dokumen Lainnya</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div
-                  v-for="doc in skripsi.dokumen.filter(
-                    (d) => d.jenis !== 'revisi_proposal',
-                  )"
-                  :key="doc.id"
-                  class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-border-light hover:border-primary/30 transition-colors"
-                >
-                  <div
-                    class="size-10 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-500 flex items-center justify-center shrink-0"
-                  >
-                    <span class="material-symbols-outlined"
-                      >picture_as_pdf</span
-                    >
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="font-bold text-text-main text-sm truncate">
-                      {{ doc.nama_file || doc.jenis }}
-                    </p>
-                    <p class="text-xs text-text-secondary">
-                      {{ formatDate(doc.created_at) }}
-                      <span v-if="doc.ukuran">
-                        • {{ formatFileSize(doc.ukuran) }}</span
-                      >
-                    </p>
-                  </div>
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    <a
-                      :href="getFileUrl(doc.path)"
-                      target="_blank"
-                      class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-primary hover:border-primary transition-all"
-                      title="Lihat"
-                    >
-                      <span class="material-symbols-outlined text-[16px]"
-                        >visibility</span
-                      >
-                    </a>
-                    <a
-                      :href="getFileUrl(doc.path)"
-                      :download="doc.nama_file || doc.jenis"
-                      class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:text-green-600 hover:border-green-400 transition-all"
-                      title="Unduh"
-                    >
-                      <span class="material-symbols-outlined text-[16px]"
-                        >download</span
-                      >
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- Revisi Proposal Dokumen -->
             <div v-if="revisiProposalDocs.length > 0">
               <h4 class="font-bold text-text-main mb-3 flex items-center gap-2">

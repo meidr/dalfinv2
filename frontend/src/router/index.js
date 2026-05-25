@@ -432,6 +432,19 @@ const router = createRouter({
   routes,
 });
 
+const CHUNK_RELOAD_KEY = "dalfin:chunk-reload-target";
+
+const isChunkLoadError = (error) => {
+  const message = String(error?.message || error || "");
+  return [
+    "Failed to fetch dynamically imported module",
+    "Importing a module script failed",
+    "error loading dynamically imported module",
+    "Loading chunk",
+    "Unable to preload CSS",
+  ].some((pattern) => message.includes(pattern));
+};
+
 let moduleSettingsFetched = false;
 
 router.beforeEach(async (to, from, next) => {
@@ -500,7 +513,26 @@ router.beforeEach(async (to, from, next) => {
   next();
 });
 
+router.onError((error, to) => {
+  stopProgress();
+
+  if (isChunkLoadError(error)) {
+    const fallbackPath =
+      window.location.pathname + window.location.search + window.location.hash;
+    const targetPath = to?.fullPath || fallbackPath;
+
+    if (sessionStorage.getItem(CHUNK_RELOAD_KEY) !== targetPath) {
+      sessionStorage.setItem(CHUNK_RELOAD_KEY, targetPath);
+      window.location.assign(targetPath);
+      return;
+    }
+  }
+
+  console.error("Router navigation failed:", error);
+});
+
 router.afterEach(() => {
+  sessionStorage.removeItem(CHUNK_RELOAD_KEY);
   stopProgress();
 });
 

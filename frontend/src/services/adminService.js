@@ -301,6 +301,14 @@ export const adminService = {
     return response.data;
   },
 
+  async downloadDokumenResmiBatch(data) {
+    const response = await api.post("/admin/dokumen-resmi/batch-download", data, {
+      responseType: "blob",
+      timeout: 120000,
+    });
+    return response;
+  },
+
   // PDF Generation
   async getSkTugasPdf(skripsiId) {
     const response = await api.get(`/admin/pdf/sk-tugas/${skripsiId}`, {

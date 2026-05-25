@@ -209,6 +209,7 @@ Route::prefix('admin')
 
         // Dokumen Management
         Route::get('/dokumen-resmi', [AdminDokumenResmiController::class, 'index']);
+        Route::post('/dokumen-resmi/batch-download', [AdminDokumenResmiController::class, 'batchDownload']);
         Route::apiResource('dokumen', AdminDokumenController::class);
         Route::get('/dokumen/{dokumen}/download', [AdminDokumenController::class, 'download']);
         Route::get('/dokumen/{dokumen}/view', [AdminDokumenController::class, 'view']);

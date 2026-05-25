@@ -72,24 +72,39 @@ button {
   cursor: pointer;
 }
 
-.page-fade-enter-active,
-.page-fade-leave-active {
+.page-fade-enter-active {
   transition:
-    opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform, filter;
 }
 
-.page-fade-enter-from,
+.page-fade-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    filter 0.18s ease;
+  will-change: opacity, transform, filter;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  filter: blur(3px);
+  transform: translate3d(0, 12px, 0) scale(0.995);
+}
+
 .page-fade-leave-to {
   opacity: 0;
-  transform: translate3d(0, 8px, 0);
+  filter: blur(1px);
+  transform: translate3d(0, -6px, 0) scale(0.998);
 }
 
 .page-fade-enter-to,
 .page-fade-leave-from {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -101,6 +116,7 @@ button {
   .page-fade-enter-from,
   .page-fade-leave-to {
     opacity: 1;
+    filter: none;
     transform: none;
   }
 }
