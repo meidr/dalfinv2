@@ -89,7 +89,8 @@ class UjianController extends Controller
             }
         }
 
-        $ujian = $query->orderBy('tanggal', 'desc')->paginate(10);
+        $perPage = max(5, min((int) $request->get('per_page', 10), 100));
+        $ujian = $query->orderBy('tanggal', 'desc')->paginate($perPage);
 
         // Add grade to each item
         $ujian->getCollection()->transform(function ($item) {

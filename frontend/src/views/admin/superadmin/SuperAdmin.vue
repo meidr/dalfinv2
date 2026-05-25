@@ -129,7 +129,7 @@
           </div>
         </div>
         <!-- Table -->
-        <div class="overflow-x-auto">
+        <DataTableScroll>
           <table class="w-full text-left text-sm whitespace-nowrap">
             <thead
               class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
@@ -221,36 +221,14 @@
               </tr>
             </tbody>
           </table>
-        </div>
+        </DataTableScroll>
         <!-- Pagination -->
-        <div
-          class="flex items-center justify-between px-6 py-4 border-t border-border-light"
-        >
-          <p class="text-xs text-text-secondary">
-            {{ logPagination.from || 0 }}–{{ logPagination.to || 0 }} dari
-            {{ logPagination.total }}
-          </p>
-          <div class="flex gap-2">
-            <button
-              @click="goToLogPage(logPagination.current_page - 1)"
-              :disabled="logPagination.current_page <= 1"
-              class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm disabled:opacity-40"
-            >
-              <span class="material-symbols-outlined text-[16px]"
-                >chevron_left</span
-              >
-            </button>
-            <button
-              @click="goToLogPage(logPagination.current_page + 1)"
-              :disabled="logPagination.current_page >= logPagination.last_page"
-              class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm disabled:opacity-40"
-            >
-              <span class="material-symbols-outlined text-[16px]"
-                >chevron_right</span
-              >
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          :pagination="logPagination"
+          :disabled="logsLoading"
+          @page-change="goToLogPage"
+          @per-page-change="changeLogPerPage"
+        />
       </div>
     </div>
 
@@ -464,7 +442,7 @@
           </div>
           <select
             v-model="userRoleFilter"
-            @change="fetchUsers"
+            @change="resetUsersAndFetch"
             class="px-4 py-2.5 bg-surface-light border border-border-light rounded-lg text-sm"
           >
             <option value="">Semua Role</option>
@@ -474,7 +452,7 @@
             <option value="mahasiswa">Mahasiswa</option>
           </select>
         </div>
-        <div class="overflow-x-auto">
+        <DataTableScroll>
           <table class="w-full text-left text-sm whitespace-nowrap">
             <thead
               class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
@@ -496,69 +474,82 @@
                   ></div>
                 </td>
               </tr>
-              <tr
-                v-for="u in users"
-                :key="u.id"
-                class="hover:bg-sidebar-light/30 transition-colors group"
-              >
-                <td class="px-6 py-3 font-medium text-text-main">
-                  {{ u.name }}
-                </td>
-                <td class="px-6 py-3 text-text-secondary">{{ u.email }}</td>
-                <td class="px-6 py-3">
-                  <span
-                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase"
-                    :class="getRoleBadge(u.role)"
-                    >{{ u.role }}</span
-                  >
-                </td>
-                <td class="px-6 py-3">
-                  <template v-if="u.role === 'staff'">
-                    <select
-                      :value="u.jenis_kelamin || ''"
-                      @change="updateStaffGender(u, $event.target.value)"
-                      class="px-2 py-1 border border-border-light rounded-lg bg-background-light text-text-main text-xs focus:ring-1 focus:ring-primary w-16"
-                    >
-                      <option value="" disabled>-</option>
-                      <option value="L">L</option>
-                      <option value="P">P</option>
-                    </select>
-                  </template>
-                  <span v-else class="text-text-secondary text-xs">-</span>
-                </td>
-                <td class="px-6 py-3">
-                  <span
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
-                    :class="
-                      u.is_active
-                        ? 'bg-green-50 text-green-700'
-                        : 'bg-red-50 text-red-700'
-                    "
-                  >
-                    <span
-                      class="w-1.5 h-1.5 rounded-full"
-                      :class="u.is_active ? 'bg-green-500' : 'bg-red-500'"
-                    ></span>
-                    {{ u.is_active ? "Aktif" : "Nonaktif" }}
-                  </span>
-                </td>
-                <td class="px-6 py-3 text-right">
-                  <button
-                    @click="impersonateUser(u)"
-                    :disabled="impersonating"
-                    class="opacity-0 group-hover:opacity-100 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-all disabled:opacity-50"
-                  >
-                    <span
-                      class="material-symbols-outlined text-[14px] align-middle mr-1"
-                      >login</span
-                    >
-                    Login Sebagai
-                  </button>
+              <tr v-else-if="users.length === 0">
+                <td colspan="6" class="p-8 text-center text-text-secondary">
+                  Tidak ada user ditemukan
                 </td>
               </tr>
+              <template v-else>
+                <tr
+                  v-for="u in users"
+                  :key="u.id"
+                  class="hover:bg-sidebar-light/30 transition-colors group"
+                >
+                  <td class="px-6 py-3 font-medium text-text-main">
+                    {{ u.name }}
+                  </td>
+                  <td class="px-6 py-3 text-text-secondary">{{ u.email }}</td>
+                  <td class="px-6 py-3">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                      :class="getRoleBadge(u.role)"
+                      >{{ u.role }}</span
+                    >
+                  </td>
+                  <td class="px-6 py-3">
+                    <template v-if="u.role === 'staff'">
+                      <select
+                        :value="u.jenis_kelamin || ''"
+                        @change="updateStaffGender(u, $event.target.value)"
+                        class="px-2 py-1 border border-border-light rounded-lg bg-background-light text-text-main text-xs focus:ring-1 focus:ring-primary w-16"
+                      >
+                        <option value="" disabled>-</option>
+                        <option value="L">L</option>
+                        <option value="P">P</option>
+                      </select>
+                    </template>
+                    <span v-else class="text-text-secondary text-xs">-</span>
+                  </td>
+                  <td class="px-6 py-3">
+                    <span
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+                      :class="
+                        u.is_active
+                          ? 'bg-green-50 text-green-700'
+                          : 'bg-red-50 text-red-700'
+                      "
+                    >
+                      <span
+                        class="w-1.5 h-1.5 rounded-full"
+                        :class="u.is_active ? 'bg-green-500' : 'bg-red-500'"
+                      ></span>
+                      {{ u.is_active ? "Aktif" : "Nonaktif" }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-3 text-right">
+                    <button
+                      @click="impersonateUser(u)"
+                      :disabled="impersonating"
+                      class="opacity-0 group-hover:opacity-100 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition-all disabled:opacity-50"
+                    >
+                      <span
+                        class="material-symbols-outlined text-[14px] align-middle mr-1"
+                        >login</span
+                      >
+                      Login Sebagai
+                    </button>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
-        </div>
+        </DataTableScroll>
+        <TablePagination
+          :pagination="userPagination"
+          :disabled="usersLoading"
+          @page-change="goToUserPage"
+          @per-page-change="changeUserPerPage"
+        />
       </div>
     </div>
 
@@ -766,6 +757,7 @@ const getAvatarColor = (role) => {
 const logPagination = reactive({
   current_page: 1,
   last_page: 1,
+  per_page: 20,
   total: 0,
   from: 0,
   to: 0,
@@ -780,6 +772,14 @@ const userRoleFilter = ref("");
 const impersonating = ref(false);
 const isImpersonating = ref(false);
 const impersonatingUser = ref("");
+const userPagination = reactive({
+  current_page: 1,
+  last_page: 1,
+  per_page: 15,
+  total: 0,
+  from: 0,
+  to: 0,
+});
 
 // Security
 const systemStatus = reactive({
@@ -796,6 +796,7 @@ const fetchLogs = async () => {
     logsLoading.value = true;
     const params = {
       page: logPagination.current_page,
+      per_page: logPagination.per_page,
       search: logSearch.value,
       action: logActionFilter.value,
       date_from: logDateFrom.value,
@@ -807,6 +808,7 @@ const fetchLogs = async () => {
       Object.assign(logPagination, {
         current_page: response.data.current_page,
         last_page: response.data.last_page,
+        per_page: response.data.per_page || logPagination.per_page,
         total: response.data.total,
         from: response.data.from,
         to: response.data.to,
@@ -875,13 +877,32 @@ const goToLogPage = (page) => {
   }
 };
 
+const changeLogPerPage = (perPage) => {
+  logPagination.per_page = perPage;
+  logPagination.current_page = 1;
+  fetchLogs();
+};
+
 const fetchUsers = async () => {
   try {
     usersLoading.value = true;
-    const params = { search: userSearch.value, role: userRoleFilter.value };
+    const params = {
+      page: userPagination.current_page,
+      per_page: userPagination.per_page,
+      search: userSearch.value,
+      role: userRoleFilter.value,
+    };
     const response = await adminService.getSuperAdminUsers(params);
     if (response.success) {
       users.value = response.data.data || response.data;
+      Object.assign(userPagination, {
+        current_page: response.data.current_page || userPagination.current_page,
+        last_page: response.data.last_page || 1,
+        per_page: response.data.per_page || userPagination.per_page,
+        total: response.data.total || users.value.length,
+        from: response.data.from || (users.value.length ? 1 : 0),
+        to: response.data.to || users.value.length,
+      });
     }
   } catch (e) {
     console.error("Failed to fetch users:", e);
@@ -893,7 +914,28 @@ const fetchUsers = async () => {
 let userSearchTimeout = null;
 const debouncedFetchUsers = () => {
   clearTimeout(userSearchTimeout);
-  userSearchTimeout = setTimeout(fetchUsers, 300);
+  userSearchTimeout = setTimeout(() => {
+    userPagination.current_page = 1;
+    fetchUsers();
+  }, 300);
+};
+
+const resetUsersAndFetch = () => {
+  userPagination.current_page = 1;
+  fetchUsers();
+};
+
+const goToUserPage = (page) => {
+  if (page >= 1 && page <= userPagination.last_page) {
+    userPagination.current_page = page;
+    fetchUsers();
+  }
+};
+
+const changeUserPerPage = (perPage) => {
+  userPagination.per_page = perPage;
+  userPagination.current_page = 1;
+  fetchUsers();
 };
 
 const impersonateUser = async (user) => {

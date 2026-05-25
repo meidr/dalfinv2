@@ -52,7 +52,8 @@ class SuperAdminController extends Controller
             $query->where('created_at', '<=', $to);
         }
 
-        $logs = $query->paginate(20);
+        $perPage = max(5, min((int) $request->get('per_page', 20), 100));
+        $logs = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -337,7 +338,8 @@ class SuperAdminController extends Controller
             $query->where('role', $request->role);
         }
 
-        $users = $query->orderBy('name')->paginate(15);
+        $perPage = max(5, min((int) $request->get('per_page', 15), 100));
+        $users = $query->orderBy('name')->paginate($perPage);
 
         return response()->json([
             'success' => true,

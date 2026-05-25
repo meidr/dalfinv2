@@ -111,7 +111,7 @@
       v-else
       class="bg-surface-light rounded-xl shadow-sm border border-border-light overflow-hidden"
     >
-      <div class="overflow-x-auto">
+      <DataTableScroll>
         <table class="w-full text-left text-sm">
           <thead class="bg-sidebar-light border-b border-border-light">
             <tr>
@@ -281,57 +281,16 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </DataTableScroll>
 
       <!-- Pagination -->
-      <div
-        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
-      >
-        <p class="text-sm text-text-secondary">
-          Menampilkan
-          <span class="font-medium text-text-main"
-            >{{ paginationFrom }}-{{ paginationTo }}</span
-          >
-          dari
-          <span class="font-medium text-text-main">{{
-            filteredList.length
-          }}</span>
-          log bimbingan
-        </p>
-        <div class="flex items-center gap-1">
-          <button
-            @click="currentPage--"
-            :disabled="currentPage <= 1"
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            <span class="material-symbols-outlined text-[18px]"
-              >chevron_left</span
-            >
-          </button>
-          <button
-            v-for="page in visiblePages"
-            :key="page"
-            @click="currentPage = page"
-            class="size-8 flex items-center justify-center rounded-lg text-sm font-bold transition-colors"
-            :class="
-              page === currentPage
-                ? 'bg-primary text-white shadow-sm'
-                : 'border border-border-light text-text-secondary hover:bg-sidebar-light'
-            "
-          >
-            {{ page }}
-          </button>
-          <button
-            @click="currentPage++"
-            :disabled="currentPage >= totalPages"
-            class="size-8 flex items-center justify-center rounded-lg border border-border-light text-text-secondary hover:bg-sidebar-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            <span class="material-symbols-outlined text-[18px]"
-              >chevron_right</span
-            >
-          </button>
-        </div>
-      </div>
+      <TablePagination
+        :pagination="localPagination"
+        :per-page-options="[5, 10, 15, 20, 50]"
+        item-label="log bimbingan"
+        @page-change="goToPage"
+        @per-page-change="changePerPage"
+      />
     </div>
 
     <!-- ===== PENGAJUAN UJIAN SKRIPSI (Mahasiswa Only) ===== -->
@@ -1018,7 +977,7 @@ const bimbinganList = ref([]);
 // ---- Filter & Pagination ----
 const activeFilter = ref("all");
 const currentPage = ref(1);
-const perPage = 5;
+const perPage = ref(5);
 
 const filterOptions = [
   { value: "all", label: "Semua", dot: null },
@@ -1038,42 +997,53 @@ const filteredList = computed(() => {
 });
 
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredList.value.length / perPage)),
+  Math.max(1, Math.ceil(filteredList.value.length / perPage.value)),
 );
 
 const paginatedList = computed(() => {
-  const start = (currentPage.value - 1) * perPage;
-  return filteredList.value.slice(start, start + perPage);
+  const start = (currentPage.value - 1) * perPage.value;
+  return filteredList.value.slice(start, start + perPage.value);
 });
 
 const paginationFrom = computed(() => {
   if (!filteredList.value.length) return 0;
-  return (currentPage.value - 1) * perPage + 1;
+  return (currentPage.value - 1) * perPage.value + 1;
 });
 
 const paginationTo = computed(() => {
-  return Math.min(currentPage.value * perPage, filteredList.value.length);
+  return Math.min(currentPage.value * perPage.value, filteredList.value.length);
 });
 
-const visiblePages = computed(() => {
-  const pages = [];
-  const total = totalPages.value;
-  const current = currentPage.value;
-  const maxVisible = 5;
-
-  let start = Math.max(1, current - Math.floor(maxVisible / 2));
-  let end = Math.min(total, start + maxVisible - 1);
-  if (end - start + 1 < maxVisible) {
-    start = Math.max(1, end - maxVisible + 1);
-  }
-  for (let i = start; i <= end; i++) pages.push(i);
-  return pages;
+const localPagination = computed(() => {
+  return {
+    current_page: currentPage.value,
+    last_page: totalPages.value,
+    per_page: perPage.value,
+    total: filteredList.value.length,
+    from: paginationFrom.value,
+    to: paginationTo.value,
+  };
 });
 
 // Reset to page 1 when filter changes
 watch(activeFilter, () => {
   currentPage.value = 1;
 });
+
+watch(totalPages, (total) => {
+  if (currentPage.value > total) {
+    currentPage.value = total;
+  }
+});
+
+const goToPage = (page) => {
+  currentPage.value = Math.min(Math.max(page, 1), totalPages.value);
+};
+
+const changePerPage = (value) => {
+  perPage.value = value;
+  currentPage.value = 1;
+};
 
 // ---- Detail Modal ----
 const detailItem = ref(null);

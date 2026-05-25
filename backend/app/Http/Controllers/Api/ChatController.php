@@ -243,8 +243,10 @@ class ChatController extends Controller
             $query->where('updated_at', '<=', $request->date_to . ' 23:59:59');
         }
 
+        $perPage = max(5, min((int) $request->get('per_page', 20), 100));
+
         $conversations = $query->orderByDesc('updated_at')
-            ->paginate(20)
+            ->paginate($perPage)
             ->through(function ($conv) {
                 $participants = $conv->participants->map(function ($p) {
                     $name = $p->name;

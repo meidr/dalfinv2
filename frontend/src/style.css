@@ -72,6 +72,39 @@ button {
   cursor: pointer;
 }
 
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition:
+    opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+}
+
+.page-fade-enter-to,
+.page-fade-leave-from {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-fade-enter-active,
+  .page-fade-leave-active {
+    transition: none;
+  }
+
+  .page-fade-enter-from,
+  .page-fade-leave-to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .simplebar-scrollbar::before {
   left: 2px;
   right: 2px;
@@ -209,6 +242,96 @@ button {
 .document-tabs-scroll:hover .simplebar-scrollbar.simplebar-visible::before,
 .document-tabs-scroll:hover .simplebar-track:hover .simplebar-scrollbar::before {
   opacity: 0.65;
+}
+
+.data-table-scroll .simplebar-content-wrapper {
+  overflow-y: hidden !important;
+}
+
+.data-table-scroll.has-y-scroll .simplebar-content-wrapper {
+  overflow-y: auto !important;
+}
+
+.data-table-scroll:not(.has-y-scroll) .simplebar-track.simplebar-vertical {
+  display: none;
+}
+
+.data-table-scroll.has-y-scroll .simplebar-track.simplebar-vertical {
+  width: 10px;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.data-table-scroll.has-y-scroll:hover .simplebar-track.simplebar-vertical {
+  opacity: 1;
+}
+
+.data-table-scroll .simplebar-track.simplebar-horizontal {
+  height: 10px;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.data-table-scroll:hover .simplebar-track.simplebar-horizontal {
+  opacity: 1;
+}
+
+.data-table-scroll .simplebar-track.simplebar-horizontal::after {
+  inset: 4px 8px;
+  height: 2px;
+  opacity: 0;
+}
+
+.data-table-scroll:hover .simplebar-track.simplebar-horizontal::after {
+  opacity: 0.55;
+}
+
+.data-table-scroll .simplebar-track.simplebar-horizontal .simplebar-scrollbar::before {
+  height: 4px;
+  background: color-mix(in srgb, var(--primary) 45%, var(--text-secondary));
+  opacity: 0;
+  transition: opacity 0.22s ease, background-color 0.18s ease;
+}
+
+.data-table-scroll:hover .simplebar-scrollbar.simplebar-visible::before,
+.data-table-scroll:hover .simplebar-track:hover .simplebar-scrollbar::before {
+  opacity: 0.65;
+}
+
+.table-pagination__button,
+.table-pagination__page {
+  min-width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.table-pagination__button {
+  padding-inline: 0.75rem;
+}
+
+.table-pagination__button:hover:not(:disabled),
+.table-pagination__page:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  color: var(--primary);
+}
+
+.table-pagination__page.is-active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.table-pagination__button:disabled,
+.table-pagination__page:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 /* Modal Transitions */

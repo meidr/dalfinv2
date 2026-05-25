@@ -20,7 +20,14 @@
         data-simplebar-auto-hide="false"
       >
         <div class="p-4 md:p-8">
-          <router-view />
+          <router-view v-slot="{ Component, route }">
+            <Transition name="page-fade" mode="out-in" appear>
+              <component
+                :is="Component"
+                :key="`${route.matched[1]?.path || route.fullPath}:${JSON.stringify(route.params)}`"
+              />
+            </Transition>
+          </router-view>
         </div>
       </SimpleBar>
     </main>

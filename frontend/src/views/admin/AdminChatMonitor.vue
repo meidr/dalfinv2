@@ -80,7 +80,7 @@
         <p class="text-text-secondary text-sm mt-3">Memuat percakapan...</p>
       </div>
 
-      <div v-else class="overflow-x-auto">
+      <DataTableScroll v-else>
         <table class="w-full text-left text-sm whitespace-nowrap">
           <thead
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
@@ -157,32 +157,15 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </DataTableScroll>
 
       <!-- Pagination -->
-      <div
-        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
-      >
-        <p class="text-sm text-text-secondary">
-          Halaman {{ pagination.current_page }} dari {{ pagination.last_page }}
-        </p>
-        <div class="flex gap-2">
-          <button
-            @click="goToPage(pagination.current_page - 1)"
-            :disabled="pagination.current_page <= 1"
-            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
-          >
-            Prev
-          </button>
-          <button
-            @click="goToPage(pagination.current_page + 1)"
-            :disabled="pagination.current_page >= pagination.last_page"
-            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <TablePagination
+        :pagination="pagination"
+        :disabled="loading"
+        @page-change="goToPage"
+        @per-page-change="changePerPage"
+      />
     </div>
 
     <!-- Chat Detail Modal -->
@@ -280,6 +263,10 @@ const conversations = ref([]);
 const pagination = reactive({
   current_page: 1,
   last_page: 1,
+  per_page: 20,
+  total: 0,
+  from: 0,
+  to: 0,
 });
 
 const filters = reactive({
@@ -297,7 +284,7 @@ const loadingMessages = ref(false);
 const fetchConversations = async (page = 1) => {
   try {
     loading.value = true;
-    const params = { page };
+    const params = { page, per_page: pagination.per_page };
     if (filters.search) params.search = filters.search;
     if (filters.date_from) params.date_from = filters.date_from;
     if (filters.date_to) params.date_to = filters.date_to;
@@ -306,6 +293,10 @@ const fetchConversations = async (page = 1) => {
       conversations.value = response.data.data;
       pagination.current_page = response.data.current_page;
       pagination.last_page = response.data.last_page;
+      pagination.per_page = response.data.per_page || pagination.per_page;
+      pagination.total = response.data.total || 0;
+      pagination.from = response.data.from || 0;
+      pagination.to = response.data.to || 0;
     }
   } catch (error) {
     console.error("Failed to fetch conversations:", error);
@@ -336,6 +327,12 @@ const goToPage = (page) => {
   if (page >= 1 && page <= pagination.last_page) {
     fetchConversations(page);
   }
+};
+
+const changePerPage = (perPage) => {
+  pagination.per_page = perPage;
+  pagination.current_page = 1;
+  fetchConversations(1);
 };
 
 const openConversation = async (conv) => {

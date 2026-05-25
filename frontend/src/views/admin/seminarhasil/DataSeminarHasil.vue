@@ -158,7 +158,7 @@
       </div>
 
       <!-- Table -->
-      <div v-else class="overflow-x-auto">
+      <DataTableScroll v-else>
         <table class="w-full text-left text-sm whitespace-nowrap">
           <thead
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
@@ -282,42 +282,15 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </DataTableScroll>
 
       <!-- Pagination -->
-      <div
-        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
-      >
-        <p class="text-sm text-text-secondary">
-          Menampilkan
-          <span class="font-medium text-text-main">{{
-            pagination.from || 0
-          }}</span>
-          sampai
-          <span class="font-medium text-text-main">{{
-            pagination.to || 0
-          }}</span>
-          dari
-          <span class="font-medium text-text-main">{{ pagination.total }}</span>
-          data
-        </p>
-        <div class="flex gap-2">
-          <button
-            @click="goToPage(pagination.current_page - 1)"
-            :disabled="pagination.current_page <= 1"
-            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
-          >
-            Sebelumnya
-          </button>
-          <button
-            @click="goToPage(pagination.current_page + 1)"
-            :disabled="pagination.current_page >= pagination.last_page"
-            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
-          >
-            Selanjutnya
-          </button>
-        </div>
-      </div>
+      <TablePagination
+        :pagination="pagination"
+        :disabled="loading"
+        @page-change="goToPage"
+        @per-page-change="changePerPage"
+      />
     </div>
 
     <!-- Schedule Modal -->
@@ -417,6 +390,7 @@ const selectedSkripsi = ref(null);
 const pagination = reactive({
   current_page: 1,
   last_page: 1,
+  per_page: 15,
   total: 0,
   from: 0,
   to: 0,
@@ -440,6 +414,7 @@ const fetchSeminarHasil = async () => {
     loading.value = true;
     const params = {
       page: pagination.current_page,
+      per_page: pagination.per_page,
       search: searchQuery.value,
       status: filterStatus.value,
       jadwal: filterJadwal.value,
@@ -452,6 +427,7 @@ const fetchSeminarHasil = async () => {
           current_page: response.data.current_page,
           last_page: response.data.last_page,
           total: response.data.total,
+          per_page: response.data.per_page || pagination.per_page,
           from: response.data.from,
           to: response.data.to,
         });
@@ -494,6 +470,12 @@ const goToPage = (page) => {
     pagination.current_page = page;
     fetchSeminarHasil();
   }
+};
+
+const changePerPage = (perPage) => {
+  pagination.per_page = perPage;
+  pagination.current_page = 1;
+  fetchSeminarHasil();
 };
 
 const openScheduleModal = (item) => {

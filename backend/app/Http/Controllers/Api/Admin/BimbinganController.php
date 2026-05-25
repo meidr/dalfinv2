@@ -26,7 +26,8 @@ class BimbinganController extends Controller
             });
         }
 
-        $skripsi = $query->orderBy('updated_at', 'desc')->paginate(10);
+        $perPage = max(5, min((int) $request->get('per_page', 10), 100));
+        $skripsi = $query->orderBy('updated_at', 'desc')->paginate($perPage);
 
         // Transform data to include total bimbingan count
         $skripsi->getCollection()->transform(function ($item) {

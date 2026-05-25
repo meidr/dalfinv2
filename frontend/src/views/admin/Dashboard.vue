@@ -184,7 +184,7 @@
               View All
             </button>
           </div>
-          <div class="overflow-x-auto">
+          <DataTableScroll>
             <table class="w-full text-left text-sm whitespace-nowrap">
               <thead
                 class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
@@ -253,7 +253,7 @@
                 </tr>
               </tbody>
             </table>
-          </div>
+          </DataTableScroll>
         </div>
       </div>
     </template>

@@ -94,7 +94,7 @@
           </div>
         </div>
       </div>
-      <div class="overflow-x-auto">
+      <DataTableScroll>
         <table class="w-full text-left text-sm whitespace-nowrap">
           <thead
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
@@ -218,49 +218,13 @@
             </tr>
           </tbody>
         </table>
-      </div>
-      <div
-        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
-      >
-        <p class="text-sm text-text-secondary">
-          Menampilkan
-          <span class="font-medium text-text-main">{{
-            pagination.from || 0
-          }}</span>
-          sampai
-          <span class="font-medium text-text-main">{{
-            pagination.to || 0
-          }}</span>
-          dari
-          <span class="font-medium text-text-main">{{ pagination.total }}</span>
-          data
-        </p>
-        <div class="flex gap-1">
-          <button
-            @click="goToPage(pagination.current_page - 1)"
-            :disabled="pagination.current_page <= 1"
-            class="size-8 flex items-center justify-center rounded border border-border-light hover:bg-background-light text-text-secondary transition-colors disabled:opacity-50"
-          >
-            <span class="material-symbols-outlined text-[16px]"
-              >chevron_left</span
-            >
-          </button>
-          <button
-            class="size-8 flex items-center justify-center rounded bg-primary text-white text-xs font-bold shadow-sm shadow-primary/20"
-          >
-            {{ pagination.current_page }}
-          </button>
-          <button
-            @click="goToPage(pagination.current_page + 1)"
-            :disabled="pagination.current_page >= pagination.last_page"
-            class="size-8 flex items-center justify-center rounded border border-border-light hover:bg-background-light text-text-secondary transition-colors"
-          >
-            <span class="material-symbols-outlined text-[16px]"
-              >chevron_right</span
-            >
-          </button>
-        </div>
-      </div>
+      </DataTableScroll>
+      <TablePagination
+        :pagination="pagination"
+        :disabled="loading"
+        @page-change="goToPage"
+        @per-page-change="changePerPage"
+      />
     </div>
 
     <!-- Upload Modal -->
@@ -374,6 +338,7 @@ const filterStatus = ref("");
 const pagination = reactive({
   current_page: 1,
   last_page: 1,
+  per_page: 10,
   total: 0,
   from: 0,
   to: 0,
@@ -399,6 +364,7 @@ const fetchSKTugas = async () => {
     loading.value = true;
     const params = {
       page: pagination.current_page,
+      per_page: pagination.per_page,
       search: searchQuery.value,
       status: filterStatus.value,
     };
@@ -413,6 +379,7 @@ const fetchSKTugas = async () => {
         Object.assign(pagination, {
           current_page: body.data.current_page,
           last_page: body.data.last_page,
+          per_page: body.data.per_page || pagination.per_page,
           total: body.data.total,
           from: body.data.from,
           to: body.data.to,
@@ -439,6 +406,12 @@ const goToPage = (page) => {
     pagination.current_page = page;
     fetchSKTugas();
   }
+};
+
+const changePerPage = (perPage) => {
+  pagination.per_page = perPage;
+  pagination.current_page = 1;
+  fetchSKTugas();
 };
 
 const generateSK = async (item) => {

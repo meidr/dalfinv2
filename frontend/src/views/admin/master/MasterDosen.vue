@@ -79,7 +79,7 @@
       v-else
       class="bg-surface-light dark:bg-surface-light rounded-xl border border-border-light shadow-sm overflow-hidden"
     >
-      <div class="overflow-x-auto">
+      <DataTableScroll>
         <table class="w-full text-left text-sm whitespace-nowrap">
           <thead
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
@@ -202,46 +202,14 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </DataTableScroll>
       <!-- Pagination -->
-      <div
-        class="flex items-center justify-between px-6 py-4 border-t border-border-light"
-      >
-        <p class="text-sm text-text-secondary">
-          Menampilkan
-          <span class="font-medium text-text-main">{{
-            pagination.from || 0
-          }}</span>
-          sampai
-          <span class="font-medium text-text-main">{{
-            pagination.to || 0
-          }}</span>
-          dari
-          <span class="font-medium text-text-main">{{ pagination.total }}</span>
-          data
-        </p>
-        <div class="flex gap-2">
-          <button
-            @click="goToPage(pagination.current_page - 1)"
-            :disabled="pagination.current_page <= 1"
-            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
-          >
-            <span class="material-symbols-outlined text-sm">chevron_left</span>
-          </button>
-          <button
-            class="px-3 py-1.5 rounded-md bg-primary text-white text-sm font-medium"
-          >
-            {{ pagination.current_page }}
-          </button>
-          <button
-            @click="goToPage(pagination.current_page + 1)"
-            :disabled="pagination.current_page >= pagination.last_page"
-            class="px-3 py-1.5 rounded-md border border-border-light text-text-secondary text-sm font-medium hover:bg-background-light disabled:opacity-50"
-          >
-            <span class="material-symbols-outlined text-sm">chevron_right</span>
-          </button>
-        </div>
-      </div>
+      <TablePagination
+        :pagination="pagination"
+        :disabled="loading"
+        @page-change="goToPage"
+        @per-page-change="changePerPage"
+      />
     </div>
 
     <!-- Add/Edit Modal -->
@@ -781,7 +749,7 @@
               <div
                 class="border border-border-light rounded-lg overflow-hidden"
               >
-                <div class="overflow-x-auto max-h-[40vh]">
+                <DataTableScroll max-height="40vh">
                   <table class="w-full text-left text-sm">
                     <thead
                       class="bg-gray-50 dark:bg-gray-800 text-text-secondary sticky top-0 z-10"
@@ -881,7 +849,7 @@
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </DataTableScroll>
               </div>
 
               <!-- Actions -->
@@ -1146,6 +1114,12 @@ const goToPage = (page) => {
     pagination.current_page = page;
     fetchDosen();
   }
+};
+
+const changePerPage = (perPage) => {
+  pagination.per_page = perPage;
+  pagination.current_page = 1;
+  fetchDosen();
 };
 
 const openAddModal = () => {

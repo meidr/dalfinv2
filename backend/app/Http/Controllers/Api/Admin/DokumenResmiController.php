@@ -67,7 +67,7 @@ class DokumenResmiController extends Controller
 
         $meta = self::TYPES[$type];
         $perPage = (int) $request->get('per_page', 10);
-        $perPage = max(5, min($perPage, 50));
+        $perPage = max(5, min($perPage, 100));
 
         $paginator = match ($meta['category']) {
             'sk_tugas' => $this->skTugas($request, $perPage),

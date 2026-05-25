@@ -70,7 +70,7 @@
         <p class="text-text-secondary text-sm mt-3">Memuat dokumen...</p>
       </div>
 
-      <div v-else class="overflow-x-auto">
+      <DataTableScroll v-else>
         <table class="w-full text-left text-sm">
           <thead class="bg-sidebar-light/50 text-text-secondary border-b border-border-light">
             <tr>
@@ -154,29 +154,14 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </DataTableScroll>
 
-      <div v-if="pagination.last_page > 1" class="p-4 border-t border-border-light flex items-center justify-between gap-3">
-        <p class="text-sm text-text-secondary">
-          Halaman {{ pagination.current_page }} dari {{ pagination.last_page }}
-        </p>
-        <div class="flex gap-2">
-          <button
-            @click="goToPage(pagination.current_page - 1)"
-            :disabled="pagination.current_page <= 1"
-            class="px-3 py-2 border border-border-light rounded-lg text-text-secondary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Sebelumnya
-          </button>
-          <button
-            @click="goToPage(pagination.current_page + 1)"
-            :disabled="pagination.current_page >= pagination.last_page"
-            class="px-3 py-2 border border-border-light rounded-lg text-text-secondary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Berikutnya
-          </button>
-        </div>
-      </div>
+      <TablePagination
+        :pagination="pagination"
+        :disabled="loading"
+        @page-change="goToPage"
+        @per-page-change="changePerPage"
+      />
     </div>
   </div>
 
@@ -308,6 +293,11 @@ const setType = (type) => {
 const goToPage = (page) => {
   if (page < 1 || page > pagination.value.last_page) return;
   fetchData(page);
+};
+
+const changePerPage = (perPage) => {
+  pagination.value.per_page = perPage;
+  fetchData(1);
 };
 
 const getPdfResponse = (item) => {

@@ -65,7 +65,8 @@ class SKYudisiumController extends Controller
             });
         }
 
-        $seminars = $query->orderBy('tanggal', 'desc')->paginate(10);
+        $perPage = max(5, min((int) $request->get('per_page', 10), 100));
+        $seminars = $query->orderBy('tanggal', 'desc')->paginate($perPage);
 
         // Transform data - set status based on SKYudisium existence
         $seminars->getCollection()->transform(function ($item) {
@@ -247,7 +248,8 @@ class SKYudisiumController extends Controller
             $query->where('nomor_sk_batch', 'like', "%{$request->search}%");
         }
 
-        $batches = $query->orderBy('tanggal_terbit', 'desc')->paginate(10);
+        $perPage = max(5, min((int) $request->get('per_page', 10), 100));
+        $batches = $query->orderBy('tanggal_terbit', 'desc')->paginate($perPage);
 
         // Load tahun akademik names
         $tahunIds = $batches->pluck('th_akademik_id')->filter()->unique();

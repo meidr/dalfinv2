@@ -339,7 +339,7 @@
           <div
             class="bg-surface-light border border-border-light rounded-xl overflow-hidden shadow-sm"
           >
-            <div class="overflow-x-auto">
+            <DataTableScroll>
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr
@@ -445,7 +445,7 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
+            </DataTableScroll>
           </div>
         </div>
 

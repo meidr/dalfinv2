@@ -80,10 +80,10 @@
 
       <!-- Tab Content -->
       <div class="mt-2 text-text-main">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
+        <router-view v-slot="{ Component, route }">
+          <Transition name="page-fade" mode="out-in" appear>
+            <component :is="Component" :key="route.fullPath" />
+          </Transition>
         </router-view>
       </div>
     </template>

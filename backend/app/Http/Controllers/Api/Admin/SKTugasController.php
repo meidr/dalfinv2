@@ -44,7 +44,8 @@ class SKTugasController extends Controller
             }
         }
 
-        $skripsi = $query->orderBy('created_at', 'desc')->paginate(10);
+        $perPage = max(5, min((int) $request->get('per_page', 10), 100));
+        $skripsi = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         // Transform data
         // Transform data

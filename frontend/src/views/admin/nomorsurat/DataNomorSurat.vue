@@ -38,7 +38,7 @@
         <p class="text-text-secondary text-sm mt-3">Memuat data...</p>
       </div>
 
-      <div v-else class="overflow-x-auto">
+      <DataTableScroll v-else>
         <table class="w-full text-left text-sm">
           <thead class="bg-sidebar-light/50 text-text-secondary border-b border-border-light">
             <tr>
@@ -78,7 +78,7 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </DataTableScroll>
     </div>
 
     <Transition name="modal-fade">

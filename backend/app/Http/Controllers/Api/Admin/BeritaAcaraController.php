@@ -43,7 +43,8 @@ class BeritaAcaraController extends Controller
             }
         }
 
-        $seminars = $query->orderBy('tanggal', 'desc')->paginate(10);
+        $perPage = max(5, min((int) $request->get('per_page', 10), 100));
+        $seminars = $query->orderBy('tanggal', 'desc')->paginate($perPage);
 
         $seminars->getCollection()->transform(function ($item) {
             $item->tanggal_ujian = $item->tanggal;

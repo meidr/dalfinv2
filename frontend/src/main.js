@@ -7,6 +7,8 @@ import "simplebar-vue/dist/simplebar.min.css";
 import "./style.css";
 import App from "./App.vue";
 import router from "./router";
+import DataTableScroll from "./components/ui/DataTableScroll.vue";
+import TablePagination from "./components/ui/TablePagination.vue";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -18,4 +20,6 @@ app.use(Toast, {
   maxToasts: 20,
   newestOnTop: true,
 });
+app.component("DataTableScroll", DataTableScroll);
+app.component("TablePagination", TablePagination);
 app.mount("#app");

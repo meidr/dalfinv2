@@ -30,7 +30,8 @@ class NotaBimbinganController extends Controller
             });
         }
 
-        $skripsiList = $query->orderBy('updated_at', 'desc')->paginate(10);
+        $perPage = max(5, min((int) $request->get('per_page', 10), 100));
+        $skripsiList = $query->orderBy('updated_at', 'desc')->paginate($perPage);
 
         // Transform data to include status and bimbingan info
         $skripsiList->getCollection()->transform(function ($item) {

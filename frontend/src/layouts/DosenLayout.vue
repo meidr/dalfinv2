@@ -227,9 +227,16 @@
 
     <!-- Main Content -->
     <main
-      class="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 flex flex-col gap-6 animate-fade-in"
+      class="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 flex flex-col gap-6"
     >
-      <router-view></router-view>
+      <router-view v-slot="{ Component, route }">
+        <Transition name="page-fade" mode="out-in" appear>
+          <component
+            :is="Component"
+            :key="`${route.matched[1]?.path || route.fullPath}:${JSON.stringify(route.params)}`"
+          />
+        </Transition>
+      </router-view>
     </main>
     <ChatWidget />
   </div>
