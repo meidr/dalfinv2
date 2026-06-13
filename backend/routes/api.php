@@ -61,6 +61,7 @@ use App\Http\Controllers\Api\Admin\NomorSuratController;
 use App\Http\Controllers\Api\Admin\PeriodeJabatanController;
 use App\Http\Controllers\Api\Admin\JabatanPejabatController;
 use App\Http\Controllers\Api\Admin\TandaTanganController;
+use App\Http\Controllers\Api\Admin\SimilarityController;
 use App\Http\Controllers\Api\PublicConfigController;
 use App\Http\Controllers\Api\VerifyDocumentController;
 use App\Http\Controllers\Api\FileController;
@@ -120,6 +121,12 @@ Route::prefix('admin')
 
         // Skripsi Management
         Route::apiResource('skripsi', AdminSkripsiController::class);
+
+        // Similarity
+        Route::get('/similarity', [SimilarityController::class, 'index']);
+        Route::get('/similarity/{skripsi}', [SimilarityController::class, 'show']);
+        Route::post('/similarity/{skripsi}/recalculate', [SimilarityController::class, 'recalculate']);
+        Route::post('/similarity/recalculate-all', [SimilarityController::class, 'recalculateAll']);
 
         // Pembimbing Management
         Route::get('/pembimbing', [AdminPembimbingController::class, 'index']);

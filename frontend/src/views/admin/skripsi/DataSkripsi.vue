@@ -19,86 +19,113 @@
       </p>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div
-        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+    <!-- Tabs -->
+    <div class="flex gap-4 border-b border-border-light pb-0">
+      <button
+        @click="activeTab = 'data'"
+        class="pb-3 px-1 border-b-2 font-medium text-sm transition-colors"
+        :class="
+          activeTab === 'data'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-text-secondary hover:text-text-main hover:border-border-light'
+        "
       >
-        <div class="flex items-center justify-between">
-          <p
-            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
-          >
-            Total Judul
-          </p>
-          <div class="bg-primary/10 p-2 rounded-lg text-primary">
-            <span class="material-symbols-outlined">library_books</span>
-          </div>
-        </div>
-        <div class="mt-2">
-          <p class="text-text-main text-3xl font-bold leading-tight">
-            {{ pagination.total }}
-          </p>
-          <div class="flex items-center gap-1 mt-1">
-            <span class="material-symbols-outlined text-green-600 text-[18px]"
-              >trending_up</span
-            >
-            <p class="text-green-600 text-xs font-semibold">Total terdaftar</p>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+        Data Skripsi
+      </button>
+      <button
+        @click="activeTab = 'similarity'"
+        class="pb-3 px-1 border-b-2 font-medium text-sm transition-colors"
+        :class="
+          activeTab === 'similarity'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-text-secondary hover:text-text-main hover:border-border-light'
+        "
       >
-        <div class="flex items-center justify-between">
-          <p
-            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
-          >
-            Sedang Bimbingan
-          </p>
-          <div class="bg-orange-100 p-2 rounded-lg text-orange-600">
-            <span class="material-symbols-outlined">pending_actions</span>
-          </div>
-        </div>
-        <div class="mt-2">
-          <p class="text-text-main text-3xl font-bold leading-tight">
-            {{ statsCount.bimbingan }}
-          </p>
-          <div class="flex items-center gap-1 mt-1">
-            <span class="material-symbols-outlined text-orange-600 text-[18px]"
-              >groups</span
-            >
-            <p class="text-orange-600 text-xs font-semibold">Mahasiswa aktif</p>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
-      >
-        <div class="flex items-center justify-between">
-          <p
-            class="text-text-secondary text-xs font-bold uppercase tracking-wider"
-          >
-            Selesai
-          </p>
-          <div class="bg-green-100 p-2 rounded-lg text-green-600">
-            <span class="material-symbols-outlined">check_circle</span>
-          </div>
-        </div>
-        <div class="mt-2">
-          <p class="text-text-main text-3xl font-bold leading-tight">
-            {{ statsCount.lulus }}
-          </p>
-          <div class="flex items-center gap-1 mt-1">
-            <span class="material-symbols-outlined text-green-600 text-[18px]"
-              >celebration</span
-            >
-            <p class="text-green-600 text-xs font-semibold">Total lulus</p>
-          </div>
-        </div>
-      </div>
+        Similarity Check
+      </button>
     </div>
+
+    <div v-if="activeTab === 'data'" class="flex flex-col gap-8">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div
+          class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+        >
+          <div class="flex items-center justify-between">
+            <p
+              class="text-text-secondary text-xs font-bold uppercase tracking-wider"
+            >
+              Total Judul
+            </p>
+            <div class="bg-primary/10 p-2 rounded-lg text-primary">
+              <span class="material-symbols-outlined">library_books</span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="text-text-main text-3xl font-bold leading-tight">
+              {{ pagination.total }}
+            </p>
+            <div class="flex items-center gap-1 mt-1">
+              <span class="material-symbols-outlined text-green-600 text-[18px]"
+                >trending_up</span
+              >
+              <p class="text-green-600 text-xs font-semibold">Total terdaftar</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+        >
+          <div class="flex items-center justify-between">
+            <p
+              class="text-text-secondary text-xs font-bold uppercase tracking-wider"
+            >
+              Sedang Bimbingan
+            </p>
+            <div class="bg-orange-100 p-2 rounded-lg text-orange-600">
+              <span class="material-symbols-outlined">pending_actions</span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="text-text-main text-3xl font-bold leading-tight">
+              {{ statsCount.bimbingan }}
+            </p>
+            <div class="flex items-center gap-1 mt-1">
+              <span class="material-symbols-outlined text-orange-600 text-[18px]"
+                >sync</span
+              >
+              <p class="text-orange-600 text-xs font-semibold">Proses aktif</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex flex-col gap-2 rounded-xl p-6 bg-surface-light border border-border-light shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300"
+        >
+          <div class="flex items-center justify-between">
+            <p
+              class="text-text-secondary text-xs font-bold uppercase tracking-wider"
+            >
+              Selesai
+            </p>
+            <div class="bg-green-100 p-2 rounded-lg text-green-600">
+              <span class="material-symbols-outlined">check_circle</span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="text-text-main text-3xl font-bold leading-tight">
+              {{ statsCount.lulus }}
+            </p>
+            <div class="flex items-center gap-1 mt-1">
+              <span class="material-symbols-outlined text-green-600 text-[18px]"
+                >celebration</span
+              >
+              <p class="text-green-600 text-xs font-semibold">Total lulus</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
     <!-- Toolbar & Table -->
     <div
@@ -879,6 +906,12 @@
       </div>
     </Transition>
     </Teleport>
+    </div>
+
+    <!-- Similarity Tab -->
+    <div v-if="activeTab === 'similarity'">
+      <SimilarityTab />
+    </div>
   </div>
 </template>
 
@@ -887,9 +920,12 @@ import { ref, computed, onMounted, onBeforeUnmount, reactive } from "vue";
 import { useRouter } from "vue-router";
 import adminService from "../../../services/adminService";
 import { useAuthStore } from "../../../stores/auth";
+import SimilarityTab from "./SimilarityTab.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+const activeTab = ref("data");
 
 const loading = ref(true);
 const saving = ref(false);

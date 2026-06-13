@@ -245,4 +245,12 @@ class Skripsi extends Model
             'updated_by' => $user?->id,
         ]);
     }
+
+    /**
+     * Get similarity records where this skripsi is the source
+     */
+    public function similarities()
+    {
+        return $this->hasMany(SkripsiSimilarity::class, 'skripsi_id');
+    }
 }

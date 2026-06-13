@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Dokumen;
 use App\Models\Skripsi;
 use App\Models\SkripsiHistory;
+use App\Services\SimilarityService;
 use App\Traits\GenderFilterable;
 use Illuminate\Http\Request;
 
@@ -137,6 +138,13 @@ class SkripsiController extends Controller
         ]);
 
         $skripsi->logHistory(null, null, 'Pendaftaran skripsi baru', $request->user());
+
+        // Calculate similarity for the new skripsi
+        try {
+            (new SimilarityService())->calculateForSkripsi($skripsi);
+        } catch (\Exception $e) {
+            \Log::warning('Similarity calculation failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
@@ -292,7 +300,14 @@ class SkripsiController extends Controller
 
         $skripsi->save();
 
-
+        // Recalculate similarity if title changed
+        if ($judulChanged && !$needsVerification) {
+            try {
+                (new SimilarityService())->calculateForSkripsi($skripsi);
+            } catch (\Exception $e) {
+                \Log::warning('Similarity calculation failed: ' . $e->getMessage());
+            }
+        }
 
 
         $message = $needsVerification

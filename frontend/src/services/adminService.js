@@ -82,6 +82,27 @@ export const adminService = {
     return response.data;
   },
 
+  // Similarity
+  async getSimilarity(params = {}) {
+    const response = await api.get("/admin/similarity", { params });
+    return response.data;
+  },
+
+  async getSimilarityDetail(id) {
+    const response = await api.get(`/admin/similarity/${id}`);
+    return response.data;
+  },
+
+  async recalculateSimilarity(id) {
+    const response = await api.post(`/admin/similarity/${id}/recalculate`);
+    return response.data;
+  },
+
+  async recalculateAllSimilarity() {
+    const response = await api.post("/admin/similarity/recalculate-all");
+    return response.data;
+  },
+
   // Mentor Sempro
   async getMentorSempro(params = {}) {
     const response = await api.get("/admin/mentor-sempro", { params });
