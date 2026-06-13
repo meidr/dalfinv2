@@ -82,6 +82,32 @@ export const adminService = {
     return response.data;
   },
 
+  // Mentor Sempro
+  async getMentorSempro(params = {}) {
+    const response = await api.get("/admin/mentor-sempro", { params });
+    return response.data;
+  },
+
+  async getAvailableMentorDosen(params = {}) {
+    const response = await api.get("/admin/mentor-sempro/available-dosen", { params });
+    return response.data;
+  },
+
+  async assignMentorSempro(data) {
+    const response = await api.post("/admin/mentor-sempro", data);
+    return response.data;
+  },
+
+  async updateMentorSempro(id, data) {
+    const response = await api.put(`/admin/mentor-sempro/${id}`, data);
+    return response.data;
+  },
+
+  async removeMentorSempro(id) {
+    const response = await api.delete(`/admin/mentor-sempro/${id}`);
+    return response.data;
+  },
+
   // Pembimbing
   async getPendingPembimbing(params = {}) {
     const response = await api.get("/admin/pembimbing", { params });
@@ -310,6 +336,13 @@ export const adminService = {
   },
 
   // PDF Generation
+  async getSuratMentorSempro(skripsiId) {
+    const response = await api.get(`/admin/pdf/mentor-sempro/${skripsiId}`, {
+      responseType: "blob",
+    });
+    return response;
+  },
+
   async getSkTugasPdf(skripsiId) {
     const response = await api.get(`/admin/pdf/sk-tugas/${skripsiId}`, {
       responseType: "blob",

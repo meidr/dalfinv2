@@ -188,6 +188,13 @@ Route::prefix('admin')
             Route::get('/users/check-email', [AdminUserController::class, 'checkEmail']);
         });
 
+        // Mentor Sempro
+        Route::get('/mentor-sempro', [App\Http\Controllers\Api\Admin\MentorSemproController::class, 'index']);
+        Route::get('/mentor-sempro/available-dosen', [App\Http\Controllers\Api\Admin\MentorSemproController::class, 'availableDosen']);
+        Route::post('/mentor-sempro', [App\Http\Controllers\Api\Admin\MentorSemproController::class, 'store']);
+        Route::put('/mentor-sempro/{mentorSempro}', [App\Http\Controllers\Api\Admin\MentorSemproController::class, 'update']);
+        Route::delete('/mentor-sempro/{mentorSempro}', [App\Http\Controllers\Api\Admin\MentorSemproController::class, 'destroy']);
+
         // Seminar Management
         Route::apiResource('seminar', AdminSeminarController::class);
         Route::post('/seminar/{seminar}/berita-acara', [AdminSeminarController::class, 'createBeritaAcara']);
@@ -220,6 +227,7 @@ Route::prefix('admin')
         Route::get('/pdf/nota-bimbingan/{skripsi}', [AdminPdfController::class, 'notaBimbingan']);
         Route::get('/pdf/berita-acara/{seminar}', [AdminPdfController::class, 'beritaAcaraSeminar']);
         Route::match(['get', 'post'], '/pdf/sk-penguji/{seminar}', [AdminPdfController::class, 'skPenguji']);
+        Route::get('/pdf/surat-mentor/{skripsi}', [AdminPdfController::class, 'suratMentorSempro']);
 
         // Bimbingan Management
         Route::get('/bimbingan', [AdminBimbinganController::class, 'index']);
@@ -267,14 +275,6 @@ Route::prefix('admin')
         Route::get('/sk-yudisium-batch/{nomor}', [AdminSKYudisiumController::class, 'batchDetail'])->where('nomor', '.*');
         Route::put('/sk-yudisium-batch/{nomor}/update', [AdminSKYudisiumController::class, 'updateBatch'])->where('nomor', '.*');
         Route::delete('/sk-yudisium-batch/{nomor}/destroy', [AdminSKYudisiumController::class, 'destroyBatch'])->where('nomor', '.*');
-
-        // User Management
-        Route::get('/users', [AdminUserController::class, 'index']);
-        Route::get('/users/{user}', [AdminUserController::class, 'show']);
-        Route::post('/users', [AdminUserController::class, 'store']);
-        Route::put('/users/{user}', [AdminUserController::class, 'update']);
-        Route::post('/users/{user}/toggle-status', [AdminUserController::class, 'toggleStatus']);
-        Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword']);
 
         // Configuration
         Route::get('/configuration/sk-tugas-signer', [AdminConfigurationController::class, 'getSkTugasSigner']);
@@ -352,6 +352,7 @@ Route::prefix('dosen')
 
         // Bimbingan Management
         Route::get('/bimbingan', [DosenBimbinganController::class, 'index']);
+        Route::get('/mentor-sempro', [DosenBimbinganController::class, 'mentorSemproList']);
         Route::get('/bimbingan/{skripsi}', [DosenBimbinganController::class, 'show']);
         Route::get('/bimbingan/{skripsi}/logs', [DosenBimbinganController::class, 'logs']);
         Route::put('/bimbingan/log/bulk-status', [DosenBimbinganController::class, 'bulkUpdateStatus']);
@@ -396,6 +397,7 @@ Route::prefix('mahasiswa')
         Route::post('/skripsi', [MahasiswaSkripsiController::class, 'store']);
         Route::get('/skripsi/detail', [MahasiswaSkripsiController::class, 'show']);
         Route::get('/skripsi/tahun-akademik', [MahasiswaSkripsiController::class, 'getTahunAkademikList']);
+        Route::get('/skripsi/mentor', [MahasiswaSkripsiController::class, 'getMentor']);
         Route::get('/skripsi/{id}/detail', [MahasiswaSkripsiController::class, 'showById']);
         Route::put('/skripsi', [MahasiswaSkripsiController::class, 'update']);
         Route::get('/skripsi/bimbingan', [MahasiswaSkripsiController::class, 'bimbingan']);

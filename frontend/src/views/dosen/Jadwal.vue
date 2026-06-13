@@ -335,6 +335,7 @@
     </div>
 
     <!-- ========== INPUT NILAI MODAL ========== -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showNilaiModal"
@@ -637,8 +638,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- ========== DETAIL MODAL ========== -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showDetailModal"
@@ -843,6 +846,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

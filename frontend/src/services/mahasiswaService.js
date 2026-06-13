@@ -39,6 +39,16 @@ export const mahasiswaService = {
   },
 
   // Bimbingan
+  async getPembimbing() {
+    const response = await api.get("/mahasiswa/skripsi/pembimbing");
+    return response.data;
+  },
+
+  async getMentor() {
+    const response = await api.get("/mahasiswa/skripsi/mentor");
+    return response.data;
+  },
+
   async getBimbinganLogs() {
     const response = await api.get("/mahasiswa/skripsi/bimbingan");
     return response.data;

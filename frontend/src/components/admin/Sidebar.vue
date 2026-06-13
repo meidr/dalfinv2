@@ -47,7 +47,7 @@
         </button>
       </div>
 
-      <div v-show="isCollapsed" class="flex justify-center lg:block hidden">
+      <div v-show="isCollapsed" class="hidden lg:flex justify-center">
         <button
           @click="toggleCollapse"
           class="text-text-secondary hover:text-primary transition-colors p-1 rounded-md hover:bg-sidebar-light"
@@ -107,6 +107,25 @@
                 class="text-sm font-medium whitespace-nowrap"
               >
                 Data Skripsi
+              </p>
+            </router-link>
+            <router-link
+              to="/admin/mentor-sempro"
+              active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
+              :class="[
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
+                isCollapsed ? 'justify-center' : '',
+              ]"
+            >
+              <span
+                class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform"
+                >groups</span
+              >
+              <p
+                v-show="!isCollapsed"
+                class="text-sm font-medium whitespace-nowrap"
+              >
+                Mentor Sempro
               </p>
             </router-link>
             <router-link

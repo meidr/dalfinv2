@@ -15,8 +15,50 @@
       </p>
     </div>
 
+    <!-- Mentor Sempro Cards -->
+    <div v-if="mentorList.length" class="mb-8">
+      <h3 class="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">groups</span>
+        Mentor Seminar Proposal
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          v-for="(item, idx) in mentorList"
+          :key="'m-'+(item.id || idx)"
+          class="bg-surface-light rounded-xl p-6 shadow-sm border border-border-light flex items-start gap-4"
+        >
+          <div
+            class="size-12 rounded-full flex items-center justify-center font-bold text-xl"
+            :class="
+              item.jenis === 'mentor_1'
+                ? 'bg-blue-100 dark:bg-blue-900/30 text-primary'
+                : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600'
+            "
+          >
+            {{ getInitials(item.dosen?.nama) }}
+          </div>
+          <div class="flex-1">
+            <h4 class="font-bold text-lg text-text-main">
+              {{ item.dosen?.nama || "Unknown" }}
+            </h4>
+            <p class="text-sm text-text-secondary mb-2">
+              Mentor {{ item.jenis === 'mentor_1' ? 'Utama' : 'Pendamping' }}
+            </p>
+            <div class="mt-3 text-xs text-text-secondary" v-if="item.dosen?.nip">
+              NIP: {{ item.dosen.nip }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Pembimbing Cards -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div v-if="pembimbingList.length">
+      <h3 class="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-orange-500">supervisor_account</span>
+        Dosen Pembimbing Skripsi
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div
         v-for="(item, idx) in pembimbingList"
         :key="item.id || idx"
@@ -53,6 +95,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -62,6 +105,7 @@ import { inject, computed } from "vue";
 const skripsi = inject("skripsi");
 
 const pembimbingList = computed(() => skripsi.value?.pembimbing || []);
+const mentorList = computed(() => skripsi.value?.mentorSempro || []);
 
 const getInitials = (nama) => {
   if (!nama) return "??";

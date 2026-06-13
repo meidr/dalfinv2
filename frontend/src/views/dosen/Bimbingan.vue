@@ -30,6 +30,24 @@
       </div>
     </div>
 
+    <!-- Tabs -->
+    <div class="flex gap-4 border-b border-border-light pb-2 mt-2 w-full">
+      <button 
+        @click="activeTab = 'pembimbing'"
+        :class="activeTab === 'pembimbing' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary font-medium hover:text-text-main'"
+        class="pb-2 px-4 transition-colors"
+      >
+        Pembimbing Skripsi
+      </button>
+      <button 
+        @click="activeTab = 'mentor'"
+        :class="activeTab === 'mentor' ? 'text-primary border-b-2 border-primary font-bold' : 'text-text-secondary font-medium hover:text-text-main'"
+        class="pb-2 px-4 transition-colors"
+      >
+        Mentor Sempro
+      </button>
+    </div>
+
     <!-- Filter Panel -->
     <div
       v-if="showFilter"
@@ -313,6 +331,7 @@ import dosenService from "../../services/dosenService";
 const loading = ref(true);
 const skripsiList = ref([]);
 const showFilter = ref(false);
+const activeTab = ref("pembimbing");
 
 const filters = ref({
   search: "",
@@ -328,7 +347,10 @@ const fetchData = async () => {
     if (filters.value.search) params.search = filters.value.search;
     if (filters.value.status) params.status = filters.value.status;
 
-    const res = await dosenService.getBimbinganList(params);
+    const res = activeTab.value === 'mentor' 
+      ? await dosenService.getMentorSemproList(params)
+      : await dosenService.getBimbinganList(params);
+      
     if (res.success) {
       skripsiList.value = res.data || [];
     }
@@ -339,7 +361,22 @@ const fetchData = async () => {
   }
 };
 
-onMounted(fetchData);
+import { watch } from "vue";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+
+onMounted(() => {
+  if (route.query.tab === 'mentor') {
+    activeTab.value = 'mentor';
+  }
+  fetchData();
+});
+
+watch(activeTab, () => {
+  currentPage.value = 1;
+  fetchData();
+});
 
 // Extract unique prodi names from data
 const prodiList = computed(() => {

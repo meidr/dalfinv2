@@ -185,6 +185,27 @@
               Lulus
             </option>
           </select>
+          <Transition name="fade">
+            <div v-if="selectedItems.length > 0" class="flex items-center gap-2">
+              <span class="text-sm text-text-secondary font-medium whitespace-nowrap mr-2">
+                {{ selectedItems.length }} dipilih
+              </span>
+              <button
+                @click="bulkApproveStatus"
+                class="inline-flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors whitespace-nowrap shadow-sm shadow-green-500/20"
+              >
+                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                Setujui Terpilih
+              </button>
+              <button
+                @click="bulkRejectStatus"
+                class="inline-flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors whitespace-nowrap shadow-sm shadow-red-500/20"
+              >
+                <span class="material-symbols-outlined text-[18px]">cancel</span>
+                Tolak Terpilih
+              </button>
+            </div>
+          </Transition>
           <button
             @click="openAddModal"
             class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-blue-600 text-white rounded-lg font-medium text-sm shadow-sm shadow-blue-500/20 transition-all w-full md:w-auto whitespace-nowrap"
@@ -210,6 +231,16 @@
             class="bg-sidebar-light/50 text-text-secondary font-medium border-b border-border-light"
           >
             <tr>
+              <th class="px-4 py-4 w-10">
+                <input
+                  v-if="hasPengajuanItems"
+                  type="checkbox"
+                  :checked="isAllSelected"
+                  :indeterminate="isIndeterminate"
+                  @change="toggleSelectAll"
+                  class="size-4 rounded border-border-light text-primary focus:ring-primary cursor-pointer accent-primary"
+                />
+              </th>
               <th
                 class="px-6 py-4 cursor-pointer hover:text-primary transition-colors select-none group"
                 @click="handleSort('mahasiswa_nama')"
@@ -271,7 +302,7 @@
           <tbody class="divide-y divide-border-light">
             <tr v-if="skripsiList.length === 0">
               <td
-                colspan="8"
+                colspan="9"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data skripsi
@@ -281,7 +312,17 @@
               v-for="item in skripsiList"
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
+              :class="{ 'bg-primary/5': selectedItems.includes(item.id) }"
             >
+              <td class="px-4 py-4">
+                <input
+                  v-if="item.status === 'pengajuan'"
+                  type="checkbox"
+                  :checked="selectedItems.includes(item.id)"
+                  @change="toggleSelect(item.id)"
+                  class="size-4 rounded border-border-light text-primary focus:ring-primary cursor-pointer accent-primary"
+                />
+              </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div
@@ -348,6 +389,22 @@
                   class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <button
+                    v-if="item.status === 'pengajuan'"
+                    @click="updateStatusDirect(item, 'disetujui')"
+                    class="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                    title="Setujui"
+                  >
+                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                  </button>
+                  <button
+                    v-if="item.status === 'pengajuan'"
+                    @click="updateStatusDirect(item, 'ditolak')"
+                    class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    title="Tolak"
+                  >
+                    <span class="material-symbols-outlined text-[20px]">cancel</span>
+                  </button>
+                  <button
                     @click="viewDetail(item.id)"
                     class="p-2 text-text-secondary hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                     title="Lihat Detail"
@@ -391,6 +448,7 @@
     </div>
 
     <!-- Add/Edit Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showModal"
@@ -773,8 +831,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Delete Confirmation Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showDeleteModal"
@@ -818,6 +878,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -834,6 +895,124 @@ const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
 const skripsiList = ref([]);
+const selectedItems = ref([]);
+
+const hasPengajuanItems = computed(() => {
+  return skripsiList.value.some(item => item.status === 'pengajuan');
+});
+
+const isAllSelected = computed(() => {
+  const pengajuanItems = skripsiList.value.filter(item => item.status === 'pengajuan');
+  return pengajuanItems.length > 0 && pengajuanItems.every(item => selectedItems.value.includes(item.id));
+});
+
+const isIndeterminate = computed(() => {
+  return selectedItems.value.length > 0 && !isAllSelected.value;
+});
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedItems.value = [];
+  } else {
+    selectedItems.value = skripsiList.value.filter(item => item.status === 'pengajuan').map(item => item.id);
+  }
+};
+
+const toggleSelect = (id) => {
+  const idx = selectedItems.value.indexOf(id);
+  if (idx >= 0) {
+    selectedItems.value.splice(idx, 1);
+  } else {
+    selectedItems.value.push(id);
+  }
+};
+
+const updateStatusDirect = async (item, newStatus) => {
+  if (newStatus === 'disetujui') {
+    const hasActive = skripsiList.value.some(s => s.mahasiswa_id === item.mahasiswa_id && s.id !== item.id && s.is_active);
+    let msg = `Apakah Anda yakin ingin menyetujui pengajuan ini?`;
+    if (hasActive) {
+      msg = `Peringatan: Mahasiswa ini sudah memiliki judul skripsi yang aktif.\nMenyetujui pengajuan ini akan otomatis menonaktifkan judul yang aktif tersebut.\nApakah Anda ingin melanjutkan?`;
+    }
+    if (!confirm(msg)) return;
+  } else {
+    if (!confirm(`Apakah Anda yakin ingin menolak pengajuan ini?`)) return;
+  }
+
+  try {
+    loading.value = true;
+    const formData = new FormData();
+    formData.append("_method", "PUT");
+    formData.append("status", newStatus);
+    if (newStatus === 'disetujui') {
+      formData.append("is_active", true);
+    }
+    formData.append("alasan", `Status diubah menjadi ${newStatus} secara langsung`);
+    const response = await adminService.updateSkripsi(item.id, formData);
+    if (response && response.message) {
+      alert(response.message);
+    }
+    fetchSkripsi();
+  } catch (error) {
+    console.error("Failed to update status:", error);
+    alert("Gagal mengupdate status: " + (error.response?.data?.message || error.message));
+    loading.value = false;
+  }
+};
+
+const bulkApproveStatus = async () => {
+  const hasActive = selectedItems.value.some(id => {
+    const item = skripsiList.value.find(s => s.id === id);
+    if (!item) return false;
+    return skripsiList.value.some(s => s.mahasiswa_id === item.mahasiswa_id && s.id !== item.id && s.is_active);
+  });
+  
+  let msg = `Setujui ${selectedItems.value.length} pengajuan skripsi terpilih?`;
+  if (hasActive) {
+    msg = `Peringatan: Beberapa mahasiswa yang dipilih sudah memiliki judul skripsi aktif.\nMenyetujui pengajuan ini akan menonaktifkan judul mereka sebelumnya.\nLanjutkan menyetujui ${selectedItems.value.length} pengajuan?`;
+  }
+  
+  if (!confirm(msg)) return;
+
+  try {
+    loading.value = true;
+    for (const id of selectedItems.value) {
+      const formData = new FormData();
+      formData.append("_method", "PUT");
+      formData.append("status", "disetujui");
+      formData.append("is_active", true);
+      formData.append("alasan", "Pengajuan disetujui secara massal");
+      await adminService.updateSkripsi(id, formData);
+    }
+    selectedItems.value = [];
+    fetchSkripsi();
+  } catch (error) {
+    console.error("Failed to bulk update status:", error);
+    alert("Gagal menyetujui pengajuan secara massal.");
+    loading.value = false;
+  }
+};
+
+const bulkRejectStatus = async () => {
+  if (!confirm(`Tolak ${selectedItems.value.length} pengajuan skripsi terpilih?`)) return;
+  try {
+    loading.value = true;
+    for (const id of selectedItems.value) {
+      const formData = new FormData();
+      formData.append("_method", "PUT");
+      formData.append("status", "ditolak");
+      formData.append("alasan", "Pengajuan ditolak secara massal");
+      await adminService.updateSkripsi(id, formData);
+    }
+    selectedItems.value = [];
+    fetchSkripsi();
+  } catch (error) {
+    console.error("Failed to bulk update status:", error);
+    alert("Gagal menolak pengajuan secara massal.");
+    loading.value = false;
+  }
+};
+
 const searchQuery = ref("");
 const filterStatus = ref("");
 const showModal = ref(false);
@@ -1253,6 +1432,9 @@ const getPembimbing = (pembimbingList) => {
 
 const getStatusClass = (status) => {
   const classes = {
+    pengajuan: "bg-gray-50 text-gray-600 border border-gray-100",
+    disetujui: "bg-green-100 text-green-700 border border-green-200",
+    ditolak: "bg-red-100 text-red-700 border border-red-200",
     proposal: "bg-yellow-50 text-yellow-600 border border-yellow-100",
     bimbingan: "bg-purple-50 text-purple-600 border border-purple-100",
     sempro: "bg-blue-50 text-blue-600 border border-blue-100",
@@ -1267,6 +1449,9 @@ const getStatusClass = (status) => {
 
 const getStatusDot = (status) => {
   const dots = {
+    pengajuan: "bg-gray-500",
+    disetujui: "bg-green-600",
+    ditolak: "bg-red-600",
     proposal: "bg-yellow-600",
     bimbingan: "bg-purple-600",
     sempro: "bg-blue-600",
@@ -1281,6 +1466,9 @@ const getStatusDot = (status) => {
 
 const getStatusLabel = (status) => {
   const labels = {
+    pengajuan: "Pengajuan",
+    disetujui: "Disetujui",
+    ditolak: "Ditolak",
     proposal: "Proposal",
     bimbingan: "Bimbingan",
     sempro: "Sem. Proposal",

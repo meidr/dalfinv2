@@ -57,7 +57,7 @@ class SkripsiVerificationController extends Controller
     /**
      * Approve a pending verification
      */
-    public function approve($id)
+    public function approve(string $id)
     {
         $history = SkripsiHistory::findOrFail($id);
 
@@ -109,7 +109,7 @@ class SkripsiVerificationController extends Controller
     /**
      * Reject a pending verification
      */
-    public function reject($id)
+    public function reject(string $id)
     {
         $history = SkripsiHistory::findOrFail($id);
 
@@ -226,6 +226,8 @@ class SkripsiVerificationController extends Controller
             'ditolak' => 0,
             'proposal' => 15,
             'sempro' => 25,
+            'penentuan_mentor' => 12,
+            'mentor' => 14,
             'penentuan_dospem' => 30,
             'dospem' => 40,
             'bimbingan' => 50,

@@ -44,6 +44,11 @@ const routes = [
         component: DataSkripsi,
       },
       {
+        path: "mentor-sempro",
+        name: "AdminMentorSempro",
+        component: () => import("../views/admin/mentorsempro/DataMentorSempro.vue"),
+      },
+      {
         path: "skripsi/verifikasi",
         name: "VerificationSkripsi",
         component: () =>

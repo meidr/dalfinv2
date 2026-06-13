@@ -195,7 +195,7 @@
       </div>
       <div class="w-full bg-sidebar-light rounded-full h-3 overflow-hidden">
         <div
-          class="bg-gradient-to-r from-blue-500 to-primary h-3 rounded-full transition-all duration-700"
+          class="bg-linear-to-r from-blue-500 to-primary h-3 rounded-full transition-all duration-700"
           :style="{ width: (skripsi?.progress_percentage ?? 0) + '%' }"
         ></div>
       </div>
@@ -214,6 +214,8 @@ const statusMap = {
   draft: "Draft",
   pengajuan: "Pengajuan Judul",
   disetujui: "Judul Disetujui",
+  penentuan_mentor: "Penentuan Mentor",
+  mentor: "Mentor Ditentukan",
   ditolak: "Ditolak",
   proposal: "Tahap Proposal",
   sempro: "Sudah Sempro",
@@ -237,6 +239,8 @@ const currentStatusLabel = computed(
 const statusOrder = [
   "pengajuan",
   "disetujui",
+  "penentuan_mentor",
+  "mentor",
   "proposal",
   "sempro",
   "penentuan_dospem",
@@ -254,6 +258,7 @@ const statusOrder = [
 const stepDefs = computed(() => {
   const allSteps = [
     { key: "judul", label: "Judul", after: ["pengajuan", "disetujui"] },
+    { key: "mentor", label: "Mentor", after: ["penentuan_mentor", "mentor"] },
     { key: "proposal", label: "Proposal", after: ["proposal"] },
     { key: "sempro", label: "Sempro", after: ["sempro"] },
     {

@@ -285,6 +285,7 @@
     </template>
 
     <!-- Pengajuan Skripsi Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showPengajuanModal"
@@ -435,6 +436,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Success Toast -->
     <Transition name="toast-slide">

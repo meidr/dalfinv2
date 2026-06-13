@@ -109,7 +109,7 @@ class PdfController extends Controller
     /**
      * Resolve the active KAPRODI for a given prodi
      */
-    private function resolveKaprodi($prodi)
+    private function resolveKaprodi(mixed $prodi)
     {
         $jabatan = \App\Models\MasterJabatan::where('kode', 'KAPRODI')->first();
 
@@ -165,7 +165,7 @@ class PdfController extends Controller
     /**
      * Resolve the active DEKAN for a given fakultas
      */
-    private function resolveDekan($fakultas)
+    private function resolveDekan(mixed $fakultas)
     {
         $signer = [
             'name' => '-',
@@ -277,6 +277,31 @@ class PdfController extends Controller
         $pdf->setPaper('a4', 'portrait');
 
         return $pdf->download("Nota_Bimbingan_{$skripsi->mahasiswa->nim}.pdf");
+    }
+
+    /**
+     * Generate Surat Mentor Sempro PDF
+     */
+    public function suratMentorSempro(Request $request, Skripsi $skripsi)
+    {
+        $skripsi->load(['mahasiswa.prodi.fakultas', 'mentorSempro.dosen']);
+
+        // Auto-resolve KAPRODI for this mahasiswa's prodi
+        $prodi = $skripsi->mahasiswa->prodi;
+        $signer = $this->resolveKaprodi($prodi);
+
+        $data = [
+            'skripsi' => $skripsi,
+            'tanggal' => now()->translatedFormat('d F Y'),
+            'prodi_kode' => $prodi->kode ?? '',
+            'prodi_nama' => $prodi->nama ?? '',
+            'signer' => $signer,
+        ];
+
+        $pdf = Pdf::loadView('pdf.surat-mentor-sempro', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf->download("Surat_Mentor_Sempro_{$skripsi->mahasiswa->nim}.pdf");
     }
 
     /**

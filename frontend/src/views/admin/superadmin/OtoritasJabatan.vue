@@ -355,6 +355,7 @@
     </div>
 
     <!-- Periode Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showPeriodeModal"
@@ -439,8 +440,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Pejabat Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showPejabatModal"
@@ -660,6 +663,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

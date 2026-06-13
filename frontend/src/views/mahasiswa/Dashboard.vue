@@ -805,6 +805,7 @@
       </section>
 
       <!-- Ujian Confirmation Modal -->
+      <Teleport to="body">
       <Transition name="modal-fade">
         <div
           v-if="showUjianConfirmModal"
@@ -859,6 +860,7 @@
           </div>
         </div>
       </Transition>
+      </Teleport>
 
       <!-- Revisi Pasca Sidang Section -->
       <section

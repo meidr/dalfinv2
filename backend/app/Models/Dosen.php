@@ -25,11 +25,13 @@ class Dosen extends Model
         'jenis_kelamin',
         'is_active',
         'kuota_bimbingan',
+        'kuota_mentor',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'kuota_bimbingan' => 'integer',
+        'kuota_mentor' => 'integer',
     ];
 
     protected $appends = ['full_name'];
@@ -56,6 +58,14 @@ class Dosen extends Model
     public function pembimbing()
     {
         return $this->hasMany(Pembimbing::class);
+    }
+
+    /**
+     * Get all mentor sempro assignments
+     */
+    public function mentorSempro()
+    {
+        return $this->hasMany(MentorSempro::class);
     }
 
     /**

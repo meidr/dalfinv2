@@ -257,6 +257,7 @@
     </div>
 
     <!-- Confirmation Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showConfirmModal"
@@ -318,6 +319,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

@@ -159,6 +159,7 @@
     </div>
 
     <!-- Password Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showPasswordModal"
@@ -224,6 +225,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

@@ -335,6 +335,7 @@
     </div>
 
     <!-- Assign Pembimbing Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showAssignModal"
@@ -501,6 +502,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

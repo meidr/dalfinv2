@@ -53,6 +53,42 @@ class BimbinganController extends Controller
     }
 
     /**
+     * List all mahasiswa bimbingan untuk mentor sempro
+     */
+    public function mentorSemproList(Request $request)
+    {
+        $dosen = $request->user()->dosen;
+
+        $query = Skripsi::with(['mahasiswa.prodi'])
+            ->whereHas('mentorSempro', function ($q) use ($dosen) {
+                $q->where('dosen_id', $dosen->id)->where('is_active', true);
+            })
+            ->where('is_active', true);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                    ->orWhereHas('mahasiswa', function ($mhs) use ($search) {
+                        $mhs->where('nama', 'like', "%{$search}%")
+                            ->orWhere('nim', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $skripsi = $query->orderBy('updated_at', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $skripsi
+        ]);
+    }
+
+    /**
      * Show detail of specific skripsi
      */
     public function show(Request $request, Skripsi $skripsi)
@@ -378,7 +414,7 @@ class BimbinganController extends Controller
     /**
      * Download official PDF for a skripsi
      */
-    public function downloadOfficialPdf(Request $request, Skripsi $skripsi, $type)
+    public function downloadOfficialPdf(Request $request, Skripsi $skripsi, string $type)
     {
         $dosen = $request->user()->dosen;
 
@@ -405,6 +441,8 @@ class BimbinganController extends Controller
         switch ($type) {
             case 'sk-tugas':
                 return $this->downloadSkTugas($skripsi);
+            case 'surat-mentor':
+                return $this->downloadSuratMentor($skripsi);
             case 'nota-bimbingan':
                 return $this->downloadNotaBimbingan($skripsi);
             case 'sk-penguji-sempro':
@@ -446,6 +484,19 @@ class BimbinganController extends Controller
         ]);
         $pdf->setPaper('a4', 'portrait');
         return $pdf->download("SK_Tugas_{$skripsi->mahasiswa->nim}.pdf");
+    }
+
+    private function downloadSuratMentor(Skripsi $skripsi)
+    {
+        $skripsi->load(['mahasiswa.prodi.fakultas', 'mentorSempro.dosen']);
+        if ($skripsi->mentorSempro->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Mentor Sempro belum ditetapkan'], 404);
+        }
+
+        // Delegate to PdfController
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        $req = request();
+        return $pdfController->suratMentorSempro($req, $skripsi);
     }
 
     private function downloadNotaBimbingan(Skripsi $skripsi)
@@ -495,7 +546,7 @@ class BimbinganController extends Controller
         return $this->generateSkPengujiPdf($seminar, $seminar->skripsi, $jenis);
     }
 
-    private function generateSkPengujiPdf($seminar, Skripsi $skripsi, string $jenis)
+    private function generateSkPengujiPdf(mixed $seminar, Skripsi $skripsi, string $jenis)
     {
         $prodi = $skripsi->mahasiswa->prodi;
         $fakultas = $prodi->fakultas ?? null;
@@ -584,7 +635,7 @@ class BimbinganController extends Controller
     /**
      * Resolve the active KAPRODI for a given prodi
      */
-    private function resolveKaprodi($prodi)
+    private function resolveKaprodi(mixed $prodi)
     {
         $jabatan = \App\Models\MasterJabatan::where('kode', 'KAPRODI')->first();
 
@@ -632,7 +683,7 @@ class BimbinganController extends Controller
     /**
      * Resolve the active DEKAN for a given fakultas
      */
-    private function resolveDekan($fakultas)
+    private function resolveDekan(mixed $fakultas)
     {
         $signer = [
             'name' => '-',

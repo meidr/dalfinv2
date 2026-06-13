@@ -56,6 +56,8 @@ class Skripsi extends Model
     const STATUS_DITOLAK = 'ditolak';
     const STATUS_PROPOSAL = 'proposal';
     const STATUS_SEMPRO = 'sempro';
+    const STATUS_PENENTUAN_MENTOR = 'penentuan_mentor';
+    const STATUS_MENTOR = 'mentor';
     const STATUS_PENENTUAN_DOSPEM = 'penentuan_dospem';
     const STATUS_DOSPEM = 'dospem';
     const STATUS_BIMBINGAN = 'bimbingan';
@@ -99,6 +101,30 @@ class Skripsi extends Model
         return $this->belongsToMany(Dosen::class, 'pembimbing')
             ->withPivot('jenis', 'tanggal_penetapan', 'is_active')
             ->withTimestamps();
+    }
+
+    /**
+     * Get all mentor sempro
+     */
+    public function mentorSempro()
+    {
+        return $this->hasMany(MentorSempro::class);
+    }
+
+    /**
+     * Get mentor 1
+     */
+    public function mentor1()
+    {
+        return $this->hasOne(MentorSempro::class)->where('jenis', 'mentor_1');
+    }
+
+    /**
+     * Get mentor 2
+     */
+    public function mentor2()
+    {
+        return $this->hasOne(MentorSempro::class)->where('jenis', 'mentor_2');
     }
 
     /**

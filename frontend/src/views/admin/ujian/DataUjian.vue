@@ -424,6 +424,7 @@
     </div>
 
     <!-- Schedule Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showScheduleModal"
@@ -499,8 +500,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- ========== EDIT UJIAN MODAL (Jadwal + Penguji + Nilai) ========== -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showEditModal"
@@ -1133,8 +1136,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- ========== DETAIL MODAL ========== -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showDetailModal"
@@ -1425,6 +1430,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

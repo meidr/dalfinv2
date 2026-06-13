@@ -505,6 +505,7 @@
     </div>
 
     <!-- Edit Jadwal Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showEditJadwalModal"
@@ -574,8 +575,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Add Penguji Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showAddPengujiModal"
@@ -673,6 +676,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

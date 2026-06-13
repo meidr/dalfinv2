@@ -565,6 +565,7 @@
     </section>
 
     <!-- Delete Confirmation Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="deleteModal.show"
@@ -614,6 +615,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Toast -->
     <Transition name="toast-slide">

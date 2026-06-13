@@ -153,6 +153,7 @@ class SkripsiController extends Controller
         $skripsi->load([
             'mahasiswa.prodi',
             'pembimbing.dosen',
+            'mentorSempro.dosen',
             'bimbingan.dosen',
             'seminar.penguji.dosen',
             'seminar.beritaAcara',
@@ -351,6 +352,8 @@ class SkripsiController extends Controller
             'ditolak' => 0,
             'proposal' => 15,
             'sempro' => 25,
+            'penentuan_mentor' => 12,
+            'mentor' => 14,
             'penentuan_dospem' => 30,
             'dospem' => 40,
             'bimbingan' => 50,

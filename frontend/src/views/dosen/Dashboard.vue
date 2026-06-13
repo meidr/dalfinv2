@@ -244,6 +244,7 @@
       </section>
 
       <!-- Ujian Reject Modal -->
+      <Teleport to="body">
       <Transition name="modal-fade">
         <div
           v-if="rejectModal.show"
@@ -302,6 +303,7 @@
           </div>
         </div>
       </Transition>
+      </Teleport>
 
       <!-- Ujian Toast -->
       <Transition name="toast-slide">

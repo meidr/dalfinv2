@@ -296,6 +296,7 @@
     </div>
 
     <!-- Schedule Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showScheduleModal"
@@ -371,6 +372,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

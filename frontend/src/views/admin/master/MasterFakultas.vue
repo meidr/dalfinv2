@@ -152,6 +152,7 @@
     </div>
 
     <!-- Modal Form -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showModal"
@@ -291,6 +292,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

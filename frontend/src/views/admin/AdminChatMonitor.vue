@@ -169,6 +169,7 @@
     </div>
 
     <!-- Chat Detail Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showDetailModal"
@@ -249,6 +250,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

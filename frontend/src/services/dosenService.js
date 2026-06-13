@@ -13,6 +13,11 @@ export const dosenService = {
     return response.data;
   },
 
+  async getMentorSemproList(params = {}) {
+    const response = await api.get("/dosen/mentor-sempro", { params });
+    return response.data;
+  },
+
   async getBimbinganDetail(skripsiId) {
     const response = await api.get(`/dosen/bimbingan/${skripsiId}`);
     return response.data;

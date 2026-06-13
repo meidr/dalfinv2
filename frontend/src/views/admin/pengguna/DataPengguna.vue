@@ -209,6 +209,7 @@
     </div>
 
     <!-- Add/Edit User Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showUserModal"
@@ -365,8 +366,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Confirm Toggle Status Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showToggleModal"
@@ -428,6 +431,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

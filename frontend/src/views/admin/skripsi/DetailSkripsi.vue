@@ -744,6 +744,7 @@
     </div>
 
     <!-- Edit Status Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showEditModal"
@@ -838,6 +839,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

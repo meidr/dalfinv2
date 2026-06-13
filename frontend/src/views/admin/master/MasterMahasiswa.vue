@@ -221,6 +221,7 @@
     </div>
 
     <!-- Add/Edit Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showModal"
@@ -346,8 +347,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Delete Confirmation Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showDeleteModal"
@@ -393,8 +396,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Import Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showImportModal"
@@ -521,8 +526,10 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Sync Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showSyncModal"
@@ -1061,6 +1068,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

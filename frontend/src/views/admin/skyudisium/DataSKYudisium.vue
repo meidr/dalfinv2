@@ -253,6 +253,7 @@
     </div>
 
     <!-- Tambah SK Yudisium Batch Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showBatchModal"
@@ -353,6 +354,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <!-- Loading -->
     <div v-if="loading" class="p-12 text-center">
@@ -566,6 +568,7 @@
     </div>
 
     <!-- Proses Yudisium Modal -->
+    <Teleport to="body">
     <Transition name="modal-fade">
       <div
         v-if="showModal"
@@ -654,6 +657,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 

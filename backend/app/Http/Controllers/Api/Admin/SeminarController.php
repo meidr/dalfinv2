@@ -25,7 +25,7 @@ class SeminarController extends Controller
             $q->where('jenis', 'sempro')->latest('tanggal');
         }])
             ->where('is_active', true)
-            ->whereIn('status', ['pengajuan', 'proposal', 'sempro', 'bimbingan', 'penentuan_dospem', 'dospem']);
+            ->whereIn('status', ['pengajuan', 'proposal', 'sempro', 'bimbingan', 'penentuan_dospem', 'dospem', 'penentuan_mentor', 'mentor']);
 
         // Gender-based filtering
         $this->applyGenderFilter($query, $request);
@@ -96,7 +96,7 @@ class SeminarController extends Controller
 
         // Update skripsi status to 'proposal'
         $skripsi = Skripsi::findOrFail($request->skripsi_id);
-        if (in_array($skripsi->status, ['pengajuan', 'draft', 'ditolak', 'proposal'])) {
+        if (in_array($skripsi->status, ['pengajuan', 'draft', 'ditolak', 'proposal', 'mentor', 'penentuan_mentor', 'disetujui'])) {
             $skripsi->status = 'sempro';
             $skripsi->save();
         }

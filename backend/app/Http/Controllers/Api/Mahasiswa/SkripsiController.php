@@ -116,6 +116,7 @@ class SkripsiController extends Controller
 
         $skripsi->load([
             'pembimbing.dosen',
+            'mentorSempro.dosen',
             'bimbingan.dosen',
             'seminar.penguji.dosen',
             'seminar.beritaAcara',
@@ -139,7 +140,7 @@ class SkripsiController extends Controller
     /**
      * Get skripsi detail by ID (for history viewing)
      */
-    public function showById(Request $request, $id)
+    public function showById(Request $request, string $id)
     {
         $mahasiswa = $request->user()->mahasiswa;
 
@@ -156,6 +157,7 @@ class SkripsiController extends Controller
 
         $skripsi->load([
             'pembimbing.dosen',
+            'mentorSempro.dosen',
             'bimbingan.dosen',
             'seminar.penguji.dosen',
             'seminar.beritaAcara',
@@ -295,6 +297,28 @@ class SkripsiController extends Controller
             'message' => 'Log bimbingan berhasil ditambahkan',
             'data' => $bimbingan->load('dosen')
         ], 201);
+    }
+
+    public function getMentor(Request $request)
+    {
+        $mahasiswa = $request->user()->mahasiswa;
+
+        $skripsi = Skripsi::with(['mentorSempro.dosen'])
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$skripsi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skripsi aktif tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $skripsi->mentorSempro
+        ]);
     }
 
     /**
@@ -672,7 +696,7 @@ class SkripsiController extends Controller
     /**
      * Download official PDF
      */
-    public function downloadOfficialPdf(Request $request, $type)
+    public function downloadOfficialPdf(Request $request, string $type)
     {
         $mahasiswa = $request->user()->mahasiswa;
         $skripsi = $mahasiswa->activeSkripsi;
@@ -687,6 +711,9 @@ class SkripsiController extends Controller
         switch ($type) {
             case 'sk-tugas':
                 return $this->downloadSkTugas($skripsi);
+
+            case 'surat-mentor':
+                return $this->downloadSuratMentor($skripsi);
 
             case 'nota-bimbingan':
                 return $this->downloadNotaBimbingan($skripsi);
@@ -733,6 +760,19 @@ class SkripsiController extends Controller
         // Delegate to PdfController (has QR support)
         $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
         return $pdfController->skTugas(request(), $skripsi);
+    }
+
+    private function downloadSuratMentor(Skripsi $skripsi)
+    {
+        $skripsi->load(['mahasiswa.prodi.fakultas', 'mentorSempro.dosen']);
+        if ($skripsi->mentorSempro->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Mentor Sempro belum ditetapkan'], 404);
+        }
+
+        // Delegate to PdfController
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        $req = request();
+        return $pdfController->suratMentorSempro($req, $skripsi);
     }
 
     private function downloadNotaBimbingan(Skripsi $skripsi)
@@ -843,7 +883,7 @@ class SkripsiController extends Controller
     /**
      * Add grade and scoring status to each seminar/ujian
      */
-    private function addSeminarGrades($skripsi)
+    private function addSeminarGrades(mixed $skripsi)
     {
         $data = $skripsi->toArray();
 
@@ -874,7 +914,7 @@ class SkripsiController extends Controller
         return $data;
     }
 
-    private function getGrade($nilai): string
+    private function getGrade(mixed $nilai): string
     {
         if ($nilai >= 85) return 'A';
         if ($nilai >= 80) return 'B+';
@@ -887,7 +927,7 @@ class SkripsiController extends Controller
     /**
      * Resolve the active KAPRODI for a given prodi
      */
-    private function resolveKaprodi($prodi)
+    private function resolveKaprodi(mixed $prodi)
     {
         $jabatan = \App\Models\MasterJabatan::where('kode', 'KAPRODI')->first();
 
@@ -935,7 +975,7 @@ class SkripsiController extends Controller
     /**
      * Resolve the active DEKAN for a given fakultas
      */
-    private function resolveDekan($fakultas)
+    private function resolveDekan(mixed $fakultas)
     {
         $signer = [
             'name' => '-',

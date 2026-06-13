@@ -24,6 +24,11 @@ class DashboardController extends Controller
             $q->where('dosen_id', $dosen->id)->where('is_active', true);
         })->where('is_active', true)->count();
 
+        // Count unique skripsi where this dosen is an active mentor sempro
+        $totalMentorSempro = Skripsi::whereHas('mentorSempro', function ($q) use ($dosen) {
+            $q->where('dosen_id', $dosen->id)->where('is_active', true);
+        })->where('is_active', true)->count();
+
         // Pending bimbingan logs (waiting for dosen review) - only from active skripsi
         $pendingLogs = Bimbingan::where('dosen_id', $dosen->id)
             ->where('status', 'pending')
@@ -117,6 +122,7 @@ class DashboardController extends Controller
                 ],
                 'stats' => [
                     'total_bimbingan' => $totalBimbingan,
+                    'total_mentor_sempro' => $totalMentorSempro,
                     'kuota_bimbingan' => $dosen->kuota_bimbingan,
                     'pending_approvals' => $pendingLogs,
                     'pending_by_type' => $pendingByType,
