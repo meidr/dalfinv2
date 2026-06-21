@@ -698,6 +698,25 @@ const officialDocuments = computed(() => {
         ? "Diterbitkan " + formatDateTime(sempro.berita_acara.created_at)
         : "Belum dibuat",
     });
+
+    // Catatan Revisi Sempro (only for lulus_bersyarat / lulus_revisi / lulus)
+    const hasilSempro = sempro.berita_acara?.hasil || sempro.hasil;
+    if (
+      sempro.status === "selesai" &&
+      (hasilSempro === "lulus_bersyarat" || hasilSempro === "lulus_revisi" || hasilSempro === "lulus")
+    ) {
+      const pengujiWithCatatan = (sempro.penguji || []).filter(
+        (p) => p.catatan,
+      ).length;
+      docs.push({
+        type: "catatan-revisi-sempro",
+        label: "Catatan Revisi Seminar Proposal",
+        icon: "rate_review",
+        iconClass: "bg-orange-50 dark:bg-orange-900/20 text-orange-500",
+        available: true,
+        subtitle: `Catatan revisi dari ${sempro.penguji?.length || 0} penguji`,
+      });
+    }
   }
 
   // 4. Seminar Hasil documents (only if module enabled)
@@ -756,6 +775,25 @@ const officialDocuments = computed(() => {
         ? "Diterbitkan " + formatDateTime(sidang.berita_acara.created_at)
         : "Belum dibuat",
     });
+
+    // Catatan Revisi Sidang (only for lulus_bersyarat / lulus_revisi / lulus)
+    const hasilSidang = sidang.berita_acara?.hasil || sidang.hasil;
+    if (
+      sidang.status === "selesai" &&
+      (hasilSidang === "lulus_bersyarat" || hasilSidang === "lulus_revisi" || hasilSidang === "lulus")
+    ) {
+      const pengujiSidangWithCatatan = (sidang.penguji || []).filter(
+        (p) => p.catatan,
+      ).length;
+      docs.push({
+        type: "catatan-revisi-sidang",
+        label: "Catatan Revisi Sidang",
+        icon: "rate_review",
+        iconClass: "bg-rose-50 dark:bg-rose-900/20 text-rose-500",
+        available: true,
+        subtitle: `Catatan revisi dari ${sidang.penguji?.length || 0} penguji`,
+      });
+    }
   }
 
   // 6. SK Yudisium
@@ -905,6 +943,8 @@ const downloadPdf = async (type) => {
       "berita-acara-sempro": "Berita_Acara_Sempro.pdf",
       "berita-acara-semhas": "Berita_Acara_Semhas.pdf",
       "berita-acara-sidang": "Berita_Acara_Sidang.pdf",
+      "catatan-revisi-sempro": "Catatan_Revisi_Sempro.pdf",
+      "catatan-revisi-sidang": "Catatan_Revisi_Sidang.pdf",
       "sk-yudisium": "SK_Yudisium.pdf",
     };
     link.download = fileNames[type] || "Dokumen.pdf";

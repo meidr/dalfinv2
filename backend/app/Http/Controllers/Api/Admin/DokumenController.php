@@ -113,7 +113,7 @@ class DokumenController extends Controller
     /**
      * Update document status
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         $dokumen = Dokumen::findOrFail($id);
         $request->validate([

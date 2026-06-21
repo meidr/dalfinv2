@@ -450,7 +450,13 @@ const handleNotifClick = async (notif) => {
   // Navigate based on type
   if (notif.data?.skripsi_id) {
     showNotifications.value = false;
-    router.push(`/admin/skripsi/${notif.data.skripsi_id}`);
+
+    // Revisi document uploads → go to ujian page with auto-open revisi tab
+    if (notif.type === "upload_dokumen" && notif.data?.jenis === "revisi") {
+      router.push(`/admin/ujian?open_revisi=${notif.data.skripsi_id}`);
+    } else {
+      router.push(`/admin/skripsi/${notif.data.skripsi_id}`);
+    }
   }
 };
 

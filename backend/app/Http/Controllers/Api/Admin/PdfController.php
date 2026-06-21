@@ -366,6 +366,81 @@ class PdfController extends Controller
     }
 
     /**
+     * Generate Catatan Revisi PDF (Sempro or Sidang)
+     */
+    public function catatanRevisi(Request $request, Seminar $seminar)
+    {
+        $seminar->load([
+            'skripsi.mahasiswa.prodi.fakultas',
+            'skripsi.pembimbing.dosen',
+            'penguji.dosen',
+            'beritaAcara',
+            'perbaikanProposal',
+        ]);
+
+        // Validate: seminar must be completed with lulus_bersyarat, lulus_revisi or lulus
+        $hasil = $seminar->beritaAcara->hasil ?? $seminar->hasil;
+        if ($seminar->status !== 'selesai' || !in_array($hasil, ['lulus_bersyarat', 'lulus_revisi', 'lulus'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Catatan revisi hanya tersedia untuk seminar dengan hasil lulus bersyarat / lulus revisi / lulus'
+            ], 404);
+        }
+
+        $jenisLabel = $seminar->jenis === 'sempro'
+            ? 'Seminar Proposal'
+            : ($seminar->jenis === 'semhas' ? 'Seminar Hasil' : 'Sidang Skripsi');
+
+        $ketuaPenguji = $seminar->penguji->firstWhere('peran', 'ketua');
+
+        // Collect catatan from penguji (only those with catatan)
+        $catatanPenguji = $seminar->penguji->filter(function ($p) {
+            return !empty($p->catatan);
+        });
+
+        // Catatan umum from berita acara or seminar
+        $catatanUmum = $seminar->beritaAcara->catatan ?? $seminar->catatan;
+
+        // Perbaikan proposal (only for sempro)
+        $perbaikan = $seminar->jenis === 'sempro' ? $seminar->perbaikanProposal : collect([]);
+
+        // QR Signature
+        $signatureMode = $this->getSignatureMode($request);
+        $qrData = null;
+        $nim = $seminar->skripsi->mahasiswa->nim;
+
+        if ($signatureMode === 'qr') {
+            $ketuaName = $ketuaPenguji?->dosen?->full_name ?? ($ketuaPenguji?->dosen?->nama ?? '-');
+            $qrData = $this->generateQrToken(
+                $request,
+                'catatan_revisi',
+                $seminar->id,
+                $seminar->beritaAcara->nomor ?? '-',
+                $ketuaName,
+                'Ketua Penguji',
+                "Catatan_Revisi_{$seminar->jenis}_{$nim}.pdf"
+            );
+        }
+
+        $data = [
+            'seminar' => $seminar,
+            'jenisLabel' => $jenisLabel,
+            'catatanPenguji' => $catatanPenguji,
+            'catatanUmum' => $catatanUmum,
+            'perbaikan' => $perbaikan,
+            'ketuaPenguji' => $ketuaPenguji,
+            'tanggal' => now()->translatedFormat('d F Y'),
+            'signatureMode' => $signatureMode,
+            'qrData' => $qrData,
+        ];
+
+        $pdf = Pdf::loadView('pdf.catatan-revisi', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf->download("Catatan_Revisi_{$seminar->jenis}_{$nim}.pdf");
+    }
+
+    /**
      * Preview SK Tugas (return HTML)
      */
     public function previewSkTugas(Skripsi $skripsi)

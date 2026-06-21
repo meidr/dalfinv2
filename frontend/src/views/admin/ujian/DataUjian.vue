@@ -1436,7 +1436,11 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import adminService from "../../../services/adminService";
+
+const route = useRoute();
+const router = useRouter();
 
 const loading = ref(true);
 const saving = ref(false);
@@ -2191,9 +2195,26 @@ const doExportPdf = async () => {
   }
 };
 
-onMounted(() => {
-  fetchEligible();
+onMounted(async () => {
+  await fetchEligible();
   loadFilterData();
+
+  // Handle auto-open for revisi notifications
+  if (route.query.open_revisi) {
+    const targetSkripsiId = parseInt(route.query.open_revisi);
+    const item = eligibleList.value.find((s) => s.id === targetSkripsiId);
+    if (item && item.is_scheduled && item.sidang_seminar) {
+      openEditModal(item);
+      if (item.status === "revisi") {
+        editTab.value = "revisi";
+        fetchRevisiDocs();
+      }
+    }
+    // Clean up URL so it doesn't reopen on manual refresh
+    const query = { ...route.query };
+    delete query.open_revisi;
+    router.replace({ query });
+  }
 });
 </script>
 

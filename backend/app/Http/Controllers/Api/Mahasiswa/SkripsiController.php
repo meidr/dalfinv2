@@ -419,7 +419,7 @@ class SkripsiController extends Controller
             'upload_dokumen',
             'Dokumen Baru Diunggah',
             $mahasiswa->nama . ' mengunggah dokumen: ' . $jenisLabel,
-            ['skripsi_id' => $skripsi->id, 'mahasiswa_id' => $mahasiswa->id, 'dokumen_id' => $dokumen->id]
+            ['skripsi_id' => $skripsi->id, 'mahasiswa_id' => $mahasiswa->id, 'dokumen_id' => $dokumen->id, 'jenis' => $request->jenis]
         );
 
         // Auto-advance skripsi status when proposal is uploaded
@@ -739,6 +739,12 @@ class SkripsiController extends Controller
             case 'sk-yudisium':
                 return $this->downloadSkYudisium($skripsi);
 
+            case 'catatan-revisi-sempro':
+                return $this->downloadCatatanRevisi($skripsi, 'sempro');
+
+            case 'catatan-revisi-sidang':
+                return $this->downloadCatatanRevisi($skripsi, 'sidang');
+
             default:
                 return response()->json([
                     'success' => false,
@@ -851,6 +857,24 @@ class SkripsiController extends Controller
         }
 
         return $pdfController->rekapYudisium($req);
+    }
+
+    private function downloadCatatanRevisi(Skripsi $skripsi, string $jenis)
+    {
+        $label = $jenis === 'sempro' ? 'Seminar Proposal' : ($jenis === 'semhas' ? 'Seminar Hasil' : 'Sidang Skripsi');
+
+        $seminar = $skripsi->seminar()->where('jenis', $jenis)->first();
+
+        if (!$seminar) {
+            return response()->json([
+                'success' => false,
+                'message' => "Catatan Revisi {$label} belum tersedia"
+            ], 404);
+        }
+
+        // Delegate to PdfController
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        return $pdfController->catatanRevisi(request(), $seminar);
     }
 
     /**
