@@ -9,7 +9,7 @@ use App\Models\Skripsi;
 use App\Models\SKYudisium;
 use App\Models\Prodi;
 use App\Services\NomorSuratService;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class SKYudisiumController extends Controller
@@ -305,7 +305,7 @@ class SKYudisiumController extends Controller
     /**
      * Get detail of a specific batch
      */
-    public function batchDetail(Request $request, $nomor)
+    public function batchDetail(Request $request, string $nomor)
     {
         $nomor = urldecode($nomor);
 
@@ -383,7 +383,7 @@ class SKYudisiumController extends Controller
     /**
      * Update batch info (all sk_yudisium records with given nomor_sk_batch)
      */
-    public function updateBatch(Request $request, $nomor)
+    public function updateBatch(Request $request, string $nomor)
     {
         $nomor = urldecode($nomor);
 
@@ -508,7 +508,7 @@ class SKYudisiumController extends Controller
     /**
      * Remove a mahasiswa from a batch (reset nomor_sk_batch only)
      */
-    public function removeBatch($id)
+    public function removeBatch(int $id)
     {
         $skYudisium = SKYudisium::findOrFail($id);
 
@@ -526,7 +526,7 @@ class SKYudisiumController extends Controller
     /**
      * Delete an entire batch (reset nomor_sk_batch for all records in batch)
      */
-    public function destroyBatch($nomor)
+    public function destroyBatch(string $nomor)
     {
         $nomor = urldecode($nomor);
 

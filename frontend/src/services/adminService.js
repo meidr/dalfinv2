@@ -405,6 +405,36 @@ export const adminService = {
     return response.data;
   },
 
+  async storeBimbingan(data) {
+    const response = await api.post("/admin/bimbingan", data);
+    return response.data;
+  },
+
+  async updateBimbingan(id, data) {
+    const response = await api.put(`/admin/bimbingan/${id}`, data);
+    return response.data;
+  },
+
+  async deleteBimbingan(id) {
+    const response = await api.delete(`/admin/bimbingan/${id}`);
+    return response.data;
+  },
+
+  async generateBulkBimbingan(data) {
+    const response = await api.post("/admin/bimbingan/generate-bulk", data);
+    return response.data;
+  },
+
+  async submitPengajuanUjian(data) {
+    const response = await api.post("/admin/bimbingan/pengajuan-ujian", data);
+    return response.data;
+  },
+
+  async reviewPengajuanUjian(data) {
+    const response = await api.post("/admin/bimbingan/review-ujian", data);
+    return response.data;
+  },
+
   // Ujian
   async getEligibleSidang(params = {}) {
     const response = await api.get("/admin/ujian/eligible", { params });

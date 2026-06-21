@@ -48,12 +48,13 @@
               <th class="px-6 py-4">Mahasiswa</th>
               <th class="px-6 py-4">Pembimbing</th>
               <th class="px-6 py-4 text-center">Total Bimbingan</th>
+              <th class="px-6 py-4 text-center">Status Ujian</th>
               <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
             <tr v-if="bimbinganList.length === 0">
-              <td colspan="4" class="p-12 text-center text-text-secondary">
+              <td colspan="5" class="p-12 text-center text-text-secondary">
                 Tidak ada data bimbingan
               </td>
             </tr>
@@ -115,6 +116,14 @@
                               : "Pembimbing 2"
                           }}
                         </span>
+                        <!-- Bimbingan count badge per pembimbing -->
+                        <span
+                          v-if="item.eligibility"
+                          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold"
+                          :class="getEligibilityBadge(item.eligibility, pembimbing.jenis)"
+                        >
+                          {{ getEligibilityCount(item.eligibility, pembimbing.jenis) }}/{{ getEligibilityRequired(item.eligibility, pembimbing.jenis) }}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -131,8 +140,48 @@
                   >
                 </div>
               </td>
+              <!-- Status Ujian Column -->
+              <td class="px-6 py-4 text-center">
+                <span
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                  :class="getSkripsiStatusClass(item.status)"
+                >
+                  <span class="material-symbols-outlined text-[13px]">{{ getSkripsiStatusIcon(item.status) }}</span>
+                  {{ getSkripsiStatusLabel(item.status) }}
+                </span>
+              </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-1">
+                  <!-- Pengajuan Ujian Button (only admin/superadmin, status bimbingan, eligibility met) -->
+                  <button
+                    v-if="isAdminOrSuperAdmin && canSubmitPengajuan(item)"
+                    @click="confirmPengajuan(item)"
+                    class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-all dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-700 dark:hover:bg-amber-900/40"
+                    title="Ajukan Ujian"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">school</span>
+                    Ajukan
+                  </button>
+                  <!-- Approve/Reject (only admin/superadmin, status pengajuan_sidang) -->
+                  <template v-if="isAdminOrSuperAdmin && item.status === 'pengajuan_sidang'">
+                    <button
+                      @click="confirmReview(item, 'approve')"
+                      class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-all dark:bg-green-900/20 dark:text-green-300 dark:border-green-700 dark:hover:bg-green-900/40"
+                      title="Setujui Ujian"
+                    >
+                      <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                      ACC
+                    </button>
+                    <button
+                      @click="openRejectModal(item)"
+                      class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-all dark:bg-red-900/20 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900/40"
+                      title="Tolak Ujian"
+                    >
+                      <span class="material-symbols-outlined text-[16px]">cancel</span>
+                      Tolak
+                    </button>
+                  </template>
+                  <!-- Detail Button -->
                   <button
                     @click="viewDetail(item)"
                     class="inline-flex items-center justify-center p-2 text-text-secondary hover:text-primary hover:bg-background-light rounded-lg transition-all"
@@ -157,18 +206,163 @@
         @per-page-change="changePerPage"
       />
     </div>
+
+    <!-- Pengajuan Ujian Confirmation Modal -->
+    <Teleport to="body">
+      <div
+        v-if="showPengajuanModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        @click.self="closePengajuanModal"
+      >
+        <div class="bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-sm animate-fade-in-up">
+          <div class="p-6 text-center">
+            <div class="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4 dark:bg-amber-900/30">
+              <span class="material-symbols-outlined text-amber-600 text-2xl dark:text-amber-400">school</span>
+            </div>
+            <h3 class="text-lg font-bold text-text-main mb-2">Ajukan Ujian?</h3>
+            <p class="text-sm text-text-secondary mb-1">
+              Mahasiswa: <strong>{{ pengajuanTarget?.mahasiswa?.nama }}</strong>
+            </p>
+            <div v-if="pengajuanTarget?.eligibility" class="my-4 text-left bg-sidebar-light/50 rounded-lg p-3 text-xs space-y-1.5 border border-border-light">
+              <div class="flex items-center justify-between">
+                <span class="text-text-secondary">Bimbingan P1</span>
+                <span class="font-bold" :class="pengajuanTarget.eligibility.pembimbing_1.met ? 'text-green-600' : 'text-red-500'">
+                  {{ pengajuanTarget.eligibility.pembimbing_1.count }}/{{ pengajuanTarget.eligibility.pembimbing_1.required }}
+                  <span class="material-symbols-outlined text-[14px] align-middle">{{ pengajuanTarget.eligibility.pembimbing_1.met ? 'check_circle' : 'cancel' }}</span>
+                </span>
+              </div>
+              <div v-if="pengajuanTarget.eligibility.pembimbing_2.exists" class="flex items-center justify-between">
+                <span class="text-text-secondary">Bimbingan P2</span>
+                <span class="font-bold" :class="pengajuanTarget.eligibility.pembimbing_2.met ? 'text-green-600' : 'text-red-500'">
+                  {{ pengajuanTarget.eligibility.pembimbing_2.count }}/{{ pengajuanTarget.eligibility.pembimbing_2.required }}
+                  <span class="material-symbols-outlined text-[14px] align-middle">{{ pengajuanTarget.eligibility.pembimbing_2.met ? 'check_circle' : 'cancel' }}</span>
+                </span>
+              </div>
+            </div>
+            <p class="text-sm text-text-secondary mb-6">
+              Status skripsi akan berubah menjadi <strong>"Pengajuan Sidang"</strong>.
+            </p>
+            <div class="flex items-center justify-center gap-3">
+              <button
+                @click="closePengajuanModal"
+                class="px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-text-main border border-border-light rounded-lg hover:bg-sidebar-light transition-all"
+              >
+                Batal
+              </button>
+              <button
+                @click="doSubmitPengajuan"
+                :disabled="submitting"
+                class="px-5 py-2.5 text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <span v-if="submitting" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+                Ajukan Ujian
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Reject Modal -->
+    <Teleport to="body">
+      <div
+        v-if="showRejectModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        @click.self="closeRejectModal"
+      >
+        <div class="bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-sm animate-fade-in-up">
+          <div class="p-6">
+            <div class="text-center mb-4">
+              <div class="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 dark:bg-red-900/30">
+                <span class="material-symbols-outlined text-red-600 text-2xl dark:text-red-400">cancel</span>
+              </div>
+              <h3 class="text-lg font-bold text-text-main mb-1">Tolak Pengajuan Ujian?</h3>
+              <p class="text-sm text-text-secondary">
+                Mahasiswa: <strong>{{ rejectTarget?.mahasiswa?.nama }}</strong>
+              </p>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-semibold text-text-main mb-1.5">Alasan Penolakan <span class="text-red-500">*</span></label>
+              <textarea
+                v-model="rejectReason"
+                rows="3"
+                placeholder="Tuliskan alasan penolakan..."
+                class="w-full px-3 py-2.5 border border-border-light rounded-lg text-sm bg-white dark:bg-sidebar-light focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                required
+              ></textarea>
+            </div>
+            <div class="flex items-center justify-center gap-3">
+              <button
+                @click="closeRejectModal"
+                class="px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-text-main border border-border-light rounded-lg hover:bg-sidebar-light transition-all"
+              >
+                Batal
+              </button>
+              <button
+                @click="doReject"
+                :disabled="submitting || !rejectReason.trim()"
+                class="px-5 py-2.5 text-sm font-semibold bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <span v-if="submitting" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+                Tolak
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Toast Notification -->
+    <Teleport to="body">
+      <Transition name="toast">
+        <div
+          v-if="toast.show"
+          class="fixed top-6 right-6 z-60 px-4 py-3 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2 max-w-sm"
+          :class="{
+            'bg-green-600 text-white': toast.type === 'success',
+            'bg-red-600 text-white': toast.type === 'error',
+          }"
+        >
+          <span class="material-symbols-outlined text-[18px]">
+            {{ toast.type === "success" ? "check_circle" : "error" }}
+          </span>
+          {{ toast.message }}
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, computed, onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
 import adminService from "../../../services/adminService";
+import { useAuthStore } from "../../../stores/auth";
+
+const authStore = useAuthStore();
+const isAdminOrSuperAdmin = computed(() => authStore.isAdmin);
 
 const router = useRouter();
 const loading = ref(true);
 const bimbinganList = ref([]);
 const searchQuery = ref("");
+const submitting = ref(false);
+
+// Pengajuan modal
+const showPengajuanModal = ref(false);
+const pengajuanTarget = ref(null);
+
+// Reject modal
+const showRejectModal = ref(false);
+const rejectTarget = ref(null);
+const rejectReason = ref("");
+
+// Toast
+const toast = ref({ show: false, message: "", type: "success" });
+const showToast = (message, type = "success") => {
+  toast.value = { show: true, message, type };
+  setTimeout(() => { toast.value.show = false; }, 3000);
+};
 
 const pagination = reactive({
   current_page: 1,
@@ -235,6 +429,85 @@ const viewDetail = (item) => {
   router.push(`/admin/bimbingan/${item.id}`);
 };
 
+// --- Pengajuan Ujian ---
+const canSubmitPengajuan = (item) => {
+  return (
+    ['bimbingan', 'dospem', 'pengajuan_sidang_tolak'].includes(item.status) &&
+    item.eligibility?.all_met
+  );
+};
+
+const confirmPengajuan = (item) => {
+  pengajuanTarget.value = item;
+  showPengajuanModal.value = true;
+};
+
+const closePengajuanModal = () => {
+  showPengajuanModal.value = false;
+  pengajuanTarget.value = null;
+};
+
+const doSubmitPengajuan = async () => {
+  try {
+    submitting.value = true;
+    await adminService.submitPengajuanUjian({ skripsi_id: pengajuanTarget.value.id });
+    showToast("Pengajuan ujian berhasil disubmit");
+    closePengajuanModal();
+    await fetchBimbingan();
+  } catch (error) {
+    showToast(error.response?.data?.message || "Gagal mengajukan ujian", "error");
+  } finally {
+    submitting.value = false;
+  }
+};
+
+// --- Review (Approve/Reject) ---
+const confirmReview = async (item, action) => {
+  if (action === "approve") {
+    try {
+      submitting.value = true;
+      await adminService.reviewPengajuanUjian({ skripsi_id: item.id, action: "approve" });
+      showToast("Pengajuan ujian disetujui");
+      await fetchBimbingan();
+    } catch (error) {
+      showToast(error.response?.data?.message || "Gagal menyetujui", "error");
+    } finally {
+      submitting.value = false;
+    }
+  }
+};
+
+const openRejectModal = (item) => {
+  rejectTarget.value = item;
+  rejectReason.value = "";
+  showRejectModal.value = true;
+};
+
+const closeRejectModal = () => {
+  showRejectModal.value = false;
+  rejectTarget.value = null;
+  rejectReason.value = "";
+};
+
+const doReject = async () => {
+  try {
+    submitting.value = true;
+    await adminService.reviewPengajuanUjian({
+      skripsi_id: rejectTarget.value.id,
+      action: "reject",
+      alasan: rejectReason.value,
+    });
+    showToast("Pengajuan ujian ditolak");
+    closeRejectModal();
+    await fetchBimbingan();
+  } catch (error) {
+    showToast(error.response?.data?.message || "Gagal menolak", "error");
+  } finally {
+    submitting.value = false;
+  }
+};
+
+// --- Helpers ---
 const getInitials = (name) => {
   if (!name) return "?";
   return name
@@ -257,7 +530,84 @@ const getAvatarColor = (name) => {
   return colors[index];
 };
 
+const getEligibilityBadge = (eligibility, jenis) => {
+  const key = jenis === 'pembimbing_1' ? 'pembimbing_1' : 'pembimbing_2';
+  const data = eligibility[key];
+  if (!data) return 'bg-sidebar-light text-text-secondary';
+  return data.met
+    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+    : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400';
+};
+
+const getEligibilityCount = (eligibility, jenis) => {
+  const key = jenis === 'pembimbing_1' ? 'pembimbing_1' : 'pembimbing_2';
+  return eligibility[key]?.count ?? 0;
+};
+
+const getEligibilityRequired = (eligibility, jenis) => {
+  const key = jenis === 'pembimbing_1' ? 'pembimbing_1' : 'pembimbing_2';
+  return eligibility[key]?.required ?? 0;
+};
+
+const getSkripsiStatusClass = (status) => {
+  const map = {
+    bimbingan: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    pengajuan_sidang: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    pengajuan_sidang_tolak: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    sidang: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    lulus: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  };
+  return map[status] || 'bg-sidebar-light text-text-secondary';
+};
+
+const getSkripsiStatusIcon = (status) => {
+  const map = {
+    bimbingan: 'menu_book',
+    pengajuan_sidang: 'pending',
+    pengajuan_sidang_tolak: 'cancel',
+    sidang: 'check_circle',
+    lulus: 'verified',
+  };
+  return map[status] || 'info';
+};
+
+const getSkripsiStatusLabel = (status) => {
+  const map = {
+    draft: 'Draft',
+    pengajuan: 'Pengajuan',
+    disetujui: 'Disetujui',
+    ditolak: 'Ditolak',
+    proposal: 'Proposal',
+    sempro: 'Sempro',
+    penentuan_dospem: 'Penentuan Dospem',
+    bimbingan: 'Bimbingan',
+    pengajuan_sidang: 'Pengajuan Sidang',
+    pengajuan_sidang_tolak: 'Ditolak',
+    sidang: 'Sidang',
+    revisi: 'Revisi',
+    lulus: 'Lulus',
+  };
+  return map[status] || status || '-';
+};
+
 onMounted(() => {
   fetchBimbingan();
 });
 </script>
+
+<style scoped>
+.toast-enter-active {
+  animation: slideInRight 0.3s ease-out;
+}
+.toast-leave-active {
+  animation: slideOutRight 0.3s ease-in;
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+</style>

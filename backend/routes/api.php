@@ -239,6 +239,14 @@ Route::prefix('admin')
         // Bimbingan Management
         Route::get('/bimbingan', [AdminBimbinganController::class, 'index']);
         Route::get('/bimbingan/{skripsi}', [AdminBimbinganController::class, 'show']);
+        Route::post('/bimbingan', [AdminBimbinganController::class, 'store']);
+        Route::put('/bimbingan/{bimbingan}', [AdminBimbinganController::class, 'update']);
+        Route::delete('/bimbingan/{bimbingan}', [AdminBimbinganController::class, 'destroy']);
+        Route::middleware(['role:super_admin'])->group(function () {
+            Route::post('/bimbingan/generate-bulk', [AdminBimbinganController::class, 'generateBulk']);
+        });
+        Route::post('/bimbingan/pengajuan-ujian', [AdminBimbinganController::class, 'submitPengajuanUjian']);
+        Route::post('/bimbingan/review-ujian', [AdminBimbinganController::class, 'reviewPengajuanUjian']);
 
         // Ujian Management
         Route::get('/ujian/eligible', [AdminUjianController::class, 'eligible']);
