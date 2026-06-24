@@ -333,26 +333,41 @@ const routes = [
             component: () => import("../views/mahasiswa/skripsi/Profil.vue"),
           },
           {
-            path: "pembimbing",
-            name: "SkripsiPembimbing",
+            path: "mentor",
+            name: "SkripsiMentor",
+            component: () => import("../views/mahasiswa/skripsi/Mentor.vue"),
+          },
+          {
+            path: "sempro",
+            name: "SkripsiSempro",
+            component: () => import("../views/mahasiswa/skripsi/Sempro.vue"),
+          },
+          {
+            path: "dospem",
+            name: "SkripsiDospem",
+            component: () => import("../views/mahasiswa/skripsi/Dospem.vue"),
+          },
+          {
+            path: "bimbingan",
+            name: "SkripsiBimbingan",
             component: () =>
-              import("../views/mahasiswa/skripsi/Pembimbing.vue"),
+              import("../views/mahasiswa/skripsi/Bimbingan.vue"),
           },
           {
-            path: "log",
-            name: "SkripsiLog",
+            path: "pengajuan-sidang",
+            name: "SkripsiPengajuanSidang",
             component: () =>
-              import("../views/mahasiswa/skripsi/LogBimbingan.vue"),
+              import("../views/mahasiswa/skripsi/PengajuanSidang.vue"),
           },
           {
-            path: "jadwal",
-            name: "SkripsiJadwal",
-            component: () => import("../views/mahasiswa/skripsi/Jadwal.vue"),
+            path: "sidang",
+            name: "SkripsiSidang",
+            component: () => import("../views/mahasiswa/skripsi/Sidang.vue"),
           },
           {
-            path: "nilai",
-            name: "SkripsiNilai",
-            component: () => import("../views/mahasiswa/skripsi/Nilai.vue"),
+            path: "revisi",
+            name: "SkripsiRevisi",
+            component: () => import("../views/mahasiswa/skripsi/Revisi.vue"),
           },
           {
             path: "dokumen",

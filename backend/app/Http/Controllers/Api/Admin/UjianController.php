@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Dokumen;
+use App\Models\Notification;
+use App\Models\Pembimbing;
+use App\Models\Penguji;
 use App\Models\Seminar;
 use App\Models\Skripsi;
-use App\Models\Penguji;
-use App\Models\Pembimbing;
 use App\Models\SkripsiHistory;
+use Illuminate\Http\Request;
 
 class UjianController extends Controller
 {
@@ -25,6 +27,7 @@ class UjianController extends Controller
                 $q->where('jenis_kelamin', $gender);
             });
         }
+
         return $query;
     }
 
@@ -33,7 +36,7 @@ class UjianController extends Controller
         $query = Seminar::with([
             'skripsi.mahasiswa.prodi',
             'skripsi.pembimbing.dosen',
-            'penguji.dosen'
+            'penguji.dosen',
         ])->where('jenis', 'sidang');
 
         // Gender-based filtering
@@ -69,7 +72,7 @@ class UjianController extends Controller
                 $query->where(function ($q) use ($startYear, $endYear) {
                     $q->whereBetween('tanggal', [
                         "{$startYear}-08-01",
-                        "{$endYear}-07-31"
+                        "{$endYear}-07-31",
                     ]);
                 });
             }
@@ -95,6 +98,7 @@ class UjianController extends Controller
         // Add grade to each item
         $ujian->getCollection()->transform(function ($item) {
             $item->grade = $item->nilai ? $this->getGrade($item->nilai) : null;
+
             return $item;
         });
 
@@ -109,6 +113,7 @@ class UjianController extends Controller
                     $mq->where('jenis_kelamin', $genderFilter);
                 });
             }
+
             return $q;
         };
 
@@ -122,7 +127,7 @@ class UjianController extends Controller
         return response()->json([
             'success' => true,
             'data' => $ujian,
-            'stats' => $stats
+            'stats' => $stats,
         ]);
     }
 
@@ -132,11 +137,20 @@ class UjianController extends Controller
      */
     public function eligible(Request $request)
     {
-        $query = Skripsi::with(['mahasiswa.prodi', 'pembimbing.dosen', 'seminar' => function ($q) {
-            $q->where('jenis', 'sidang')->with('penguji.dosen')->latest('tanggal');
-        }])
-            ->where('is_active', true)
-            ->whereIn('status', ['pengajuan_sidang_acc', 'sidang', 'revisi', 'lulus']);
+        $config = \App\Models\Configuration::where('key', 'syarat_bimbingan_ujian')->first();
+        $requirements = $config?->value ?? ['pembimbing_1' => 8, 'pembimbing_2' => 4];
+
+        $query = Skripsi::with([
+            'mahasiswa.prodi',
+            'pembimbing.dosen',
+            'bimbingan',
+            'dokumen' => fn ($q) => $q->where('jenis', Dokumen::JENIS_SK6),
+            'seminar' => function ($q) {
+                $q->where('jenis', 'sidang')->with('penguji.dosen')->latest('tanggal');
+            },
+        ])->where('is_active', true);
+
+        $this->applySidangCandidateFilter($query, $requirements);
 
         // Gender-based filtering
         $this->applyMahasiswaGenderFilter($query, $request, 'mahasiswa');
@@ -239,17 +253,44 @@ class UjianController extends Controller
         $skripsiList = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         // Add computed fields
-        $skripsiList->getCollection()->transform(function ($skripsi) {
+        $skripsiList->getCollection()->transform(function ($skripsi) use ($requirements) {
             $seminarSidang = $skripsi->seminar->where('jenis', 'sidang')->first();
             $skripsi->sidang_seminar = $seminarSidang;
-            $skripsi->is_scheduled = !is_null($seminarSidang);
+            $skripsi->is_scheduled = ! is_null($seminarSidang);
+
+            $p1 = $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first();
+            $p2 = $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first();
+            $countP1 = $p1
+                ? $skripsi->bimbingan->where('dosen_id', $p1->dosen_id)->where('status', 'approved')->count()
+                : 0;
+            $countP2 = $p2
+                ? $skripsi->bimbingan->where('dosen_id', $p2->dosen_id)->where('status', 'approved')->count()
+                : 0;
+            $p1Met = $p1 && $countP1 >= (int) $requirements['pembimbing_1'];
+            $p2Met = ! $p2 || $countP2 >= (int) $requirements['pembimbing_2'];
+
+            $skripsi->eligibility = [
+                'pembimbing_1' => [
+                    'count' => $countP1,
+                    'required' => (int) $requirements['pembimbing_1'],
+                    'met' => $p1Met,
+                ],
+                'pembimbing_2' => [
+                    'count' => $countP2,
+                    'required' => (int) $requirements['pembimbing_2'],
+                    'met' => $p2Met,
+                    'exists' => (bool) $p2,
+                ],
+                'all_met' => $p1Met && $p2Met,
+            ];
+
             return $skripsi;
         });
 
         // Stats (also filtered by gender)
         $user = $request->user();
-        $baseQuery = Skripsi::where('is_active', true)
-            ->whereIn('status', ['pengajuan_sidang_acc', 'sidang', 'revisi', 'lulus']);
+        $baseQuery = Skripsi::where('is_active', true);
+        $this->applySidangCandidateFilter($baseQuery, $requirements);
         if ($user->role !== 'super_admin' && $user->jenis_kelamin) {
             $genderFilter = $user->jenis_kelamin;
             $baseQuery->whereHas('mahasiswa', function ($mq) use ($genderFilter) {
@@ -270,8 +311,40 @@ class UjianController extends Controller
                 'total' => $skripsiList->total(),
                 'terjadwal' => $terjadwal,
                 'belum' => $belum,
-            ]
+            ],
         ]);
+    }
+
+    private function applySidangCandidateFilter($query, array $requirements): void
+    {
+        $requiredP1 = (int) ($requirements['pembimbing_1'] ?? 8);
+        $requiredP2 = (int) ($requirements['pembimbing_2'] ?? 4);
+
+        $query->where(function ($statusQuery) use ($requiredP1, $requiredP2) {
+            $statusQuery
+                ->whereIn('status', ['pengajuan_sidang', 'pengajuan_sidang_acc', 'sidang', 'revisi', 'lulus'])
+                ->orWhere(function ($bimbinganQuery) use ($requiredP1, $requiredP2) {
+                    $bimbinganQuery
+                        ->where('status', 'bimbingan')
+                        ->whereHas('pembimbing', fn ($q) => $q->where('jenis', 'pembimbing_1'))
+                        ->whereRaw(
+                            '(SELECT COUNT(*) FROM bimbingan b '
+                            .'INNER JOIN pembimbing p ON p.skripsi_id = b.skripsi_id AND p.dosen_id = b.dosen_id '
+                            .'WHERE b.skripsi_id = skripsi.id AND b.status = ? AND p.jenis = ?) >= ?',
+                            ['approved', 'pembimbing_1', $requiredP1]
+                        )
+                        ->where(function ($p2Query) use ($requiredP2) {
+                            $p2Query
+                                ->whereDoesntHave('pembimbing', fn ($q) => $q->where('jenis', 'pembimbing_2'))
+                                ->orWhereRaw(
+                                    '(SELECT COUNT(*) FROM bimbingan b '
+                                    .'INNER JOIN pembimbing p ON p.skripsi_id = b.skripsi_id AND p.dosen_id = b.dosen_id '
+                                    .'WHERE b.skripsi_id = skripsi.id AND b.status = ? AND p.jenis = ?) >= ?',
+                                    ['approved', 'pembimbing_2', $requiredP2]
+                                );
+                        });
+                });
+        });
     }
 
     public function show($id)
@@ -280,12 +353,12 @@ class UjianController extends Controller
             'skripsi.mahasiswa.prodi',
             'skripsi.pembimbing.dosen',
             'penguji.dosen',
-            'beritaAcara'
+            'beritaAcara',
         ])->where('jenis', 'sidang')->findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'data' => $this->formatUjianResponse($ujian)
+            'data' => $this->formatUjianResponse($ujian),
         ]);
     }
 
@@ -302,7 +375,7 @@ class UjianController extends Controller
         ]);
 
         // Validate penguji not pembimbing
-        if (!empty($validated['penguji'])) {
+        if (! empty($validated['penguji'])) {
             $pembimbingDosenIds = Pembimbing::where('skripsi_id', $validated['skripsi_id'])
                 ->pluck('dosen_id')->toArray();
 
@@ -310,7 +383,7 @@ class UjianController extends Controller
                 if (in_array($p['dosen_id'], $pembimbingDosenIds)) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Dosen pembimbing tidak bisa menjadi dosen penguji'
+                        'message' => 'Dosen pembimbing tidak bisa menjadi dosen penguji',
                     ], 422);
                 }
             }
@@ -325,8 +398,7 @@ class UjianController extends Controller
             'status' => 'pending',
         ]);
 
-        // Create penguji
-        if (!empty($validated['penguji'])) {
+        if (! empty($validated['penguji'])) {
             foreach ($validated['penguji'] as $p) {
                 Penguji::create([
                     'seminar_id' => $ujian->id,
@@ -336,18 +408,17 @@ class UjianController extends Controller
             }
         }
 
-        $ujian->load('penguji.dosen');
-
-        // Auto-update skripsi status to 'sidang' if currently 'pengajuan_sidang'
         $skripsi = Skripsi::find($validated['skripsi_id']);
         if ($skripsi && $skripsi->status === 'pengajuan_sidang_acc') {
             $skripsi->update(['status' => 'sidang', 'progress_percentage' => 85]);
         }
 
+        $ujian->load('penguji.dosen');
+
         return response()->json([
             'success' => true,
             'message' => 'Ujian berhasil dijadwalkan',
-            'data' => $ujian
+            'data' => $ujian,
         ], 201);
     }
 
@@ -357,17 +428,18 @@ class UjianController extends Controller
     private function isFemaleStaff(Request $request): bool
     {
         $user = $request->user();
-        if (!$user || $user->role !== 'staff') {
+        if (! $user || $user->role !== 'staff') {
             return false;
         }
         $gender = strtolower(trim($user->jenis_kelamin ?? ''));
+
         return $gender === 'p' || $gender === 'perempuan';
     }
 
     /**
      * Create a pending SkripsiHistory for admin approval
      */
-    private function createPendingStatusChange(Skripsi $skripsi, string $newStatus, int $userId, string $alasan = null): void
+    private function createPendingStatusChange(Skripsi $skripsi, string $newStatus, int $userId, ?string $alasan = null): void
     {
         SkripsiHistory::create([
             'skripsi_id' => $skripsi->id,
@@ -407,7 +479,7 @@ class UjianController extends Controller
         $pendingApproval = false;
 
         // Validate penguji not pembimbing
-        if (!empty($validated['penguji'])) {
+        if (! empty($validated['penguji'])) {
             $pembimbingDosenIds = Pembimbing::where('skripsi_id', $ujian->skripsi_id)
                 ->pluck('dosen_id')->toArray();
 
@@ -415,7 +487,7 @@ class UjianController extends Controller
                 if (in_array($p['dosen_id'], $pembimbingDosenIds)) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Dosen pembimbing tidak bisa menjadi dosen penguji'
+                        'message' => 'Dosen pembimbing tidak bisa menjadi dosen penguji',
                     ], 422);
                 }
             }
@@ -428,15 +500,15 @@ class UjianController extends Controller
             'ruangan',
             'status',
             'hasil',
-            'catatan'
+            'catatan',
         ])->toArray();
 
-        if (!empty($ujianFields)) {
+        if (! empty($ujianFields)) {
             $ujian->update($ujianFields);
         }
 
         // Auto-update skripsi status when admin manually sets hasil (without penguji recalc)
-        if (isset($validated['hasil']) && !isset($validated['penguji'])) {
+        if (isset($validated['hasil']) && ! isset($validated['penguji'])) {
             $skripsi = $ujian->skripsi;
             if ($skripsi && in_array($skripsi->status, ['sidang', 'pengajuan_sidang', 'bimbingan'])) {
                 $targetStatus = null;
@@ -473,7 +545,7 @@ class UjianController extends Controller
                 $pi = $p['nilai_pi'] ?? null;
 
                 // Auto-calculate per-penguji average from filled components
-                $components = array_filter([$mt, $ms, $pm, $pi], fn($v) => $v !== null);
+                $components = array_filter([$mt, $ms, $pm, $pi], fn ($v) => $v !== null);
                 $pengujiAvg = count($components) === 4
                     ? round(array_sum($components) / 4, 2)
                     : null;
@@ -517,7 +589,7 @@ class UjianController extends Controller
      * Recalculate the average score from all penguji
      * Returns 'pending' if status change needs admin approval
      */
-    private function recalculateNilai(Seminar $ujian, bool $skipStatusUpdate = false, int $userId = null): ?string
+    private function recalculateNilai(Seminar $ujian, bool $skipStatusUpdate = false, ?int $userId = null): ?string
     {
         $pengujiScores = Penguji::where('seminar_id', $ujian->id)
             ->whereNotNull('nilai')
@@ -554,6 +626,7 @@ class UjianController extends Controller
                             // Female staff: defer to admin approval
                             $this->createPendingStatusChange($skripsi, $targetStatus, $userId);
                             $ujian->update($updateData);
+
                             return 'pending';
                         } else {
                             $progressMap = ['lulus' => 100, 'revisi' => 90];
@@ -577,11 +650,22 @@ class UjianController extends Controller
      */
     private function getGrade($nilai): string
     {
-        if ($nilai >= 85) return 'A';
-        if ($nilai >= 80) return 'B+';
-        if ($nilai >= 70) return 'B';
-        if ($nilai >= 65) return 'C+';
-        if ($nilai >= 55) return 'C';
+        if ($nilai >= 85) {
+            return 'A';
+        }
+        if ($nilai >= 80) {
+            return 'B+';
+        }
+        if ($nilai >= 70) {
+            return 'B';
+        }
+        if ($nilai >= 65) {
+            return 'C+';
+        }
+        if ($nilai >= 55) {
+            return 'C';
+        }
+
         return 'D';
     }
 
@@ -592,6 +676,7 @@ class UjianController extends Controller
     {
         $data = $ujian->toArray();
         $data['grade'] = $ujian->nilai ? $this->getGrade($ujian->nilai) : null;
+
         return $data;
     }
 
@@ -626,7 +711,50 @@ class UjianController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $dosen
+            'data' => $dosen,
+        ]);
+    }
+
+    public function cancelRequest(Skripsi $skripsi)
+    {
+        $hasSchedule = Seminar::where('skripsi_id', $skripsi->id)
+            ->where('jenis', 'sidang')
+            ->exists();
+
+        if ($hasSchedule) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengajuan tidak dapat dibatalkan karena jadwal sidang sudah dibuat.',
+            ], 422);
+        }
+
+        if (! in_array($skripsi->status, ['pengajuan_sidang', 'pengajuan_sidang_acc', 'sidang'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skripsi tidak berada dalam status pengajuan sidang yang dapat dibatalkan.',
+            ], 422);
+        }
+
+        $skripsi->update([
+            'status' => 'bimbingan',
+            'progress_percentage' => 50,
+            'alasan_tolak_sidang' => null,
+        ]);
+
+        if ($skripsi->mahasiswa?->user_id) {
+            Notification::create([
+                'type' => 'pengajuan_ujian_dibatalkan',
+                'title' => 'Pengajuan Ujian Dibatalkan',
+                'message' => 'Pengajuan ujian skripsi Anda dibatalkan oleh admin. Silakan mengajukan kembali jika sudah siap.',
+                'data' => ['skripsi_id' => $skripsi->id],
+                'user_id' => $skripsi->mahasiswa->user_id,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan ujian skripsi berhasil dibatalkan.',
+            'data' => $skripsi->fresh(),
         ]);
     }
 

@@ -35,26 +35,41 @@ class Dokumen extends Model
      */
     public function getFileUrlAttribute()
     {
-        if (!$this->path) {
+        if (! $this->path) {
             return null;
         }
-        return url('/api/file/' . $this->path);
+
+        return url('/api/file/'.$this->path);
     }
 
     const JENIS_PROPOSAL = 'proposal';
+
     const JENIS_BAB1 = 'bab1';
+
     const JENIS_BAB2 = 'bab2';
+
     const JENIS_BAB3 = 'bab3';
+
     const JENIS_BAB4 = 'bab4';
+
     const JENIS_BAB5 = 'bab5';
+
     const JENIS_FULL_DRAFT = 'full_draft';
+
     const JENIS_FINAL = 'final';
+
     const JENIS_REVISI = 'revisi';
+
     const JENIS_REVISI_PROPOSAL = 'revisi_proposal';
+
+    const JENIS_SK6 = 'sk6';
+
     const JENIS_LAINNYA = 'lainnya';
 
     const STATUS_PENDING = 'pending';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_REJECTED = 'rejected';
 
     /**

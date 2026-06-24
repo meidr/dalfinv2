@@ -14,6 +14,7 @@ use App\Models\Seminar;
 use App\Models\BeritaAcaraSeminar;
 use App\Models\Configuration;
 use App\Models\Notification;
+use App\Services\Sk6DocumentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -599,7 +600,7 @@ class SkripsiController extends Controller
     /**
      * Request ujian skripsi (submit pengajuan)
      */
-    public function requestUjian(Request $request)
+    public function requestUjian(Request $request, Sk6DocumentService $sk6Documents)
     {
         $mahasiswa = $request->user()->mahasiswa;
         $skripsi = $mahasiswa->activeSkripsi;
@@ -610,6 +611,16 @@ class SkripsiController extends Controller
                 'message' => 'Skripsi tidak ditemukan'
             ], 404);
         }
+
+        $request->validate(
+            ['file_sk6' => 'required|file|mimes:pdf,doc,docx|max:20480'],
+            [
+                'file_sk6.required' => 'File SK 6 wajib dilampirkan saat pengajuan sidang.',
+                'file_sk6.file' => 'Lampiran SK 6 harus berupa file.',
+                'file_sk6.mimes' => 'Format SK 6 harus PDF, DOC, atau DOCX.',
+                'file_sk6.max' => 'Ukuran file SK 6 maksimal 20 MB.',
+            ]
+        );
 
         if (!in_array($skripsi->status, ['bimbingan', 'pengajuan_sidang_tolak'])) {
             return response()->json([
@@ -672,10 +683,17 @@ class SkripsiController extends Controller
             ], 422);
         }
 
-        // Update status
-        $skripsi->status = 'pengajuan_sidang';
-        $skripsi->alasan_tolak_sidang = null;
-        $skripsi->save();
+        $sk6Document = $sk6Documents->storeForRequest(
+            $skripsi,
+            $request->file('file_sk6'),
+            $request->user()->id,
+            function () use ($skripsi) {
+                $skripsi->status = 'pengajuan_sidang';
+                $skripsi->progress_percentage = 60;
+                $skripsi->alasan_tolak_sidang = null;
+                $skripsi->save();
+            }
+        );
 
         // Notify dosen pembimbing utama
         $dosenUtama = $pembimbing1->dosen;
@@ -690,6 +708,7 @@ class SkripsiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pengajuan ujian skripsi berhasil dikirim. Menunggu persetujuan dosen pembimbing utama.',
+            'data' => ['sk6_document' => $sk6Document],
         ]);
     }
 

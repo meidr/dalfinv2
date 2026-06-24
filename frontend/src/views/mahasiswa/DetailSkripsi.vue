@@ -191,10 +191,13 @@ const statusBadgeClass = computed(
 const tabs = [
   { id: "progress", label: "Progress", routeName: "SkripsiProgress" },
   { id: "umum", label: "Profil & Judul", routeName: "SkripsiProfil" },
-  { id: "pembimbing", label: "Pembimbing", routeName: "SkripsiPembimbing" },
-  { id: "log", label: "Log Bimbingan", routeName: "SkripsiLog" },
-  { id: "jadwal", label: "Jadwal", routeName: "SkripsiJadwal" },
-  { id: "nilai", label: "Nilai", routeName: "SkripsiNilai" },
+  { id: "mentor", label: "Mentor", routeName: "SkripsiMentor" },
+  { id: "sempro", label: "Sempro", routeName: "SkripsiSempro" },
+  { id: "dospem", label: "Dospem", routeName: "SkripsiDospem" },
+  { id: "bimbingan", label: "Bimbingan", routeName: "SkripsiBimbingan" },
+  { id: "pengajuan_sidang", label: "Pengajuan Sidang", routeName: "SkripsiPengajuanSidang" },
+  { id: "sidang", label: "Sidang", routeName: "SkripsiSidang" },
+  { id: "revisi", label: "Revisi", routeName: "SkripsiRevisi" },
   { id: "dokumen", label: "Dokumen", routeName: "SkripsiDokumen" },
 ];
 

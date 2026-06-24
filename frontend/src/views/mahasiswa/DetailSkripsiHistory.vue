@@ -195,6 +195,7 @@ const statusBadgeClass = computed(
 const tabs = [
   { id: "progress", label: "Progress", routeName: "HistorySkripsiProgress" },
   { id: "umum", label: "Profil & Judul", routeName: "HistorySkripsiProfil" },
+  { id: "mentor", label: "Mentor", routeName: "HistorySkripsiMentor" },
   {
     id: "pembimbing",
     label: "Pembimbing",

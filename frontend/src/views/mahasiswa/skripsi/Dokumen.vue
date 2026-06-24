@@ -580,6 +580,7 @@ const dokumenList = computed(() => {
       "final",
       "revisi",
       "revisi_proposal",
+      "sk6",
       "lainnya",
     ];
     return order.indexOf(a.jenis) - order.indexOf(b.jenis);
@@ -670,6 +671,20 @@ const officialDocuments = computed(() => {
           s.nota_bimbingan.tanggal_terbit || s.nota_bimbingan.created_at,
         )
       : "Otomatis diperbarui",
+  });
+
+  const latestSk6 = dokumenList.value
+    .filter((d) => d.jenis === "sk6")
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+  docs.push({
+    type: "sk6",
+    label: "SK 6",
+    icon: "verified_user",
+    iconClass: "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600",
+    available: !!latestSk6,
+    subtitle: latestSk6
+      ? `${latestSk6.nama_file || "SK 6"}${latestSk6.ukuran ? ` • ${formatFileSize(latestSk6.ukuran)}` : ""} • Diunggah ${formatDateTime(latestSk6.created_at)}`
+      : "Belum diunggah saat pengajuan sidang",
   });
 
   // 3. Seminar Proposal documents
@@ -915,13 +930,16 @@ const getLatestUploadedFile = (jenis) => {
 const downloadPdf = async (type) => {
   downloading.value = type;
   try {
-    // For sk-tugas, use uploaded file if available
-    if (type === "sk-tugas") {
-      const uploaded = getLatestUploadedFile("sk_tugas");
+    const uploadedJenis =
+      type === "sk-tugas" ? "sk_tugas" : type === "sk6" ? "sk6" : null;
+    if (uploadedJenis) {
+      const uploaded = getLatestUploadedFile(uploadedJenis);
       if (uploaded && uploaded.path) {
         const link = document.createElement("a");
         link.href = getFileUrl(uploaded.path);
-        link.download = uploaded.nama_file || "SK_Pembimbing.pdf";
+        link.download =
+          uploaded.nama_file ||
+          (type === "sk6" ? "SK_6.pdf" : "SK_Pembimbing.pdf");
         link.target = "_blank";
         document.body.appendChild(link);
         link.click();
@@ -937,6 +955,7 @@ const downloadPdf = async (type) => {
     const fileNames = {
       "sk-tugas": "SK_Pembimbing.pdf",
       "nota-bimbingan": "Nota_Bimbingan.pdf",
+      sk6: "SK_6.pdf",
       "sk-penguji-sempro": "SK_Penguji_Sempro.pdf",
       "sk-penguji-semhas": "SK_Penguji_Semhas.pdf",
       "sk-penguji-sidang": "SK_Penguji_Sidang.pdf",
@@ -963,9 +982,10 @@ const downloadPdf = async (type) => {
 const previewPdf = async (type) => {
   previewing.value = type;
   try {
-    // For sk-tugas, use uploaded file if available
-    if (type === "sk-tugas") {
-      const uploaded = getLatestUploadedFile("sk_tugas");
+    const uploadedJenis =
+      type === "sk-tugas" ? "sk_tugas" : type === "sk6" ? "sk6" : null;
+    if (uploadedJenis) {
+      const uploaded = getLatestUploadedFile(uploadedJenis);
       if (uploaded && uploaded.path) {
         window.open(getFileUrl(uploaded.path), "_blank");
         previewing.value = null;
@@ -1012,6 +1032,7 @@ const getJenisLabel = (jenis) => {
     revisi_proposal: "Revisi Proposal",
     lainnya: "Lainnya",
     sk_tugas: "SK Pembimbing Skripsi",
+    sk6: "SK 6",
   };
   return map[jenis] || jenis || "Dokumen";
 };
@@ -1028,6 +1049,7 @@ const getDocIcon = (jenis) => {
     final: "task",
     revisi: "rate_review",
     revisi_proposal: "rate_review",
+    sk6: "verified_user",
     lainnya: "article",
   };
   return map[jenis] || "description";
@@ -1045,6 +1067,7 @@ const getDocIconClass = (jenis) => {
     final: "bg-green-100 dark:bg-green-900/30 text-green-600",
     revisi: "bg-orange-100 dark:bg-orange-900/30 text-orange-600",
     revisi_proposal: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600",
+    sk6: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700",
     lainnya: "bg-gray-100 dark:bg-gray-800 text-gray-600",
   };
   return map[jenis] || "bg-gray-100 dark:bg-gray-800 text-gray-600";

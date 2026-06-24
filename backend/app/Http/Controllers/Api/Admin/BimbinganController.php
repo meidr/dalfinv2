@@ -9,6 +9,7 @@ use App\Models\Bimbingan;
 use App\Models\Skripsi;
 use App\Models\Configuration;
 use App\Models\Notification;
+use App\Services\Sk6DocumentService;
 use Carbon\Carbon;
 
 class BimbinganController extends Controller
@@ -229,13 +230,22 @@ class BimbinganController extends Controller
     /**
      * Submit pengajuan ujian on behalf of mahasiswa (admin/superadmin)
      */
-    public function submitPengajuanUjian(Request $request)
+    public function submitPengajuanUjian(Request $request, Sk6DocumentService $sk6Documents)
     {
-        $request->validate([
-            'skripsi_id' => 'required|exists:skripsi,id',
-        ]);
+        $request->validate(
+            [
+                'skripsi_id' => 'required|exists:skripsi,id',
+                'file_sk6' => 'required|file|mimes:pdf,doc,docx|max:20480',
+            ],
+            [
+                'file_sk6.required' => 'File SK 6 wajib dilampirkan saat pengajuan sidang.',
+                'file_sk6.file' => 'Lampiran SK 6 harus berupa file.',
+                'file_sk6.mimes' => 'Format SK 6 harus PDF, DOC, atau DOCX.',
+                'file_sk6.max' => 'Ukuran file SK 6 maksimal 20 MB.',
+            ]
+        );
 
-        $skripsi = Skripsi::with(['pembimbing.dosen', 'mahasiswa', 'dokumen'])->findOrFail($request->skripsi_id);
+        $skripsi = Skripsi::with(['pembimbing.dosen', 'mahasiswa', 'dokumen', 'bimbingan'])->findOrFail($request->skripsi_id);
 
         if (!in_array($skripsi->status, ['bimbingan', 'dospem', 'pengajuan_sidang_tolak'])) {
             return response()->json([
@@ -244,10 +254,35 @@ class BimbinganController extends Controller
             ], 422);
         }
 
-        // Update status
-        $skripsi->status = 'pengajuan_sidang';
-        $skripsi->alasan_tolak_sidang = null;
-        $skripsi->save();
+        $config = Configuration::where('key', 'syarat_bimbingan_ujian')->first();
+        $requirements = $config?->value ?? ['pembimbing_1' => 8, 'pembimbing_2' => 4];
+        $p1 = $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first();
+        $p2 = $skripsi->pembimbing->where('jenis', 'pembimbing_2')->first();
+        $countP1 = $p1
+            ? $skripsi->bimbingan->where('dosen_id', $p1->dosen_id)->where('status', 'approved')->count()
+            : 0;
+        $countP2 = $p2
+            ? $skripsi->bimbingan->where('dosen_id', $p2->dosen_id)->where('status', 'approved')->count()
+            : 0;
+
+        if (! $p1 || $countP1 < (int) $requirements['pembimbing_1'] || ($p2 && $countP2 < (int) $requirements['pembimbing_2'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jumlah bimbingan mahasiswa belum memenuhi syarat pengajuan sidang.',
+            ], 422);
+        }
+
+        $sk6Document = $sk6Documents->storeForRequest(
+            $skripsi,
+            $request->file('file_sk6'),
+            $request->user()->id,
+            function () use ($skripsi) {
+                $skripsi->status = 'pengajuan_sidang';
+                $skripsi->progress_percentage = 60;
+                $skripsi->alasan_tolak_sidang = null;
+                $skripsi->save();
+            }
+        );
 
         // Notify dosen pembimbing utama
         $pembimbing1 = $skripsi->pembimbing->where('jenis', 'pembimbing_1')->first();
@@ -264,6 +299,7 @@ class BimbinganController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pengajuan ujian berhasil disubmit',
+            'data' => ['sk6_document' => $sk6Document],
         ]);
     }
 
@@ -289,7 +325,7 @@ class BimbinganController extends Controller
 
         if ($request->action === 'approve') {
             $skripsi->status = 'sidang';
-            $skripsi->progress_percentage = min(($skripsi->progress_percentage ?? 0) + 10, 100);
+            $skripsi->progress_percentage = 85;
             $skripsi->save();
 
             // Notify mahasiswa
@@ -309,6 +345,7 @@ class BimbinganController extends Controller
             ]);
         } else {
             $skripsi->status = 'pengajuan_sidang_tolak';
+            $skripsi->progress_percentage = 60;
             $skripsi->alasan_tolak_sidang = $request->alasan;
             $skripsi->save();
 

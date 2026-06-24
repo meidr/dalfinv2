@@ -235,13 +235,14 @@
               <th class="px-6 py-4">Pembimbing</th>
               <th class="px-6 py-4">Dosen Penguji</th>
               <th class="px-6 py-4">Status & Jadwal</th>
+              <th class="px-6 py-4">SK 6</th>
               <th class="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
             <tr v-if="eligibleList.length === 0">
               <td
-                colspan="5"
+                colspan="6"
                 class="px-6 py-12 text-center text-text-secondary"
               >
                 Tidak ada data mahasiswa
@@ -363,12 +364,60 @@
                   </span>
                 </div>
               </td>
+              <td class="px-6 py-4">
+                <a
+                  v-if="getSk6Document(item)"
+                  :href="getDocumentUrl(getSk6Document(item))"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[16px]"
+                    >description</span
+                  >
+                  Lihat SK 6
+                </a>
+                <span
+                  v-else
+                  class="inline-flex items-center gap-1 text-xs text-text-secondary"
+                >
+                  <span class="material-symbols-outlined text-[15px]"
+                    >file_off</span
+                  >
+                  Belum ada
+                </span>
+              </td>
               <td class="px-6 py-4 text-right">
                 <div
                   class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <button
-                    v-if="!item.is_scheduled"
+                    v-if="!item.is_scheduled && canSubmitRequest(item)"
+                    @click="openRequestModal(item)"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition-all shadow-sm"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >upload_file</span
+                    >
+                    Ajukan
+                  </button>
+                  <button
+                    v-if="!item.is_scheduled && canApproveRequest(item)"
+                    @click="approveUjianRequest(item)"
+                    :disabled="approvingRequestId === item.id"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span
+                      v-if="approvingRequestId === item.id"
+                      class="size-3.5 rounded-full border-2 border-green-200 border-t-white animate-spin"
+                    ></span>
+                    <span v-else class="material-symbols-outlined text-[16px]"
+                      >check_circle</span
+                    >
+                    {{ approvingRequestId === item.id ? "Memproses..." : "ACC" }}
+                  </button>
+                  <button
+                    v-if="!item.is_scheduled && canSchedule(item)"
                     @click="openScheduleModal(item)"
                     class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-sm"
                   >
@@ -376,6 +425,25 @@
                       >calendar_month</span
                     >
                     Jadwalkan
+                  </button>
+                  <button
+                    v-if="!item.is_scheduled && canCancelRequest(item)"
+                    @click="cancelUjianRequest(item)"
+                    :disabled="cancellingRequestId === item.id"
+                    class="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span
+                      v-if="cancellingRequestId === item.id"
+                      class="size-3.5 rounded-full border-2 border-red-300 border-t-red-600 animate-spin"
+                    ></span>
+                    <span v-else class="material-symbols-outlined text-[16px]"
+                      >cancel</span
+                    >
+                    {{
+                      cancellingRequestId === item.id
+                        ? "Membatalkan..."
+                        : "Batalkan"
+                    }}
                   </button>
                   <button
                     v-if="item.is_scheduled"
@@ -500,6 +568,117 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
+
+    <!-- Submit Sidang Request Modal -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div
+          v-if="showRequestModal"
+          class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          @click.self="closeRequestModal"
+        >
+          <div
+            class="bg-white dark:bg-surface-light rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+          >
+            <div class="p-6 border-b border-border-light">
+              <h2 class="text-xl font-bold text-text-main">
+                Ajukan Ujian Skripsi
+              </h2>
+              <p class="text-sm text-text-secondary mt-1">
+                {{ requestTarget?.mahasiswa?.nama }} -
+                {{ requestTarget?.mahasiswa?.nim }}
+              </p>
+            </div>
+            <div class="p-6 space-y-4">
+              <div
+                v-if="requestTarget?.eligibility"
+                class="grid grid-cols-1 sm:grid-cols-2 gap-2"
+              >
+                <div
+                  class="p-3 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                >
+                  <p class="text-xs text-text-secondary">Bimbingan P1</p>
+                  <p class="text-sm font-bold text-green-700 dark:text-green-400">
+                    {{ requestTarget.eligibility.pembimbing_1.count }} /
+                    {{ requestTarget.eligibility.pembimbing_1.required }} sesi
+                  </p>
+                </div>
+                <div
+                  v-if="requestTarget.eligibility.pembimbing_2.exists"
+                  class="p-3 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800"
+                >
+                  <p class="text-xs text-text-secondary">Bimbingan P2</p>
+                  <p class="text-sm font-bold text-green-700 dark:text-green-400">
+                    {{ requestTarget.eligibility.pembimbing_2.count }} /
+                    {{ requestTarget.eligibility.pembimbing_2.required }} sesi
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800"
+              >
+                <span class="material-symbols-outlined text-amber-600 text-[18px] mt-0.5"
+                  >info</span
+                >
+                <p class="text-xs text-amber-800 dark:text-amber-300">
+                  Jika mahasiswa belum mempunyai SK 6, silakan mengurusnya ke
+                  staff prodi masing-masing sebelum pengajuan sidang.
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-text-main mb-1.5">
+                  Lampiran SK 6 <span class="text-red-500">*</span>
+                </label>
+                <label
+                  class="flex items-center gap-3 px-3 py-3 rounded-lg border border-dashed border-border-light hover:border-amber-500 hover:bg-amber-50/50 cursor-pointer transition-colors"
+                >
+                  <span class="material-symbols-outlined text-amber-600"
+                    >upload_file</span
+                  >
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-medium text-text-main truncate">
+                      {{ requestSk6File?.name || "Pilih file SK 6" }}
+                    </span>
+                    <span class="block text-xs text-text-secondary">
+                      PDF, DOC, atau DOCX, maksimal 20 MB
+                    </span>
+                  </span>
+                  <input
+                    type="file"
+                    class="sr-only"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    @change="handleRequestSk6File"
+                  />
+                </label>
+                <p v-if="requestSk6Error" class="text-xs text-red-600 mt-1.5">
+                  {{ requestSk6Error }}
+                </p>
+              </div>
+
+              <div class="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  @click="closeRequestModal"
+                  class="flex-1 px-4 py-2.5 border border-border-light rounded-lg text-text-secondary hover:bg-background-light transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  @click="submitUjianRequest"
+                  :disabled="requestSubmitting"
+                  class="flex-1 px-4 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                >
+                  {{ requestSubmitting ? "Mengajukan..." : "Ajukan Ujian" }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </Teleport>
 
     <!-- ========== EDIT UJIAN MODAL (Jadwal + Penguji + Nilai) ========== -->
@@ -1454,6 +1633,13 @@ const editingUjian = ref(null);
 const detailUjian = ref(null);
 const editTab = ref("jadwal");
 const selectedSkripsi = ref(null);
+const cancellingRequestId = ref(null);
+const approvingRequestId = ref(null);
+const showRequestModal = ref(false);
+const requestTarget = ref(null);
+const requestSk6File = ref(null);
+const requestSk6Error = ref("");
+const requestSubmitting = ref(false);
 const editingSkripsiStatus = ref("");
 const revisiDocs = ref([]);
 const revisiLoading = ref(false);
@@ -1674,6 +1860,145 @@ const saveSidangSchedule = async () => {
   } finally {
     saving.value = false;
   }
+};
+
+const getSk6Document = (skripsi) =>
+  (skripsi?.dokumen || []).find((document) => document.jenis === "sk6");
+
+const canSchedule = (skripsi) =>
+  ["pengajuan_sidang_acc", "sidang"].includes(skripsi?.status);
+
+const canSubmitRequest = (skripsi) =>
+  skripsi?.status === "bimbingan" && skripsi?.eligibility?.all_met;
+
+const canApproveRequest = (skripsi) =>
+  skripsi?.status === "pengajuan_sidang";
+
+const openRequestModal = (skripsi) => {
+  requestTarget.value = skripsi;
+  requestSk6File.value = null;
+  requestSk6Error.value = "";
+  showRequestModal.value = true;
+};
+
+const closeRequestModal = () => {
+  showRequestModal.value = false;
+  requestTarget.value = null;
+  requestSk6File.value = null;
+  requestSk6Error.value = "";
+};
+
+const handleRequestSk6File = (event) => {
+  const file = event.target.files?.[0] || null;
+  requestSk6Error.value = "";
+
+  if (!file) {
+    requestSk6File.value = null;
+    return;
+  }
+
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (!["pdf", "doc", "docx"].includes(extension)) {
+    requestSk6File.value = null;
+    requestSk6Error.value = "Format SK 6 harus PDF, DOC, atau DOCX.";
+    event.target.value = "";
+    return;
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    requestSk6File.value = null;
+    requestSk6Error.value = "Ukuran file SK 6 maksimal 20 MB.";
+    event.target.value = "";
+    return;
+  }
+
+  requestSk6File.value = file;
+};
+
+const submitUjianRequest = async () => {
+  if (!requestSk6File.value) {
+    requestSk6Error.value = "File SK 6 wajib dilampirkan.";
+    return;
+  }
+
+  try {
+    requestSubmitting.value = true;
+    const formData = new FormData();
+    formData.append("skripsi_id", requestTarget.value.id);
+    formData.append("file_sk6", requestSk6File.value);
+    await adminService.submitPengajuanUjian(formData);
+    closeRequestModal();
+    await fetchEligible();
+  } catch (error) {
+    console.error("Failed to submit ujian request:", error);
+    requestSk6Error.value =
+      error.response?.data?.message || "Gagal mengajukan ujian skripsi.";
+  } finally {
+    requestSubmitting.value = false;
+  }
+};
+
+const approveUjianRequest = async (skripsi) => {
+  if (
+    !confirm(
+      `Setujui pengajuan ujian skripsi ${skripsi.mahasiswa?.nama || "mahasiswa ini"}?`,
+    )
+  ) {
+    return;
+  }
+
+  try {
+    approvingRequestId.value = skripsi.id;
+    await adminService.reviewPengajuanUjian({
+      skripsi_id: skripsi.id,
+      action: "approve",
+    });
+    await fetchEligible();
+  } catch (error) {
+    console.error("Failed to approve ujian request:", error);
+    alert(
+      "Gagal menyetujui pengajuan: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    approvingRequestId.value = null;
+  }
+};
+
+const canCancelRequest = (skripsi) =>
+  ["pengajuan_sidang", "pengajuan_sidang_acc", "sidang"].includes(
+    skripsi?.status,
+  );
+
+const cancelUjianRequest = async (skripsi) => {
+  if (
+    !confirm(
+      `Batalkan pengajuan ujian skripsi ${skripsi.mahasiswa?.nama || "mahasiswa ini"}? Status akan dikembalikan ke Bimbingan.`,
+    )
+  ) {
+    return;
+  }
+
+  try {
+    cancellingRequestId.value = skripsi.id;
+    await adminService.cancelUjianRequest(skripsi.id);
+    await fetchEligible();
+  } catch (error) {
+    console.error("Failed to cancel ujian request:", error);
+    alert(
+      "Gagal membatalkan pengajuan: " +
+        (error.response?.data?.message || error.message),
+    );
+  } finally {
+    cancellingRequestId.value = null;
+  }
+};
+
+const getDocumentUrl = (document) => {
+  if (document?.file_url) return document.file_url;
+  if (!document?.path) return "#";
+  const baseUrl = import.meta.env.VITE_API_URL?.replace(/\/api$/, "") || "";
+  return `${baseUrl}/api/file/${document.path}`;
 };
 
 // ---- EDIT MODAL ----
@@ -1995,6 +2320,7 @@ const getDosenName = (dosen) => {
 
 const getSkripsiStatusClass = (status) => {
   const classes = {
+    bimbingan: "bg-cyan-50 text-cyan-700 border border-cyan-100",
     pengajuan_sidang: "bg-blue-50 text-blue-600 border border-blue-100",
     pengajuan_sidang_acc: "bg-green-50 text-green-600 border border-green-100",
     sidang: "bg-purple-50 text-purple-600 border border-purple-100",
@@ -2006,6 +2332,7 @@ const getSkripsiStatusClass = (status) => {
 
 const getSkripsiStatusDot = (status) => {
   const dots = {
+    bimbingan: "bg-cyan-600",
     pengajuan_sidang: "bg-blue-600",
     pengajuan_sidang_acc: "bg-green-600",
     sidang: "bg-purple-600",
@@ -2017,6 +2344,7 @@ const getSkripsiStatusDot = (status) => {
 
 const getSkripsiStatusLabel = (status) => {
   const labels = {
+    bimbingan: "Bimbingan - Syarat Terpenuhi",
     pengajuan_sidang: "Pengajuan Sidang",
     pengajuan_sidang_acc: "Disetujui Dosen",
     sidang: "Sidang",

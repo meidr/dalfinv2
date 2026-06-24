@@ -214,7 +214,7 @@
         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         @click.self="closePengajuanModal"
       >
-        <div class="bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-sm animate-fade-in-up">
+        <div class="bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-md max-h-[90vh] overflow-y-auto animate-fade-in-up">
           <div class="p-6 text-center">
             <div class="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4 dark:bg-amber-900/30">
               <span class="material-symbols-outlined text-amber-600 text-2xl dark:text-amber-400">school</span>
@@ -242,6 +242,42 @@
             <p class="text-sm text-text-secondary mb-6">
               Status skripsi akan berubah menjadi <strong>"Pengajuan Sidang"</strong>.
             </p>
+            <div
+              class="flex items-start gap-2.5 p-3 mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-left"
+            >
+              <span class="material-symbols-outlined text-amber-600 text-[18px] mt-0.5">info</span>
+              <p class="text-xs text-amber-800 dark:text-amber-300">
+                Jika mahasiswa belum mempunyai SK 6, silakan mengurusnya ke
+                staff prodi masing-masing sebelum pengajuan sidang.
+              </p>
+            </div>
+            <div class="mb-5 text-left">
+              <label class="block text-sm font-semibold text-text-main mb-1.5">
+                Lampiran SK 6 <span class="text-red-500">*</span>
+              </label>
+              <label
+                class="flex items-center gap-3 px-3 py-3 rounded-lg border border-dashed border-border-light hover:border-amber-500 hover:bg-amber-50/50 cursor-pointer transition-colors"
+              >
+                <span class="material-symbols-outlined text-amber-600">upload_file</span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-medium text-text-main truncate">
+                    {{ pengajuanSk6File?.name || "Pilih file SK 6" }}
+                  </span>
+                  <span class="block text-xs text-text-secondary">
+                    PDF, DOC, atau DOCX, maksimal 20 MB
+                  </span>
+                </span>
+                <input
+                  type="file"
+                  class="sr-only"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  @change="handlePengajuanSk6File"
+                />
+              </label>
+              <p v-if="pengajuanSk6Error" class="text-xs text-red-600 mt-1.5">
+                {{ pengajuanSk6Error }}
+              </p>
+            </div>
             <div class="flex items-center justify-center gap-3">
               <button
                 @click="closePengajuanModal"
@@ -351,6 +387,8 @@ const submitting = ref(false);
 // Pengajuan modal
 const showPengajuanModal = ref(false);
 const pengajuanTarget = ref(null);
+const pengajuanSk6File = ref(null);
+const pengajuanSk6Error = ref("");
 
 // Reject modal
 const showRejectModal = ref(false);
@@ -439,18 +477,57 @@ const canSubmitPengajuan = (item) => {
 
 const confirmPengajuan = (item) => {
   pengajuanTarget.value = item;
+  pengajuanSk6File.value = null;
+  pengajuanSk6Error.value = "";
   showPengajuanModal.value = true;
 };
 
 const closePengajuanModal = () => {
   showPengajuanModal.value = false;
   pengajuanTarget.value = null;
+  pengajuanSk6File.value = null;
+  pengajuanSk6Error.value = "";
+};
+
+const handlePengajuanSk6File = (event) => {
+  const file = event.target.files?.[0] || null;
+  pengajuanSk6Error.value = "";
+
+  if (!file) {
+    pengajuanSk6File.value = null;
+    return;
+  }
+
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (!["pdf", "doc", "docx"].includes(extension)) {
+    pengajuanSk6File.value = null;
+    pengajuanSk6Error.value = "Format SK 6 harus PDF, DOC, atau DOCX.";
+    event.target.value = "";
+    return;
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    pengajuanSk6File.value = null;
+    pengajuanSk6Error.value = "Ukuran file SK 6 maksimal 20 MB.";
+    event.target.value = "";
+    return;
+  }
+
+  pengajuanSk6File.value = file;
 };
 
 const doSubmitPengajuan = async () => {
+  if (!pengajuanSk6File.value) {
+    pengajuanSk6Error.value = "File SK 6 wajib dilampirkan.";
+    return;
+  }
+
   try {
     submitting.value = true;
-    await adminService.submitPengajuanUjian({ skripsi_id: pengajuanTarget.value.id });
+    const formData = new FormData();
+    formData.append("skripsi_id", pengajuanTarget.value.id);
+    formData.append("file_sk6", pengajuanSk6File.value);
+    await adminService.submitPengajuanUjian(formData);
     showToast("Pengajuan ujian berhasil disubmit");
     closePengajuanModal();
     await fetchBimbingan();

@@ -85,7 +85,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Judul Skripsi -->
         <div
-          class="bg-surface-light border border-border-light rounded-xl p-5 shadow-sm"
+          class="bg-surface-light border border-border-light rounded-xl p-5 shadow-sm lg:col-span-2 lg:order-1"
         >
           <h3
             class="text-xs font-bold text-text-secondary uppercase tracking-wide mb-3"
@@ -117,7 +117,7 @@
 
         <!-- Pembimbing -->
         <div
-          class="bg-surface-light border border-border-light rounded-xl p-5 shadow-sm"
+          class="bg-surface-light border border-border-light rounded-xl p-5 shadow-sm lg:order-3"
         >
           <h3
             class="text-xs font-bold text-text-secondary uppercase tracking-wide mb-3"
@@ -147,6 +147,41 @@
           </div>
           <div v-else class="text-text-secondary text-sm italic">
             Belum ada pembimbing ditugaskan
+          </div>
+        </div>
+
+        <!-- Mentor Sempro -->
+        <div
+          class="bg-surface-light border border-border-light rounded-xl p-5 shadow-sm lg:order-2"
+        >
+          <h3
+            class="text-xs font-bold text-text-secondary uppercase tracking-wide mb-3"
+          >
+            Dosen Mentor
+          </h3>
+          <div v-if="mentorSempro.length > 0" class="space-y-3">
+            <div
+              v-for="(mentor, index) in mentorSempro"
+              :key="mentor.id"
+              class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-white/5 rounded-lg"
+            >
+              <div
+                class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold shrink-0"
+              >
+                {{ index + 1 }}
+              </div>
+              <div class="min-w-0">
+                <p class="font-bold text-text-main text-sm truncate">
+                  {{ mentor.dosen?.full_name || mentor.dosen?.nama || "-" }}
+                </p>
+                <p class="text-xs text-text-secondary">
+                  {{ mentor.dosen?.nidn || "-" }} • Pembimbing sampai Sempro
+                </p>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-text-secondary text-sm italic">
+            Belum ada mentor ditugaskan
           </div>
         </div>
       </div>
@@ -907,6 +942,12 @@ const pembimbing = computed(() => {
   return skripsi.value?.pembimbing || [];
 });
 
+const mentorSempro = computed(() => {
+  return (skripsi.value?.mentor_sempro || [])
+    .filter((mentor) => mentor.is_active !== false)
+    .sort((a, b) => (a.jenis || "").localeCompare(b.jenis || ""));
+});
+
 const filteredSeminars = computed(() => {
   const seminars = skripsi.value?.seminar || [];
   // Only include sempro and semhas (actual seminars) — everything else goes to Sidang tab
@@ -975,6 +1016,9 @@ const officialDocuments = computed(() => {
   const semproBeritaAcara = getBeritaAcara(sempro);
   const semhasBeritaAcara = getBeritaAcara(semhas);
   const sidangBeritaAcara = getBeritaAcara(sidang);
+  const latestSk6 = (s.dokumen || [])
+    .filter((doc) => doc.jenis === "sk6")
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
   const canSkTugas = statusAtLeast("dospem");
   const canNota = statusAtLeast("bimbingan");
   const canSempro = statusAtLeast("sempro");
@@ -1014,6 +1058,17 @@ const officialDocuments = computed(() => {
         : skTugasAvailable
           ? "Siap diterbitkan"
           : "Locked - belum masuk tahap bimbingan",
+    },
+    {
+      type: "sk6",
+      label: "SK 6",
+      icon: "verified_user",
+      iconClass: "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600",
+      available: !!latestSk6,
+      uploadedDocument: latestSk6,
+      subtitle: latestSk6
+        ? `${latestSk6.nama_file || "SK 6"}${latestSk6.ukuran ? ` • ${formatFileSize(latestSk6.ukuran)}` : ""} • Diunggah ${formatDateTime(latestSk6.created_at)}`
+        : "Belum diunggah saat pengajuan sidang",
     },
     {
       type: "sk-penguji-sempro",
@@ -1235,6 +1290,7 @@ const getOfficialFileName = (type) => {
   const names = {
     "sk-tugas": `SK_Tugas_${nim}.pdf`,
     "nota-bimbingan": `Nota_Bimbingan_${nim}.pdf`,
+    sk6: `SK_6_${nim}.pdf`,
     "sk-penguji-sempro": `SK_Penguji_Sempro_${nim}.pdf`,
     "berita-acara-sempro": `Berita_Acara_Sempro_${nim}.pdf`,
     "sk-penguji-semhas": `SK_Penguji_Semhas_${nim}.pdf`,
@@ -1250,6 +1306,10 @@ const previewOfficialDocument = async (doc) => {
   if (!doc.available) return;
   try {
     previewingOfficial.value = doc.type;
+    if (doc.uploadedDocument?.path) {
+      window.open(getFileUrl(doc.uploadedDocument.path), "_blank");
+      return;
+    }
     const response = await getOfficialPdfResponse(doc);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
@@ -1270,6 +1330,17 @@ const downloadOfficialDocument = async (doc) => {
   if (!doc.available) return;
   try {
     downloadingOfficial.value = doc.type;
+    if (doc.uploadedDocument?.path) {
+      const link = document.createElement("a");
+      link.href = getFileUrl(doc.uploadedDocument.path);
+      link.download =
+        doc.uploadedDocument.nama_file || getOfficialFileName(doc.type);
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
     const response = await getOfficialPdfResponse(doc);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);

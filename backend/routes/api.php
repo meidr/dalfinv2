@@ -254,6 +254,7 @@ Route::prefix('admin')
         Route::get('/ujian/{ujian}', [AdminUjianController::class, 'show']);
         Route::post('/ujian', [AdminUjianController::class, 'store']);
         Route::put('/ujian/{ujian}', [AdminUjianController::class, 'update']);
+        Route::post('/ujian/{skripsi}/cancel-request', [AdminUjianController::class, 'cancelRequest']);
         Route::delete('/ujian/{ujian}', [AdminUjianController::class, 'destroy']);
         Route::get('/ujian/{ujian}/available-penguji', [AdminUjianController::class, 'availablePenguji']);
 

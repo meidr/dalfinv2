@@ -426,7 +426,9 @@ export const adminService = {
   },
 
   async submitPengajuanUjian(data) {
-    const response = await api.post("/admin/bimbingan/pengajuan-ujian", data);
+    const response = await api.post("/admin/bimbingan/pengajuan-ujian", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   },
 
@@ -463,6 +465,11 @@ export const adminService = {
 
   async deleteUjian(id) {
     const response = await api.delete(`/admin/ujian/${id}`);
+    return response.data;
+  },
+
+  async cancelUjianRequest(skripsiId) {
+    const response = await api.post(`/admin/ujian/${skripsiId}/cancel-request`);
     return response.data;
   },
 

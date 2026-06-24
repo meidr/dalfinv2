@@ -297,6 +297,7 @@
     <section
       v-if="
         !isDosen &&
+        !hidePengajuanSidang &&
         (skripsi?.status === 'bimbingan' ||
           skripsi?.status === 'pengajuan_sidang' ||
           skripsi?.status === 'pengajuan_sidang_tolak' ||
@@ -379,7 +380,7 @@
           </div>
           <div class="flex justify-end">
             <button
-              @click="submitUjianRequest"
+              @click="openUjianRequestModal"
               :disabled="submittingUjian"
               class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20 text-sm"
             >
@@ -437,7 +438,7 @@
             <div class="flex justify-end pt-2">
               <button
                 v-if="ujianEligibility?.eligible"
-                @click="showUjianConfirmModal = true"
+                @click="openUjianRequestModal"
                 class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20 text-sm"
               >
                 <span class="material-symbols-outlined text-[20px]"
@@ -464,7 +465,7 @@
         @click="showUjianConfirmModal = false"
       ></div>
       <div
-        class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-sm"
+        class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-sm max-h-[90vh] overflow-y-auto"
       >
         <div class="p-6 flex flex-col items-center gap-4 text-center">
           <div
@@ -480,9 +481,49 @@
               Pengajuan akan dikirim ke dosen pembimbing utama untuk disetujui.
             </p>
           </div>
+          <div
+            class="w-full flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-left"
+          >
+            <span class="material-symbols-outlined text-amber-600 text-[18px] mt-0.5"
+              >info</span
+            >
+            <p class="text-xs text-amber-800 dark:text-amber-300">
+              Belum mempunyai SK 6? Silakan mengurusnya ke staff prodi
+              masing-masing sebelum mengajukan sidang.
+            </p>
+          </div>
+          <div class="w-full text-left">
+            <label class="block text-sm font-bold text-text-main mb-1.5">
+              Lampiran SK 6 <span class="text-red-500">*</span>
+            </label>
+            <label
+              class="flex items-center gap-3 px-3 py-3 rounded-lg border border-dashed border-border-light hover:border-primary hover:bg-primary/5 cursor-pointer transition-colors"
+            >
+              <span class="material-symbols-outlined text-primary"
+                >upload_file</span
+              >
+              <span class="min-w-0 flex-1">
+                <span class="block text-sm font-medium text-text-main truncate">
+                  {{ sk6File?.name || "Pilih file SK 6" }}
+                </span>
+                <span class="block text-xs text-text-secondary">
+                  PDF, DOC, atau DOCX, maksimal 20 MB
+                </span>
+              </span>
+              <input
+                type="file"
+                class="sr-only"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                @change="handleSk6File"
+              />
+            </label>
+            <p v-if="sk6Error" class="text-xs text-red-600 mt-1.5">
+              {{ sk6Error }}
+            </p>
+          </div>
           <div class="flex gap-3 w-full">
             <button
-              @click="showUjianConfirmModal = false"
+              @click="closeUjianRequestModal"
               class="flex-1 px-4 py-2.5 rounded-lg text-text-secondary font-bold hover:bg-sidebar-light transition-colors text-sm border border-border-light"
             >
               Batal
@@ -965,6 +1006,7 @@ import dosenService from "../../../services/dosenService";
 
 const props = defineProps({
   isDosen: { type: Boolean, default: false },
+  hidePengajuanSidang: { type: Boolean, default: false },
 });
 
 const route = useRoute();
@@ -1071,6 +1113,8 @@ const ujianEligibility = ref(null);
 const showUjianConfirmModal = ref(false);
 const submittingUjian = ref(false);
 const ujianToast = ref({ show: false, message: "", type: "success" });
+const sk6File = ref(null);
+const sk6Error = ref("");
 
 const ujianChecklist = computed(() => {
   if (!ujianEligibility.value) return [];
@@ -1264,15 +1308,62 @@ const checkUjianEligibility = async () => {
   }
 };
 
+const openUjianRequestModal = () => {
+  sk6File.value = null;
+  sk6Error.value = "";
+  showUjianConfirmModal.value = true;
+};
+
+const closeUjianRequestModal = () => {
+  showUjianConfirmModal.value = false;
+  sk6File.value = null;
+  sk6Error.value = "";
+};
+
+const handleSk6File = (event) => {
+  const file = event.target.files?.[0] || null;
+  sk6Error.value = "";
+
+  if (!file) {
+    sk6File.value = null;
+    return;
+  }
+
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (!["pdf", "doc", "docx"].includes(extension)) {
+    sk6File.value = null;
+    sk6Error.value = "Format SK 6 harus PDF, DOC, atau DOCX.";
+    event.target.value = "";
+    return;
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    sk6File.value = null;
+    sk6Error.value = "Ukuran file SK 6 maksimal 20 MB.";
+    event.target.value = "";
+    return;
+  }
+
+  sk6File.value = file;
+};
+
 const submitUjianRequest = async () => {
+  if (!sk6File.value) {
+    sk6Error.value = "File SK 6 wajib dilampirkan.";
+    return;
+  }
+
   submittingUjian.value = true;
   try {
-    const res = await mahasiswaService.requestUjian();
+    const formData = new FormData();
+    formData.append("file_sk6", sk6File.value);
+    const res = await mahasiswaService.requestUjian(formData);
     if (res.success) {
-      showUjianConfirmModal.value = false;
+      closeUjianRequestModal();
       // Update skripsi status locally
       if (skripsi.value) {
         skripsi.value.status = "pengajuan_sidang";
+        skripsi.value.progress_percentage = 60;
       }
       ujianToast.value = {
         show: true,

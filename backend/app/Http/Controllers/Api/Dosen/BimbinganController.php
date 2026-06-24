@@ -340,6 +340,7 @@ class BimbinganController extends Controller
         } else {
             // Reject: set status to pengajuan_sidang_tolak
             $skripsi->status = 'pengajuan_sidang_tolak';
+            $skripsi->progress_percentage = 60;
             $skripsi->alasan_tolak_sidang = $request->alasan;
             $skripsi->save();
 

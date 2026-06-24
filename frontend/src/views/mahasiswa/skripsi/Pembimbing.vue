@@ -16,7 +16,7 @@
     </div>
 
     <!-- Mentor Sempro Cards -->
-    <div v-if="mentorList.length" class="mb-8">
+    <div v-if="showMentor && mentorList.length" class="mb-8">
       <h3 class="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
         <span class="material-symbols-outlined text-primary">groups</span>
         Mentor Seminar Proposal
@@ -102,10 +102,19 @@
 <script setup>
 import { inject, computed } from "vue";
 
+defineProps({
+  showMentor: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const skripsi = inject("skripsi");
 
 const pembimbingList = computed(() => skripsi.value?.pembimbing || []);
-const mentorList = computed(() => skripsi.value?.mentorSempro || []);
+const mentorList = computed(
+  () => skripsi.value?.mentor_sempro || skripsi.value?.mentorSempro || [],
+);
 
 const getInitials = (nama) => {
   if (!nama) return "??";

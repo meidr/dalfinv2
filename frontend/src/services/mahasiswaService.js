@@ -104,8 +104,10 @@ export const mahasiswaService = {
     return response.data;
   },
 
-  async requestUjian() {
-    const response = await api.post("/mahasiswa/skripsi/request-ujian");
+  async requestUjian(data) {
+    const response = await api.post("/mahasiswa/skripsi/request-ujian", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   },
 

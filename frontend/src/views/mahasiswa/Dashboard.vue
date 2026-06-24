@@ -590,7 +590,7 @@
             </div>
             <div class="flex justify-end">
               <button
-                @click="submitUjianRequest"
+                @click="openUjianRequestModal"
                 :disabled="submittingUjian"
                 class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20 text-sm"
               >
@@ -648,7 +648,7 @@
               <div class="flex justify-end pt-2">
                 <button
                   v-if="ujianEligibility?.eligible"
-                  @click="showUjianConfirmModal = true"
+                  @click="openUjianRequestModal"
                   class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-md shadow-primary/20 text-sm"
                 >
                   <span class="material-symbols-outlined text-[20px]"
@@ -813,10 +813,10 @@
         >
           <div
             class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            @click="showUjianConfirmModal = false"
+            @click="closeUjianRequestModal"
           ></div>
           <div
-            class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-md p-6 flex flex-col gap-5"
+            class="relative bg-surface-light rounded-xl shadow-xl border border-border-light w-full max-w-md max-h-[90vh] overflow-y-auto p-6 flex flex-col gap-5"
           >
             <div class="flex items-center gap-3">
               <div class="p-2 bg-primary/10 rounded-lg text-primary">
@@ -835,9 +835,49 @@
               Apakah Anda yakin ingin mengajukan ujian skripsi? Pastikan semua
               persyaratan sudah terpenuhi dan naskah final sudah diunggah.
             </p>
+            <div
+              class="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800"
+            >
+              <span class="material-symbols-outlined text-amber-600 text-[18px] mt-0.5"
+                >info</span
+              >
+              <p class="text-xs text-amber-800 dark:text-amber-300">
+                Belum mempunyai SK 6? Silakan mengurusnya ke staff prodi
+                masing-masing sebelum mengajukan sidang.
+              </p>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-text-main mb-1.5">
+                Lampiran SK 6 <span class="text-red-500">*</span>
+              </label>
+              <label
+                class="flex items-center gap-3 px-3 py-3 rounded-lg border border-dashed border-border-light hover:border-primary hover:bg-primary/5 cursor-pointer transition-colors"
+              >
+                <span class="material-symbols-outlined text-primary"
+                  >upload_file</span
+                >
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm font-medium text-text-main truncate">
+                    {{ sk6File?.name || "Pilih file SK 6" }}
+                  </span>
+                  <span class="block text-xs text-text-secondary">
+                    PDF, DOC, atau DOCX, maksimal 20 MB
+                  </span>
+                </span>
+                <input
+                  type="file"
+                  class="sr-only"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  @change="handleSk6File"
+                />
+              </label>
+              <p v-if="sk6Error" class="text-xs text-red-600 mt-1.5">
+                {{ sk6Error }}
+              </p>
+            </div>
             <div class="flex justify-end gap-3 pt-2">
               <button
-                @click="showUjianConfirmModal = false"
+                @click="closeUjianRequestModal"
                 class="px-5 py-2.5 rounded-lg text-text-secondary font-bold hover:bg-sidebar-light transition-colors text-sm"
               >
                 Batal
@@ -1524,6 +1564,8 @@ const ujianEligibility = ref(null);
 const showUjianConfirmModal = ref(false);
 const submittingUjian = ref(false);
 const ujianToast = ref({ show: false, message: "", type: "success" });
+const sk6File = ref(null);
+const sk6Error = ref("");
 
 // Revisi state
 const revisiDocsMhs = ref([]);
@@ -1578,16 +1620,64 @@ const checkUjianEligibility = async () => {
   }
 };
 
+const openUjianRequestModal = () => {
+  sk6File.value = null;
+  sk6Error.value = "";
+  showUjianConfirmModal.value = true;
+};
+
+const closeUjianRequestModal = () => {
+  showUjianConfirmModal.value = false;
+  sk6File.value = null;
+  sk6Error.value = "";
+};
+
+const handleSk6File = (event) => {
+  const file = event.target.files?.[0] || null;
+  sk6Error.value = "";
+
+  if (!file) {
+    sk6File.value = null;
+    return;
+  }
+
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (!["pdf", "doc", "docx"].includes(extension)) {
+    sk6File.value = null;
+    sk6Error.value = "Format SK 6 harus PDF, DOC, atau DOCX.";
+    event.target.value = "";
+    return;
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    sk6File.value = null;
+    sk6Error.value = "Ukuran file SK 6 maksimal 20 MB.";
+    event.target.value = "";
+    return;
+  }
+
+  sk6File.value = file;
+};
+
 const submitUjianRequest = async () => {
+  if (!sk6File.value) {
+    sk6Error.value = "File SK 6 wajib dilampirkan.";
+    return;
+  }
+
   submittingUjian.value = true;
   try {
-    const res = await mahasiswaService.requestUjian();
+    const formData = new FormData();
+    formData.append("file_sk6", sk6File.value);
+    const res = await mahasiswaService.requestUjian(formData);
     if (res.success) {
-      showUjianConfirmModal.value = false;
+      closeUjianRequestModal();
       // Update skripsi status locally
       if (skripsi.value) {
         skripsi.value.status = "pengajuan_sidang";
+        skripsi.value.progress_percentage = 60;
       }
+      stats.value.progress = 60;
       ujianToast.value = {
         show: true,
         message: "Pengajuan ujian skripsi berhasil dikirim!",
@@ -1858,11 +1948,19 @@ const lastUpdated = computed(() => {
 const milestoneSteps = computed(() => {
   const allSteps = [
     {
-      key: "proposal",
-      label: "Proposal",
-      statuses: ["proposal", "pengajuan", "disetujui"],
+      key: "sempro",
+      label: "Sempro",
+      statuses: [
+        "draft",
+        "pengajuan",
+        "ditolak",
+        "disetujui",
+        "penentuan_mentor",
+        "mentor",
+        "proposal",
+        "sempro",
+      ],
     },
-    { key: "sempro", label: "Sempro", statuses: ["sempro"] },
     {
       key: "dospem",
       label: "Dospem",
@@ -1871,8 +1969,12 @@ const milestoneSteps = computed(() => {
     {
       key: "bimbingan",
       label: "Bimbingan",
+      statuses: ["bimbingan"],
+    },
+    {
+      key: "pengajuan_sidang",
+      label: "Pengajuan Sidang",
       statuses: [
-        "bimbingan",
         "pengajuan_sidang",
         "pengajuan_sidang_acc",
         "pengajuan_sidang_tolak",
@@ -1890,7 +1992,10 @@ const milestoneSteps = computed(() => {
 const statusOrder = [
   "draft",
   "pengajuan",
+  "ditolak",
   "disetujui",
+  "penentuan_mentor",
+  "mentor",
   "proposal",
   "sempro",
   "penentuan_dospem",
@@ -1900,6 +2005,7 @@ const statusOrder = [
   "pengajuan_sidang_tolak",
   "pengajuan_sidang_acc",
   "semhas",
+  "ujian",
   "sidang",
   "revisi",
   "lulus",

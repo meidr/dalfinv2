@@ -6,13 +6,27 @@
     >
       <h3 class="text-lg font-bold text-text-main mb-6">Workflow Progress</h3>
       <div class="min-w-[800px]">
-        <ol class="flex items-center w-full relative justify-between">
+        <ol class="flex items-start w-full relative justify-between">
           <li
             v-for="(step, i) in steps"
             :key="step.key"
-            class="relative flex flex-col items-center group w-full"
+            class="relative flex flex-col items-center group flex-1 cursor-pointer transition-transform hover:scale-105"
+            @click="navigateToStep(step)"
           >
             <div class="flex items-center w-full">
+              <!-- Left connector -->
+              <div
+                class="flex-auto border-t-4"
+                :class="
+                  i === 0
+                    ? 'border-transparent'
+                    : steps[i - 1]?.state === 'done'
+                      ? 'border-green-500'
+                      : steps[i - 1]?.state === 'active'
+                        ? 'border-primary/40'
+                        : 'border-gray-200 dark:border-gray-700'
+                "
+              ></div>
               <!-- Icon -->
               <div
                 class="flex items-center justify-center size-10 rounded-full shrink-0 z-10 border-2"
@@ -34,22 +48,23 @@
                   >circle</span
                 >
               </div>
-              <!-- Connector line (not on last item) -->
+              <!-- Right connector -->
               <div
-                v-if="i < steps.length - 1"
                 class="flex-auto border-t-4"
                 :class="
-                  step.state === 'done'
-                    ? 'border-green-500'
-                    : step.state === 'active'
-                      ? 'border-primary/40'
-                      : 'border-gray-200 dark:border-gray-700'
+                  i === steps.length - 1
+                    ? 'border-transparent'
+                    : step.state === 'done'
+                      ? 'border-green-500'
+                      : step.state === 'active'
+                        ? 'border-primary/40'
+                        : 'border-gray-200 dark:border-gray-700'
                 "
               ></div>
             </div>
-            <div class="mt-3 text-center pr-6">
+            <div class="mt-3 text-center px-1 w-max max-w-[120px]">
               <h4
-                class="text-sm font-bold"
+                class="text-sm font-bold leading-tight mb-1"
                 :class="
                   step.state === 'done'
                     ? 'text-green-700 dark:text-green-400'
@@ -205,7 +220,10 @@
 
 <script setup>
 import { inject, computed } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "../../../stores/auth";
+
+const router = useRouter();
 
 const authStore = useAuthStore();
 const skripsi = inject("skripsi");
@@ -237,7 +255,9 @@ const currentStatusLabel = computed(
 
 // Define workflow steps and derive their state from skripsi status
 const statusOrder = [
+  "draft",
   "pengajuan",
+  "ditolak",
   "disetujui",
   "penentuan_mentor",
   "mentor",
@@ -250,6 +270,7 @@ const statusOrder = [
   "pengajuan_sidang_tolak",
   "pengajuan_sidang_acc",
   "semhas",
+  "ujian",
   "sidang",
   "revisi",
   "lulus",
@@ -257,30 +278,41 @@ const statusOrder = [
 
 const stepDefs = computed(() => {
   const allSteps = [
-    { key: "judul", label: "Judul", after: ["pengajuan", "disetujui"] },
-    { key: "mentor", label: "Mentor", after: ["penentuan_mentor", "mentor"] },
-    { key: "proposal", label: "Proposal", after: ["proposal"] },
-    { key: "sempro", label: "Sempro", after: ["sempro"] },
+    {
+      key: "judul",
+      label: "Judul",
+      after: ["draft", "pengajuan", "ditolak", "disetujui"],
+      routeName: "SkripsiProfil",
+    },
+    { key: "mentor", label: "Mentor", after: ["penentuan_mentor", "mentor"], routeName: "SkripsiMentor" },
+    { key: "sempro", label: "Sempro", after: ["proposal", "sempro"], routeName: "SkripsiSempro" },
     {
       key: "penentuan_dospem",
       label: "Dospem",
       tooltip: "Penentuan Dosen Pembimbing",
       after: ["penentuan_dospem", "dospem"],
+      routeName: "SkripsiDospem",
     },
     {
       key: "bimbingan",
       label: "Bimbingan",
+      after: ["bimbingan"],
+      routeName: "SkripsiBimbingan",
+    },
+    {
+      key: "pengajuan_sidang",
+      label: "Pengajuan Sidang",
       after: [
-        "bimbingan",
         "pengajuan_sidang",
         "pengajuan_sidang_acc",
         "pengajuan_sidang_tolak",
       ],
+      routeName: "SkripsiPengajuanSidang",
     },
-    { key: "semhas", label: "Semhas", after: ["semhas"] },
-    { key: "sidang", label: "Sidang", after: ["sidang"] },
-    { key: "revisi", label: "Revisi", after: ["revisi"] },
-    { key: "lulus", label: "Lulus", after: ["lulus"] },
+    { key: "semhas", label: "Semhas", after: ["semhas"], routeName: "SkripsiSidang" },
+    { key: "sidang", label: "Sidang", after: ["ujian", "sidang"], routeName: "SkripsiSidang" },
+    { key: "revisi", label: "Revisi", after: ["revisi"], routeName: "SkripsiRevisi" },
+    { key: "lulus", label: "Lulus", after: ["lulus"], routeName: "SkripsiProgress" },
   ];
   if (!authStore.semhasEnabled) {
     return allSteps.filter((s) => s.key !== "semhas");
@@ -302,6 +334,12 @@ const steps = computed(() => {
     return { ...step, state };
   });
 });
+
+const navigateToStep = (step) => {
+  if (step.routeName) {
+    router.push({ name: step.routeName });
+  }
+};
 
 const getStepIconClass = (state) => {
   if (state === "done")

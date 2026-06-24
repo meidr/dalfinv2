@@ -2,40 +2,54 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
-use App\Models\Mahasiswa;
-use App\Models\Dosen;
-use App\Models\Prodi;
-use App\Models\Fakultas;
-use App\Models\Tahun;
-use App\Models\Skripsi;
-use App\Models\Seminar;
-use App\Models\Pembimbing;
 use App\Models\Bimbingan;
+use App\Models\Dosen;
+use App\Models\Fakultas;
+use App\Models\Mahasiswa;
+use App\Models\Pembimbing;
+use App\Models\Prodi;
+use App\Models\Seminar;
+use App\Models\Skripsi;
+use App\Models\Tahun;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 class SkripsiFlowTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $admin;
+
     protected Mahasiswa $mahasiswa;
+
     protected Dosen $dosen1;
+
     protected Dosen $dosen2;
+
     protected Dosen $dosen3;
+
     protected Dosen $dosen4;
+
     protected Dosen $dosen5;
+
     protected Tahun $tahun;
+
     protected Prodi $prodi;
+
     protected Fakultas $fakultas;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        Storage::fake('public');
+
         // Create admin user
         $this->admin = User::create([
+            'username' => 'admin_test',
             'name' => 'Admin Test',
             'email' => 'admin@test.com',
             'password' => 'password',
@@ -69,6 +83,7 @@ class SkripsiFlowTest extends TestCase
 
         // Create mahasiswa user + profile
         $mhsUser = User::create([
+            'username' => '12345678',
             'name' => 'Mahasiswa Test',
             'email' => 'mahasiswa@test.com',
             'password' => 'password',
@@ -99,6 +114,7 @@ class SkripsiFlowTest extends TestCase
         $dosenModels = [];
         foreach ($dosenData as $d) {
             $user = User::create([
+                'username' => $d['nip'],
                 'name' => $d['nama'],
                 'email' => $d['email'],
                 'password' => 'password',
@@ -146,7 +162,6 @@ class SkripsiFlowTest extends TestCase
 
         return $data;
     }
-
 
     /**
      * Update skripsi status via API
@@ -293,6 +308,199 @@ class SkripsiFlowTest extends TestCase
         return $response->json('data');
     }
 
+    public function test_student_sidang_request_requires_sk6_file(): void
+    {
+        $skripsi = $this->createSkripsi('Sidang tanpa SK 6');
+
+        $response = $this->actingAs($this->mahasiswa->user, 'sanctum')
+            ->postJson('/api/mahasiswa/skripsi/request-ujian');
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('file_sk6')
+            ->assertJsonPath('errors.file_sk6.0', 'File SK 6 wajib dilampirkan saat pengajuan sidang.');
+
+        $this->assertDatabaseMissing('dokumen', [
+            'skripsi_id' => $skripsi['id'],
+            'jenis' => 'sk6',
+        ]);
+    }
+
+    public function test_student_sidang_request_stores_sk6_in_student_documents_and_admin_table(): void
+    {
+        $skripsi = $this->createSkripsi('Sidang dengan SK 6');
+        Skripsi::whereKey($skripsi['id'])->update(['status' => 'bimbingan']);
+        Pembimbing::create([
+            'skripsi_id' => $skripsi['id'],
+            'dosen_id' => $this->dosen1->id,
+            'jenis' => 'pembimbing_1',
+        ]);
+        \App\Models\Configuration::updateOrCreate(
+            ['key' => 'syarat_bimbingan_ujian'],
+            ['value' => ['pembimbing_1' => 0, 'pembimbing_2' => 0]]
+        );
+        \App\Models\Dokumen::create([
+            'skripsi_id' => $skripsi['id'],
+            'jenis' => 'final',
+            'nama_file' => 'naskah_final.pdf',
+            'path' => 'dokumen/final.pdf',
+            'status' => 'approved',
+            'uploaded_by' => $this->mahasiswa->user_id,
+        ]);
+
+        $response = $this->actingAs($this->mahasiswa->user, 'sanctum')
+            ->post('/api/mahasiswa/skripsi/request-ujian', [
+                'file_sk6' => UploadedFile::fake()->create('SK_6.pdf', 100, 'application/pdf'),
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.sk6_document.jenis', 'sk6')
+            ->assertJsonPath('data.sk6_document.status', 'approved');
+
+        $sk6 = \App\Models\Dokumen::where('skripsi_id', $skripsi['id'])
+            ->where('jenis', 'sk6')
+            ->firstOrFail();
+
+        $this->assertSame('approved', $sk6->status);
+        Storage::disk('public')->assertExists($sk6->path);
+        $this->assertDatabaseHas('skripsi', [
+            'id' => $skripsi['id'],
+            'status' => 'pengajuan_sidang',
+            'progress_percentage' => 60,
+        ]);
+
+        $this->actingAs($this->admin, 'sanctum')
+            ->getJson('/api/admin/ujian/eligible?search=Sidang+dengan+SK+6')
+            ->assertOk()
+            ->assertJsonPath('data.data.0.status', 'pengajuan_sidang')
+            ->assertJsonPath('data.data.0.dokumen.0.jenis', 'sk6');
+
+        $this->actingAs($this->mahasiswa->user, 'sanctum')
+            ->getJson('/api/mahasiswa/skripsi/detail')
+            ->assertOk()
+            ->assertJsonFragment([
+                'jenis' => 'sk6',
+                'nama_file' => 'SK_6.pdf',
+            ]);
+    }
+
+    public function test_admin_sidang_request_requires_and_stores_sk6_file(): void
+    {
+        $skripsi = $this->createSkripsi('Pengajuan admin dengan SK 6');
+        Skripsi::whereKey($skripsi['id'])->update(['status' => 'bimbingan']);
+        Pembimbing::create([
+            'skripsi_id' => $skripsi['id'],
+            'dosen_id' => $this->dosen1->id,
+            'jenis' => 'pembimbing_1',
+        ]);
+        \App\Models\Configuration::updateOrCreate(
+            ['key' => 'syarat_bimbingan_ujian'],
+            ['value' => ['pembimbing_1' => 0, 'pembimbing_2' => 0]]
+        );
+
+        $this->actingAs($this->admin, 'sanctum')
+            ->postJson('/api/admin/bimbingan/pengajuan-ujian', ['skripsi_id' => $skripsi['id']])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('file_sk6');
+
+        $this->actingAs($this->admin, 'sanctum')
+            ->post('/api/admin/bimbingan/pengajuan-ujian', [
+                'skripsi_id' => $skripsi['id'],
+                'file_sk6' => UploadedFile::fake()->create('SK_6_Admin.docx', 100, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.sk6_document.jenis', 'sk6');
+
+        $this->assertDatabaseHas('skripsi', [
+            'id' => $skripsi['id'],
+            'status' => 'pengajuan_sidang',
+            'progress_percentage' => 60,
+        ]);
+
+        $this->assertDatabaseHas('dokumen', [
+            'skripsi_id' => $skripsi['id'],
+            'jenis' => 'sk6',
+            'nama_file' => 'SK_6_Admin.docx',
+        ]);
+    }
+
+    public function test_data_ujian_lists_bimbingan_student_after_guidance_requirement_is_met(): void
+    {
+        $skripsi = $this->createSkripsi('Kandidat Pengajuan dari Data Ujian');
+        Skripsi::whereKey($skripsi['id'])->update(['status' => 'bimbingan']);
+        Pembimbing::create([
+            'skripsi_id' => $skripsi['id'],
+            'dosen_id' => $this->dosen1->id,
+            'jenis' => 'pembimbing_1',
+        ]);
+        \App\Models\Configuration::updateOrCreate(
+            ['key' => 'syarat_bimbingan_ujian'],
+            ['value' => ['pembimbing_1' => 1, 'pembimbing_2' => 1]]
+        );
+
+        $this->actingAs($this->admin, 'sanctum')
+            ->getJson('/api/admin/ujian/eligible?search=Kandidat+Pengajuan')
+            ->assertOk()
+            ->assertJsonPath('data.total', 0);
+
+        Bimbingan::create([
+            'skripsi_id' => $skripsi['id'],
+            'dosen_id' => $this->dosen1->id,
+            'tanggal' => now()->toDateString(),
+            'topik' => 'Persiapan sidang',
+            'status' => 'approved',
+        ]);
+
+        $this->actingAs($this->admin, 'sanctum')
+            ->getJson('/api/admin/ujian/eligible?search=Kandidat+Pengajuan')
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.data.0.status', 'bimbingan')
+            ->assertJsonPath('data.data.0.eligibility.pembimbing_1.count', 1)
+            ->assertJsonPath('data.data.0.eligibility.all_met', true);
+    }
+
+    public function test_admin_can_cancel_unscheduled_sidang_request_but_not_a_scheduled_exam(): void
+    {
+        $skripsi = $this->createSkripsi('Pengajuan yang dibatalkan');
+        Skripsi::whereKey($skripsi['id'])->update([
+            'status' => 'pengajuan_sidang_acc',
+            'progress_percentage' => 65,
+        ]);
+        \App\Models\Dokumen::create([
+            'skripsi_id' => $skripsi['id'],
+            'jenis' => 'sk6',
+            'nama_file' => 'SK_6.pdf',
+            'path' => 'dokumen/sk6.pdf',
+            'status' => 'approved',
+            'uploaded_by' => $this->admin->id,
+        ]);
+
+        $this->actingAs($this->admin, 'sanctum')
+            ->postJson("/api/admin/ujian/{$skripsi['id']}/cancel-request")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'bimbingan')
+            ->assertJsonPath('data.progress_percentage', 50);
+
+        $this->assertDatabaseHas('dokumen', [
+            'skripsi_id' => $skripsi['id'],
+            'jenis' => 'sk6',
+        ]);
+
+        Skripsi::whereKey($skripsi['id'])->update(['status' => 'pengajuan_sidang_acc']);
+        $this->scheduleSidang($skripsi['id']);
+
+        $this->actingAs($this->admin, 'sanctum')
+            ->postJson("/api/admin/ujian/{$skripsi['id']}/cancel-request")
+            ->assertUnprocessable()
+            ->assertJsonPath(
+                'message',
+                'Pengajuan tidak dapat dibatalkan karena jadwal sidang sudah dibuat.'
+            );
+    }
+
     /**
      * Complete sidang with a given hasil.
      *
@@ -320,7 +528,7 @@ class SkripsiFlowTest extends TestCase
         $response = $this->actingAs($this->admin, 'sanctum')
             ->postJson('/api/admin/sk-yudisium', [
                 'skripsi_id' => $skripsiId,
-                'nomor_sk' => 'SK-' . uniqid(),
+                'nomor_sk' => 'SK-'.uniqid(),
                 'tanggal' => now()->toDateString(),
                 'ipk' => 3.75,
                 'predikat' => 'cum_laude',
@@ -336,7 +544,7 @@ class SkripsiFlowTest extends TestCase
      */
     private function assignToBatch(int $skripsiId): string
     {
-        $nomorBatch = 'BATCH-' . uniqid();
+        $nomorBatch = 'BATCH-'.uniqid();
 
         // Create batch
         $batchResponse = $this->actingAs($this->admin, 'sanctum')
