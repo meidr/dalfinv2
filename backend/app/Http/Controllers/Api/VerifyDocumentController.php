@@ -90,6 +90,11 @@ class VerifyDocumentController extends Controller
                 $response = $pdfController->skYudisium($request, $skripsi);
                 break;
 
+            case 'lembar_pengesahan':
+                $seminar = \App\Models\Seminar::findOrFail($doc->document_id);
+                $response = $pdfController->lembarPengesahan($request, $seminar);
+                break;
+
             default:
                 abort(404, 'Jenis dokumen tidak dikenali.');
         }

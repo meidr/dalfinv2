@@ -283,6 +283,25 @@
               </p>
             </router-link>
             <router-link
+              to="/admin/lembarpengesahan"
+              active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
+              :class="[
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-light transition-all group cursor-pointer',
+                isCollapsed ? 'justify-center' : '',
+              ]"
+            >
+              <span
+                class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform"
+                >verified</span
+              >
+              <p
+                v-show="!isCollapsed"
+                class="text-sm font-medium whitespace-nowrap"
+              >
+                Lembar Pengesahan
+              </p>
+            </router-link>
+            <router-link
               to="/admin/skyudisium"
               active-class="bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-400"
               :class="[

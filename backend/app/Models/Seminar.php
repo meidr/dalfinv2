@@ -75,6 +75,14 @@ class Seminar extends Model
     }
 
     /**
+     * Get lembar pengesahan
+     */
+    public function lembarPengesahan()
+    {
+        return $this->hasOne(LembarPengesahan::class);
+    }
+
+    /**
      * Get perbaikan proposal items
      */
     public function perbaikanProposal()

@@ -791,6 +791,18 @@ const officialDocuments = computed(() => {
         : "Belum dibuat",
     });
 
+    const hasLembarPengesahan = !!sidang.lembar_pengesahan;
+    docs.push({
+      type: "lembar-pengesahan",
+      label: "Lembar Pengesahan",
+      icon: "verified",
+      iconClass: "bg-purple-50 dark:bg-purple-900/20 text-purple-600",
+      available: hasLembarPengesahan,
+      subtitle: hasLembarPengesahan
+        ? "Diterbitkan " + formatDateTime(sidang.lembar_pengesahan.created_at || sidang.lembar_pengesahan.tanggal)
+        : "Belum dibuat",
+    });
+
     // Catatan Revisi Sidang (only for lulus_bersyarat / lulus_revisi / lulus)
     const hasilSidang = sidang.berita_acara?.hasil || sidang.hasil;
     if (

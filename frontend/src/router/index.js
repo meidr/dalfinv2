@@ -119,6 +119,12 @@ const routes = [
           import("../views/admin/beritaacara/DataBeritaAcara.vue"),
       },
       {
+        path: "lembarpengesahan",
+        name: "DataLembarPengesahan",
+        component: () =>
+          import("../views/admin/lembarpengesahan/DataLembarPengesahan.vue"),
+      },
+      {
         path: "skyudisium",
         name: "DataSKYudisium",
         component: () => import("../views/admin/skyudisium/DataSKYudisium.vue"),

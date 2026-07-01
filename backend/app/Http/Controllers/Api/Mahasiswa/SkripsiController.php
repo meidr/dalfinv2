@@ -121,6 +121,7 @@ class SkripsiController extends Controller
             'bimbingan.dosen',
             'seminar.penguji.dosen',
             'seminar.beritaAcara',
+            'seminar.lembarPengesahan',
             'ujian.penguji.dosen',
             'ujian.beritaAcara',
             'dokumen',
@@ -162,6 +163,7 @@ class SkripsiController extends Controller
             'bimbingan.dosen',
             'seminar.penguji.dosen',
             'seminar.beritaAcara',
+            'seminar.lembarPengesahan',
             'ujian.penguji.dosen',
             'ujian.beritaAcara',
             'dokumen',
@@ -764,6 +766,9 @@ class SkripsiController extends Controller
             case 'catatan-revisi-sidang':
                 return $this->downloadCatatanRevisi($skripsi, 'sidang');
 
+            case 'lembar-pengesahan':
+                return $this->downloadLembarPengesahan($skripsi);
+
             default:
                 return response()->json([
                     'success' => false,
@@ -850,6 +855,30 @@ class SkripsiController extends Controller
         // Delegate to PdfController (has QR support)
         $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
         return $pdfController->beritaAcaraSeminar(request(), $seminar);
+    }
+
+    private function downloadLembarPengesahan(Skripsi $skripsi)
+    {
+        $seminar = $skripsi->seminar()->where('jenis', 'sidang')->first();
+
+        if (!$seminar) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lembar Pengesahan belum tersedia'
+            ], 404);
+        }
+
+        $seminar->load('lembarPengesahan');
+        if (!$seminar->lembarPengesahan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lembar Pengesahan belum digenerate'
+            ], 404);
+        }
+
+        // Delegate to PdfController
+        $pdfController = app(\App\Http\Controllers\Api\Admin\PdfController::class);
+        return $pdfController->lembarPengesahan(request(), $seminar);
     }
 
     private function downloadSkYudisium(Skripsi $skripsi)

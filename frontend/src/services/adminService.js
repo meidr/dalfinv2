@@ -535,6 +535,28 @@ export const adminService = {
     return response;
   },
 
+  // Lembar Pengesahan
+  async getLembarPengesahan(params = {}) {
+    const response = await api.get("/admin/lembar-pengesahan", { params });
+    return response.data;
+  },
+
+  async generateLembarPengesahan(seminarId) {
+    const response = await api.post(
+      `/admin/lembar-pengesahan/${seminarId}/generate`,
+      {},
+      { responseType: "blob" },
+    );
+    return response;
+  },
+
+  async getLembarPengesahanPdf(seminarId) {
+    const response = await api.get(`/admin/lembar-pengesahan/${seminarId}/pdf`, {
+      responseType: "blob",
+    });
+    return response;
+  },
+
   // Nota Bimbingan
   async getNotaBimbingan(params = {}) {
     const response = await api.get("/admin/nota-bimbingan", { params });

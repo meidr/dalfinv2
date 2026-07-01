@@ -1050,4 +1050,74 @@ class PdfController extends Controller
 
         return $pdf->download($filename);
     }
+    public function lembarPengesahan(Request $request, Seminar $seminar)
+    {
+        $seminar->load([
+            'skripsi.mahasiswa.prodi', 
+            'penguji.dosen'
+        ]);
+
+        $skripsi = $seminar->skripsi;
+        if (!$skripsi) {
+            return response()->json(['success' => false, 'message' => 'Skripsi tidak ditemukan'], 404);
+        }
+
+        // Get Ketua, Penguji 1, Penguji 2
+        $pengujiList = collect($seminar->penguji);
+        $ketua = $pengujiList->firstWhere('peran', 'ketua')?->dosen;
+        $penguji1 = $pengujiList->firstWhere('peran', 'penguji_1')?->dosen;
+        $penguji2 = $pengujiList->firstWhere('peran', 'penguji_2')?->dosen;
+
+        // Fallback for kaprodi
+        $prodi = $skripsi->mahasiswa->prodi;
+        $kaprodi = $this->resolveKaprodi($prodi);
+
+        // QR signature mode
+        $signatureMode = $this->getSignatureMode($request);
+        $qrDataKetua = null;
+        $qrDataPenguji1 = null;
+        $qrDataPenguji2 = null;
+        $qrDataKaprodi = null;
+
+        $docTitle = 'Lembar_Pengesahan_' . ($skripsi->mahasiswa->nim ?? 'Unknown') . '.pdf';
+
+        if ($signatureMode === 'qr') {
+            if ($ketua) {
+                $qrDataKetua = $this->generateQrToken($request, 'lembar_pengesahan', $seminar->id, '-', $ketua->nama, 'Ketua Penguji', $docTitle);
+            }
+            if ($penguji1) {
+                $qrDataPenguji1 = $this->generateQrToken($request, 'lembar_pengesahan', $seminar->id, '-', $penguji1->nama, 'Penguji I', $docTitle);
+            }
+            if ($penguji2) {
+                $qrDataPenguji2 = $this->generateQrToken($request, 'lembar_pengesahan', $seminar->id, '-', $penguji2->nama, 'Penguji II', $docTitle);
+            }
+            if ($kaprodi) {
+                $qrDataKaprodi = $this->generateQrToken($request, 'lembar_pengesahan', $seminar->id, '-', $kaprodi['name'], $kaprodi['position'], $docTitle);
+            }
+        }
+
+        $tanggal = $seminar->lembarPengesahan ? $seminar->lembarPengesahan->tanggal->translatedFormat('d F Y') : now()->translatedFormat('d F Y');
+
+        $data = [
+            'seminar' => $seminar,
+            'skripsi' => $skripsi,
+            'mahasiswa' => $skripsi->mahasiswa,
+            'ketua' => $ketua,
+            'penguji1' => $penguji1,
+            'penguji2' => $penguji2,
+            'kaprodi' => $kaprodi,
+            'tanggal' => $tanggal,
+            'signatureMode' => $signatureMode,
+            'qrKetua' => $qrDataKetua,
+            'qrPenguji1' => $qrDataPenguji1,
+            'qrPenguji2' => $qrDataPenguji2,
+            'qrKaprodi' => $qrDataKaprodi,
+            'cap_path' => public_path('images/capori.png'),
+        ];
+
+        $pdf = Pdf::loadView('pdf.lembar-pengesahan', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf->download($docTitle);
+    }
 }

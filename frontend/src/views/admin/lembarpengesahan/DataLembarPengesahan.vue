@@ -5,11 +5,11 @@
     >
       <div class="flex flex-col gap-1">
         <h1 class="text-text-main text-3xl font-bold leading-tight">
-          Berita Acara Ujian
+          Lembar Pengesahan Skripsi
         </h1>
         <p class="text-text-secondary text-sm font-normal">
           Daftar mahasiswa yang telah menyelesaikan ujian dan siap untuk dicetak
-          berita acara.
+          lembar pengesahan.
         </p>
       </div>
       <div class="flex items-center gap-3">
@@ -164,13 +164,13 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-border-light">
-            <tr v-if="beritaAcaraList.length === 0">
+            <tr v-if="lembarPengesahanList.length === 0">
               <td colspan="5" class="p-12 text-center text-text-secondary">
                 Tidak ada data
               </td>
             </tr>
             <tr
-              v-for="item in beritaAcaraList"
+              v-for="item in lembarPengesahanList"
               :key="item.id"
               class="group hover:bg-sidebar-light/30 transition-colors"
             >
@@ -218,29 +218,19 @@
               </td>
               <td class="px-6 py-4 text-right">
                 <button
-                  v-if="item.hasil === 'lulus' && !item.berita_acara_tercetak"
-                  @click="generateBA(item)"
+                  v-if="!item.lembar_pengesahan"
+                  @click="generateLP(item)"
                   :disabled="generating === item.id"
                   class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:shadow-lg disabled:opacity-50"
                 >
                   <span class="material-symbols-outlined text-[16px]"
-                    >description</span
+                    >verified</span
                   >
-                  {{ generating === item.id ? "Generating..." : "Generate BA" }}
-                </button>
-                <button
-                  v-else-if="item.hasil !== 'lulus'"
-                  class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-text-secondary bg-gray-100 rounded-lg cursor-not-allowed opacity-70"
-                  disabled
-                >
-                  <span class="material-symbols-outlined text-[16px]"
-                    >lock</span
-                  >
-                  Menunggu Revisi
+                  {{ generating === item.id ? "Generating..." : "Generate LP" }}
                 </button>
                 <div v-else class="flex items-center justify-end gap-2">
                   <button
-                    @click="previewBA(item)"
+                    @click="previewLP(item)"
                     :disabled="previewing === item.id"
                     class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-all disabled:opacity-50"
                   >
@@ -249,7 +239,7 @@
                     Lihat
                   </button>
                   <button
-                    @click="downloadBA(item)"
+                    @click="downloadLP(item)"
                     class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-all"
                   >
                     <span class="material-symbols-outlined text-[16px]">download</span>
@@ -278,7 +268,7 @@ import adminService from "../../../services/adminService";
 const loading = ref(true);
 const generating = ref(null);
 const previewing = ref(null);
-const beritaAcaraList = ref([]);
+const lembarPengesahanList = ref([]);
 const searchQuery = ref("");
 const filterStatus = ref("");
 
@@ -299,7 +289,7 @@ const pagination = reactive({
 
 let searchTimeout = null;
 
-const fetchBeritaAcara = async () => {
+const fetchLembarPengesahan = async () => {
   try {
     loading.value = true;
     const params = {
@@ -308,9 +298,9 @@ const fetchBeritaAcara = async () => {
       search: searchQuery.value,
       status: filterStatus.value,
     };
-    const response = await adminService.getBeritaAcara(params);
+    const response = await adminService.getLembarPengesahan(params);
     if (response.success) {
-      beritaAcaraList.value = response.data.data || response.data;
+      lembarPengesahanList.value = response.data.data || response.data;
       if (response.data.current_page) {
         Object.assign(pagination, {
           current_page: response.data.current_page,
@@ -326,7 +316,7 @@ const fetchBeritaAcara = async () => {
       }
     }
   } catch (error) {
-    console.error("Failed to fetch berita acara:", error);
+    console.error("Failed to fetch lembar pengesahan:", error);
   } finally {
     loading.value = false;
   }
@@ -336,70 +326,70 @@ const debouncedSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     pagination.current_page = 1;
-    fetchBeritaAcara();
+    fetchLembarPengesahan();
   }, 300);
 };
 
 watch(filterStatus, () => {
   pagination.current_page = 1;
-  fetchBeritaAcara();
+  fetchLembarPengesahan();
 });
 
 const goToPage = (page) => {
   if (page >= 1 && page <= pagination.last_page) {
     pagination.current_page = page;
-    fetchBeritaAcara();
+    fetchLembarPengesahan();
   }
 };
 
 const changePerPage = (perPage) => {
   pagination.per_page = perPage;
   pagination.current_page = 1;
-  fetchBeritaAcara();
+  fetchLembarPengesahan();
 };
 
-const generateBA = async (item) => {
+const generateLP = async (item) => {
   try {
     generating.value = item.id;
-    const response = await adminService.generateBeritaAcara(item.id);
+    const response = await adminService.generateLembarPengesahan(item.id);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     window.open(url, "_blank");
-    fetchBeritaAcara();
+    fetchLembarPengesahan();
   } catch (error) {
-    console.error("Failed to generate BA:", error);
-    alert("Gagal generate Berita Acara");
+    console.error("Failed to generate LP:", error);
+    alert("Gagal generate Lembar Pengesahan");
   } finally {
     generating.value = null;
   }
 };
 
-const downloadBA = async (item) => {
+const downloadLP = async (item) => {
   try {
-    const response = await adminService.getBeritaAcaraPdf(item.id);
+    const response = await adminService.getLembarPengesahanPdf(item.id);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `berita-acara-${item.skripsi?.mahasiswa?.nim || item.id}.pdf`;
+    link.download = `lembar-pengesahan-${item.skripsi?.mahasiswa?.nim || item.id}.pdf`;
     link.click();
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("Failed to download BA:", error);
-    alert("Gagal download Berita Acara");
+    console.error("Failed to download LP:", error);
+    alert("Gagal download Lembar Pengesahan");
   }
 };
 
-const previewBA = async (item) => {
+const previewLP = async (item) => {
   try {
     previewing.value = item.id;
-    const response = await adminService.getBeritaAcaraPdf(item.id);
+    const response = await adminService.getLembarPengesahanPdf(item.id);
     const blob = new Blob([response.data], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     window.open(url, "_blank");
   } catch (error) {
-    console.error("Failed to preview BA:", error);
-    alert("Gagal memuat Berita Acara");
+    console.error("Failed to preview LP:", error);
+    alert("Gagal memuat Lembar Pengesahan");
   } finally {
     previewing.value = null;
   }
@@ -473,6 +463,6 @@ const getHasilLabel = (hasil) => {
 };
 
 onMounted(() => {
-  fetchBeritaAcara();
+  fetchLembarPengesahan();
 });
 </script>

@@ -64,6 +64,11 @@ class DokumenResmiController extends Controller
             'label' => 'SK Yudisium',
             'category' => 'sk_yudisium',
         ],
+        'lembar_pengesahan' => [
+            'label' => 'Lembar Pengesahan',
+            'category' => 'lembar_pengesahan',
+            'jenis' => 'sidang',
+        ],
         'jadwal_ujian' => [
             'label' => 'Jadwal',
             'category' => 'jadwal_ujian',
@@ -86,6 +91,7 @@ class DokumenResmiController extends Controller
             'jadwal_ujian' => $this->jadwalUjian($request, $perPage),
             'sk_penguji' => $this->skPenguji($request, $meta['jenis'], $perPage),
             'berita_acara' => $this->beritaAcara($request, $meta['jenis'], $perPage),
+            'lembar_pengesahan' => $this->lembarPengesahan($request, $perPage),
         };
 
         $paginator->getCollection()->transform(fn ($item) => $this->formatItem($item, $type, $meta));
@@ -226,6 +232,10 @@ class DokumenResmiController extends Controller
                 ->where('jenis', $meta['jenis'])
                 ->whereHas('penguji')
                 ->whereHas('skripsi'),
+            'lembar_pengesahan' => Seminar::with(['skripsi.mahasiswa.prodi', 'lembarPengesahan'])
+                ->where('jenis', 'sidang')
+                ->whereHas('lembarPengesahan')
+                ->whereHas('skripsi'),
             'berita_acara' => BeritaAcara::with('seminar.skripsi.mahasiswa.prodi')
                 ->whereHas('seminar', fn ($q) => $q->where('jenis', $meta['jenis'])),
         };
@@ -300,6 +310,20 @@ class DokumenResmiController extends Controller
         return $query->latest('tanggal')->paginate($perPage);
     }
 
+    private function lembarPengesahan(Request $request, int $perPage)
+    {
+        $query = Seminar::with(['skripsi.mahasiswa.prodi', 'lembarPengesahan'])
+            ->where('jenis', 'sidang')
+            ->whereHas('lembarPengesahan')
+            ->whereHas('skripsi');
+
+        $this->applySkripsiFilters($query, $request, 'skripsi');
+        // Tanggal lembar pengesahan is in relation, but we can sort by seminar tanggal for simplicity or join
+        $this->applyDateFilter($query, $request, 'tanggal');
+
+        return $query->latest('tanggal')->paginate($perPage);
+    }
+
     private function applySkripsiFilters($query, Request $request, string $relation): void
     {
         $this->applyGenderFilter($query, $request, "{$relation}.mahasiswa");
@@ -356,13 +380,13 @@ class DokumenResmiController extends Controller
     {
         $skripsi = match ($meta['category']) {
             'sk_tugas', 'nota_bimbingan', 'sk_yudisium' => $item->skripsi,
-            'sk_penguji' => $item->skripsi,
+            'sk_penguji', 'lembar_pengesahan' => $item->skripsi,
             'berita_acara' => $item->seminar?->skripsi,
             'jadwal_ujian' => $item->skripsi,
         };
 
         $seminar = match ($meta['category']) {
-            'sk_penguji', 'jadwal_ujian' => $item,
+            'sk_penguji', 'jadwal_ujian', 'lembar_pengesahan' => $item,
             'berita_acara' => $item->seminar,
             default => null,
         };
@@ -372,12 +396,14 @@ class DokumenResmiController extends Controller
             'nota_bimbingan', 'berita_acara' => $item->nomor,
             'sk_penguji' => $item->nomor_sk_penguji,
             'jadwal_ujian' => $item->ruangan ?: $item->waktu,
+            'lembar_pengesahan' => '-',
         };
 
         $tanggal = match ($meta['category']) {
             'sk_tugas', 'nota_bimbingan', 'sk_yudisium' => $item->tanggal_terbit,
             'berita_acara' => $item->tanggal,
             'sk_penguji', 'jadwal_ujian' => $item->tanggal,
+            'lembar_pengesahan' => $item->lembarPengesahan?->tanggal,
         };
 
         return [
@@ -427,13 +453,17 @@ class DokumenResmiController extends Controller
                 ->where('jenis', $meta['jenis'])
                 ->whereHas('penguji')
                 ->whereHas('skripsi'),
+            'lembar_pengesahan' => Seminar::query()
+                ->where('jenis', 'sidang')
+                ->whereHas('lembarPengesahan')
+                ->whereHas('skripsi'),
             'berita_acara' => BeritaAcara::query()
                 ->whereHas('seminar', fn ($q) => $q->where('jenis', $meta['jenis'])),
         };
 
         $relation = match ($meta['category']) {
             'sk_tugas', 'nota_bimbingan', 'sk_yudisium' => 'skripsi',
-            'sk_penguji', 'jadwal_ujian' => 'skripsi',
+            'sk_penguji', 'jadwal_ujian', 'lembar_pengesahan' => 'skripsi',
             'berita_acara' => 'seminar.skripsi',
         };
 
@@ -453,6 +483,7 @@ class DokumenResmiController extends Controller
             'sk_yudisium' => $pdfController->skYudisium($request, $item->skripsi),
             'sk_penguji' => $pdfController->skPenguji($request, $item),
             'berita_acara' => $pdfController->beritaAcaraSeminar($request, $item->seminar),
+            'lembar_pengesahan' => $pdfController->lembarPengesahan($request, $item),
             default => throw new RuntimeException('Jenis dokumen tidak tersedia untuk batch download'),
         };
     }
@@ -470,6 +501,7 @@ class DokumenResmiController extends Controller
             'sk_penguji_sidang' => 'SK_Penguji_Sidang',
             'ba_sidang' => 'Berita_Acara_Sidang',
             'sk_yudisium' => 'SK_Yudisium',
+            'lembar_pengesahan' => 'Lembar_Pengesahan',
         ];
 
         $base = $names[$item['type']] ?? 'Dokumen';
@@ -543,7 +575,7 @@ class DokumenResmiController extends Controller
     {
         return match ($category) {
             'sk_tugas', 'nota_bimbingan', 'sk_yudisium' => 'skripsi',
-            'sk_penguji', 'jadwal_ujian' => 'skripsi',
+            'sk_penguji', 'jadwal_ujian', 'lembar_pengesahan' => 'skripsi',
             'berita_acara' => 'seminar.skripsi',
         };
     }

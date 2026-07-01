@@ -265,6 +265,7 @@ const formatDocType = (type) => {
     sk_penguji: "SK Penguji",
     nota_bimbingan: "Nota Bimbingan",
     sk_yudisium: "SK Yudisium",
+    lembar_pengesahan: "Lembar Pengesahan",
   };
   return map[type] || type;
 };

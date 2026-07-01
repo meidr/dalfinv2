@@ -159,6 +159,9 @@
               <p class="text-text-secondary text-sm" v-if="pembimbingNames">
                 Pembimbing: {{ pembimbingNames }}
               </p>
+              <p class="text-text-secondary text-sm" v-if="mentorSemproNames">
+                Mentor Sempro: {{ mentorSemproNames }}
+              </p>
             </div>
             <div class="mt-auto pt-4 flex items-center gap-2">
               <div
@@ -1924,6 +1927,15 @@ const pembimbingNames = computed(() => {
   if (!skripsi.value?.pembimbing?.length) return "";
   return skripsi.value.pembimbing
     .map((p) => p.dosen?.nama || "Unknown")
+    .join(", ");
+});
+
+// Mentor Sempro names
+const mentorSemproNames = computed(() => {
+  const mentors = skripsi.value?.mentor_sempro || skripsi.value?.mentorSempro;
+  if (!mentors || !mentors.length) return "";
+  return mentors
+    .map((m) => m.dosen?.nama || "Unknown")
     .join(", ");
 });
 

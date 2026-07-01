@@ -44,6 +44,7 @@ use App\Http\Controllers\Api\Admin\PdfController as AdminPdfController;
 use App\Http\Controllers\Api\Admin\BimbinganController as AdminBimbinganController;
 use App\Http\Controllers\Api\Admin\UjianController as AdminUjianController;
 use App\Http\Controllers\Api\Admin\BeritaAcaraController as AdminBeritaAcaraController;
+use App\Http\Controllers\Api\Admin\LembarPengesahanController as AdminLembarPengesahanController;
 use App\Http\Controllers\Api\Admin\NotaBimbinganController as AdminNotaBimbinganController;
 use App\Http\Controllers\Api\Admin\SKTugasController as AdminSKTugasController;
 use App\Http\Controllers\Api\Admin\SKYudisiumController as AdminSKYudisiumController;
@@ -235,6 +236,7 @@ Route::prefix('admin')
         Route::get('/pdf/berita-acara/{seminar}', [AdminPdfController::class, 'beritaAcaraSeminar']);
         Route::match(['get', 'post'], '/pdf/sk-penguji/{seminar}', [AdminPdfController::class, 'skPenguji']);
         Route::get('/pdf/surat-mentor/{skripsi}', [AdminPdfController::class, 'suratMentorSempro']);
+        Route::get('/pdf/lembar-pengesahan/{seminar}', [AdminPdfController::class, 'lembarPengesahan']);
 
         // Bimbingan Management
         Route::get('/bimbingan', [AdminBimbinganController::class, 'index']);
@@ -267,6 +269,11 @@ Route::prefix('admin')
         Route::get('/berita-acara/export-excel', [AdminBeritaAcaraController::class, 'exportExcel']);
         Route::post('/berita-acara/{seminar}/generate', [AdminBeritaAcaraController::class, 'generate']);
         Route::get('/berita-acara/{seminar}/pdf', [AdminBeritaAcaraController::class, 'downloadPdf']);
+
+        // Lembar Pengesahan
+        Route::get('/lembar-pengesahan', [AdminLembarPengesahanController::class, 'index']);
+        Route::post('/lembar-pengesahan/{seminar}/generate', [AdminLembarPengesahanController::class, 'generate']);
+        Route::get('/lembar-pengesahan/{seminar}/pdf', [AdminLembarPengesahanController::class, 'downloadPdf']);
 
         // Nota Bimbingan
         Route::get('/nota-bimbingan', [AdminNotaBimbinganController::class, 'index']);
