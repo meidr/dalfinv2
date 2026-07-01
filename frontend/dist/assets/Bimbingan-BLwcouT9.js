@@ -1,0 +1,1 @@
+import r from"./LogBimbingan-B3C4irpd.js";import{b as a,C as e}from"./index-DIeLc0Qm.js";import"./mahasiswaService-CfdhIu5P.js";import"./dosenService-DQyx8U5N.js";const _={__name:"Bimbingan",setup(n){return(o,t)=>(a(),e(r,{hidePengajuanSidang:!0}))}};export{_ as default};
