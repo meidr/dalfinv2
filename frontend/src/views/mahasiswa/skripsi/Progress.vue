@@ -322,7 +322,22 @@ const stepDefs = computed(() => {
 
 const steps = computed(() => {
   const status = skripsi.value?.status || "draft";
-  const currentIdx = statusOrder.indexOf(status);
+  let currentIdx = statusOrder.indexOf(status);
+
+  // Auto-correct currentIdx if admin bypassed the workflow (e.g., scheduled sidang while status is mentor)
+  if (skripsi.value?.status === 'lulus' || skripsi.value?.status === 'revisi') {
+    // keep as is
+  } else if (skripsi.value?.ujian?.length > 0) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("sidang"));
+  } else if (skripsi.value?.seminar?.some((s) => s.jenis === "semhas")) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("semhas"));
+  } else if (skripsi.value?.bimbingan?.length > 0) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("bimbingan"));
+  } else if (skripsi.value?.pembimbing?.length > 0) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("dospem"));
+  } else if (skripsi.value?.seminar?.some((s) => s.jenis === "sempro")) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("sempro"));
+  }
 
   return stepDefs.value.map((step) => {
     const indices = step.after.map((s) => statusOrder.indexOf(s));

@@ -2025,7 +2025,25 @@ const statusOrder = [
 
 const milestones = computed(() => {
   if (!skripsi.value) return milestoneSteps.value;
-  const currentIdx = statusOrder.indexOf(skripsi.value.status);
+  
+  const status = skripsi.value.status;
+  let currentIdx = statusOrder.indexOf(status);
+
+  // Auto-correct currentIdx if admin bypassed the workflow
+  if (status === 'lulus' || status === 'revisi') {
+    // keep as is
+  } else if (skripsi.value?.ujian?.length > 0) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("sidang"));
+  } else if (skripsi.value?.seminar?.some((s) => s.jenis === "semhas")) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("semhas"));
+  } else if (skripsi.value?.bimbingan?.length > 0) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("bimbingan"));
+  } else if (skripsi.value?.pembimbing?.length > 0) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("dospem"));
+  } else if (skripsi.value?.seminar?.some((s) => s.jenis === "sempro")) {
+    currentIdx = Math.max(currentIdx, statusOrder.indexOf("sempro"));
+  }
+
   return milestoneSteps.value.map((m) => {
     const mStatuses = m.statuses;
     const mMaxIdx = Math.max(...mStatuses.map((s) => statusOrder.indexOf(s)));
