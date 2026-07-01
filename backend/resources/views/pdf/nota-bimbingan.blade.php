@@ -305,6 +305,298 @@
     <div class="footer">
         <p>Dokumen ini dicetak secara otomatis oleh Sistem Informasi Skripsi</p>
     </div>
+
+    {{-- ==================== HALAMAN NOTA PEMBIMBING ==================== --}}
+    <div style="page-break-before: always;"></div>
+
+    @php
+        $prodiNama = strtolower($skripsi->mahasiswa->prodi->nama ?? '');
+        $isArabicProdi = str_contains($prodiNama, 'bahasa arab') || str_contains($prodiNama, 'sastra arab');
+    @endphp
+
+    {{-- Kop Surat Nota Pembimbing --}}
+    <div class="kop">
+        <img src="{{ public_path('images/kop surat.jpg') }}">
+    </div>
+
+    @if ($isArabicProdi)
+        {{-- ==================== VERSI BAHASA ARAB ==================== --}}
+
+        {{-- Judul --}}
+        <div style="text-align: center; margin: 10px 0 20px 0;">
+            <h3 style="font-size: 16pt; letter-spacing: 2px; text-decoration: underline; margin-bottom: 2px; font-family: 'Traditional Arabic', 'Amiri', 'Times New Roman', serif;">مذكرة المشرف</h3>
+        </div>
+
+        {{-- Isi Surat Bahasa Arab --}}
+        <div style="font-size: 12pt; line-height: 2; direction: rtl; text-align: right; font-family: 'Traditional Arabic', 'Amiri', 'Times New Roman', serif;">
+            <table style="margin-bottom: 8px; border-collapse: collapse; direction: rtl; width: 100%;">
+                <tr>
+                    <td style="padding: 1px 5px; vertical-align: top; width: 100px; text-align: right;">الموضوع</td>
+                    <td style="padding: 1px 5px; vertical-align: top; width: 15px; text-align: center;">:</td>
+                    <td style="padding: 1px 5px; vertical-align: top; text-align: right;">الموافقة على مناقشة البحث العلمي</td>
+                </tr>
+            </table>
+
+            <p style="margin-bottom: 5px;">
+                إلى سعادة مدير جامعة دار اللغة والدعوة الإسلامية العالمية بانقيل، باسوروان، جاوى الشرقية.
+            </p>
+
+            <p style="margin-bottom: 10px;">
+                السلام عليكم ورحمة الله وبركاته
+            </p>
+
+            <p style="margin-bottom: 10px; text-align: justify;">
+                بعد الاطلاع والمراجعة الدقيقة وإجراء التصحيحات والتحسينات اللازمة وفقاً لتوجيهاتنا وإرشاداتنا، فإننا نرى أن البحث العلمي للطالب/ة:
+            </p>
+
+            {{-- Data Mahasiswa --}}
+            <table style="margin: 5px 30px 10px 0; border-collapse: collapse; direction: rtl; width: 90%;">
+                <tr>
+                    <td style="padding: 2px 5px; vertical-align: top; width: 120px; text-align: right;">الاسم</td>
+                    <td style="padding: 2px 5px; vertical-align: top; width: 15px; text-align: center;">:</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: right;">{{ $skripsi->mahasiswa->nama }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: right;">رقم القيد</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: center;">:</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: right; direction: ltr;">{{ $skripsi->mahasiswa->nim }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: right;">القسم</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: center;">:</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: right;">{{ $skripsi->mahasiswa->prodi->nama ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: right;">عنوان البحث</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: center;">:</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: justify;">"{{ $skripsi->judul }}"</td>
+                </tr>
+            </table>
+
+            <p style="margin-bottom: 10px; text-align: justify;">
+                قد استوفى الشروط المطلوبة لتقديمه في امتحان مناقشة البحث العلمي
+                {{ $skripsi->mahasiswa->prodi->fakultas->nama_fakultas ?? '' }}
+                قسم {{ $skripsi->mahasiswa->prodi->nama ?? '' }}
+                بجامعة دار اللغة والدعوة الإسلامية العالمية بانقيل، باسوروان، جاوى الشرقية.
+                لذا نرجو أن يُناقَش هذا البحث العلمي. وتفضلوا بقبول فائق الاحترام والتقدير.
+            </p>
+
+            <p style="margin-bottom: 15px;">
+                والسلام عليكم ورحمة الله وبركاته
+            </p>
+        </div>
+
+        {{-- Tanggal --}}
+        <div style="text-align: left; margin-bottom: 20px; font-size: 11pt;">
+            <p>Bangil, {{ $tanggal }}</p>
+        </div>
+
+        {{-- Tanda Tangan Pembimbing I & II --}}
+        <div class="signatures">
+            <table>
+                <tr>
+                    <td style="width: 50%;">
+                        <p style="font-family: 'Traditional Arabic', 'Amiri', 'Times New Roman', serif; font-size: 12pt;">المشرف الأول</p>
+                        @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                            <div style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                                <img src="{{ $qrData['qr_base64'] }}" style="width: 70px; height: 70px;" alt="QR">
+                            </div>
+                        @else
+                            <div style="position: relative; height: 70px; margin-top: 5px;">
+                                <img src="{{ public_path('images/cap.jpg') }}" style="position: absolute; left: 50%; transform: translateX(-50%); margin-left: -40px; top: -10px; width: 90px; opacity: 0.8;">
+                            </div>
+                        @endif
+                        <p class="name">{{ $pembimbing1?->dosen->full_name ?? '________________' }}</p>
+                        @if ($pembimbing1?->dosen->nip)
+                            <p class="nip">NIP/NIY. {{ $pembimbing1->dosen->nip }}</p>
+                        @endif
+                    </td>
+                    @if ($pembimbing2)
+                        <td style="width: 50%;">
+                            <p style="font-family: 'Traditional Arabic', 'Amiri', 'Times New Roman', serif; font-size: 12pt;">المشرف الثاني</p>
+                            @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                                <div style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="{{ $qrData['qr_base64'] }}" style="width: 70px; height: 70px;" alt="QR">
+                                </div>
+                            @else
+                                <div style="position: relative; height: 70px; margin-top: 5px;">
+                                    <img src="{{ public_path('images/cap.jpg') }}" style="position: absolute; left: 50%; transform: translateX(-50%); margin-left: -40px; top: -10px; width: 90px; opacity: 0.8;">
+                                </div>
+                            @endif
+                            <p class="name">{{ $pembimbing2->dosen->full_name ?? '________________' }}</p>
+                            @if ($pembimbing2->dosen->nip)
+                                <p class="nip">NIP/NIY. {{ $pembimbing2->dosen->nip }}</p>
+                            @endif
+                        </td>
+                    @endif
+                </tr>
+            </table>
+        </div>
+
+        {{-- Tanda Tangan Ketua Program Studi --}}
+        <div style="text-align: center; margin-top: 15px; font-size: 11pt;">
+            <p style="font-family: 'Traditional Arabic', 'Amiri', 'Times New Roman', serif; font-size: 12pt;">رئيس قسم {{ $skripsi->mahasiswa->prodi->nama ?? '' }}</p>
+            @if (isset($kaprodi) && $kaprodi['signature'])
+                <div style="height: 70px; margin-top: 5px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ $kaprodi['signature'] }}" style="height: 60px; opacity: 0.9;">
+                </div>
+            @elseif (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                <div style="height: 70px; margin-top: 5px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ $qrData['qr_base64'] }}" style="width: 60px; height: 60px;" alt="QR">
+                </div>
+            @else
+                <div style="height: 70px; margin-top: 5px;">
+                    <img src="{{ public_path('images/cap.jpg') }}" style="width: 90px; opacity: 0.8;">
+                </div>
+            @endif
+            <p style="font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 5px;">
+                {{ $kaprodi['name'] ?? '________________' }}
+            </p>
+            @if (isset($kaprodi['nip']) && $kaprodi['nip'] !== '-')
+                <p style="font-size: 10pt;">NIP/NIY. {{ $kaprodi['nip'] }}</p>
+            @endif
+        </div>
+
+    @else
+        {{-- ==================== VERSI BAHASA INDONESIA ==================== --}}
+
+        {{-- Judul Nota Pembimbing --}}
+        <div style="text-align: center; margin: 10px 0 20px 0;">
+            <h3 style="font-size: 14pt; letter-spacing: 2px; text-decoration: underline; margin-bottom: 2px;">NOTA PEMBIMBING</h3>
+        </div>
+
+        {{-- Isi Surat --}}
+        <div style="font-size: 11pt; line-height: 1.6;">
+            <table style="margin-bottom: 8px; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 1px 5px; vertical-align: top; width: 60px;">Hal</td>
+                    <td style="padding: 1px 5px; vertical-align: top; width: 15px; text-align: center;">:</td>
+                    <td style="padding: 1px 5px; vertical-align: top;">Persetujuan Munaqosyah Skripsi</td>
+                </tr>
+            </table>
+
+            <p style="margin-bottom: 5px; text-indent: 30px;">
+                Yth. Rektor Universitas Islam Internasional Darullughah Wadda'wah Bangil, Pasuruan, Jawa Timur.
+            </p>
+
+            <p style="margin-bottom: 10px; text-indent: 30px; font-style: italic;">
+                Assalamu'alaikum Warahmatullahi Wabarakatuh
+            </p>
+
+            <p style="margin-bottom: 10px; text-indent: 30px; text-align: justify;">
+                Setelah secermat kami baca/teliti kembali dan telah diadakan perbaikan penyempurnaan sesuai dengan petunjuk dan pengarahan kami, maka kami berpendapat bahwa skripsi saudara/i:
+            </p>
+
+            {{-- Data Mahasiswa --}}
+            <table style="margin: 5px 0 10px 30px; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 2px 5px; vertical-align: top; width: 120px;">Nama</td>
+                    <td style="padding: 2px 5px; vertical-align: top; width: 15px; text-align: center;">:</td>
+                    <td style="padding: 2px 5px; vertical-align: top;">{{ $skripsi->mahasiswa->nama }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px 5px; vertical-align: top;">NIM</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: center;">:</td>
+                    <td style="padding: 2px 5px; vertical-align: top;">{{ $skripsi->mahasiswa->nim }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px 5px; vertical-align: top;">Jurusan/prodi</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: center;">:</td>
+                    <td style="padding: 2px 5px; vertical-align: top;">{{ $skripsi->mahasiswa->prodi->nama ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 2px 5px; vertical-align: top;">Judul Skripsi</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: center;">:</td>
+                    <td style="padding: 2px 5px; vertical-align: top; text-align: justify;">"{{ $skripsi->judul }}"</td>
+                </tr>
+            </table>
+
+            <p style="margin-bottom: 10px; text-align: justify;">
+                Telah memenuhi syarat untuk diajukan dalam sidang ujian munaqosyah skripsi
+                {{ $skripsi->mahasiswa->prodi->fakultas->nama_fakultas ?? '' }}
+                prodi {{ $skripsi->mahasiswa->prodi->nama ?? '' }}
+                di Universitas Islam Internasional Darullughah Wadda'wah Bangil, Pasuruan, Jawa Timur.
+                Untuk itu kami harapkan agar skripsi ini dapat dimunaqosyahkan. Demikian kami sampaikan terimakasih.
+            </p>
+
+            <p style="margin-bottom: 15px; font-style: italic;">
+                Wassalamu'alaikum Warahmatullahi Wabarakatuh
+            </p>
+        </div>
+
+        {{-- Tanggal --}}
+        <div style="text-align: right; margin-bottom: 20px; font-size: 11pt;">
+            <p>Bangil, {{ $tanggal }}</p>
+        </div>
+
+        {{-- Tanda Tangan Pembimbing I & II --}}
+        <div class="signatures">
+            <table>
+                <tr>
+                    <td style="width: 50%;">
+                        <p>Pembimbing I</p>
+                        @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                            <div style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                                <img src="{{ $qrData['qr_base64'] }}" style="width: 70px; height: 70px;" alt="QR">
+                            </div>
+                        @else
+                            <div style="position: relative; height: 70px; margin-top: 5px;">
+                                <img src="{{ public_path('images/cap.jpg') }}" style="position: absolute; left: 50%; transform: translateX(-50%); margin-left: -40px; top: -10px; width: 90px; opacity: 0.8;">
+                            </div>
+                        @endif
+                        <p class="name">{{ $pembimbing1?->dosen->full_name ?? '________________' }}</p>
+                        @if ($pembimbing1?->dosen->nip)
+                            <p class="nip">NIP/NIY. {{ $pembimbing1->dosen->nip }}</p>
+                        @endif
+                    </td>
+                    @if ($pembimbing2)
+                        <td style="width: 50%;">
+                            <p>Pembimbing II</p>
+                            @if (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                                <div style="height: 80px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="{{ $qrData['qr_base64'] }}" style="width: 70px; height: 70px;" alt="QR">
+                                </div>
+                            @else
+                                <div style="position: relative; height: 70px; margin-top: 5px;">
+                                    <img src="{{ public_path('images/cap.jpg') }}" style="position: absolute; left: 50%; transform: translateX(-50%); margin-left: -40px; top: -10px; width: 90px; opacity: 0.8;">
+                                </div>
+                            @endif
+                            <p class="name">{{ $pembimbing2->dosen->full_name ?? '________________' }}</p>
+                            @if ($pembimbing2->dosen->nip)
+                                <p class="nip">NIP/NIY. {{ $pembimbing2->dosen->nip }}</p>
+                            @endif
+                        </td>
+                    @endif
+                </tr>
+            </table>
+        </div>
+
+        {{-- Tanda Tangan Ketua Program Studi --}}
+        <div style="text-align: center; margin-top: 15px; font-size: 11pt;">
+            <p>Ketua Program Studi {{ $skripsi->mahasiswa->prodi->nama ?? '' }}</p>
+            @if (isset($kaprodi) && $kaprodi['signature'])
+                <div style="height: 70px; margin-top: 5px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ $kaprodi['signature'] }}" style="height: 60px; opacity: 0.9;">
+                </div>
+            @elseif (isset($signatureMode) && $signatureMode === 'qr' && !empty($qrData))
+                <div style="height: 70px; margin-top: 5px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ $qrData['qr_base64'] }}" style="width: 60px; height: 60px;" alt="QR">
+                </div>
+            @else
+                <div style="height: 70px; margin-top: 5px;">
+                    <img src="{{ public_path('images/cap.jpg') }}" style="width: 90px; opacity: 0.8;">
+                </div>
+            @endif
+            <p style="font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 5px;">
+                {{ $kaprodi['name'] ?? '________________' }}
+            </p>
+            @if (isset($kaprodi['nip']) && $kaprodi['nip'] !== '-')
+                <p style="font-size: 10pt;">NIP/NIY. {{ $kaprodi['nip'] }}</p>
+            @endif
+        </div>
+
+    @endif
+
 </body>
 
 </html>

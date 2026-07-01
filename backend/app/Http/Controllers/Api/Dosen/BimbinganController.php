@@ -507,12 +507,16 @@ class BimbinganController extends Controller
     private function downloadNotaBimbingan(Skripsi $skripsi)
     {
         $skripsi->load([
-            'mahasiswa.prodi',
+            'mahasiswa.prodi.fakultas',
             'pembimbing.dosen',
             'bimbingan' => function ($q) {
                 $q->with('dosen')->orderBy('tanggal', 'asc');
             }
         ]);
+
+        // Resolve Kaprodi for Nota Pembimbing page
+        $prodi = $skripsi->mahasiswa->prodi;
+        $kaprodi = $this->resolveKaprodi($prodi);
 
         $nota = $skripsi->notaBimbingan;
         $nomorSuratService = app(NomorSuratService::class);
@@ -532,6 +536,7 @@ class BimbinganController extends Controller
             'nota' => $nota,
             'bimbingan' => $skripsi->bimbingan,
             'tanggal' => now()->translatedFormat('d F Y'),
+            'kaprodi' => $kaprodi,
         ]);
         $pdf->setPaper('a4', 'portrait');
         return $pdf->download("Nota_Bimbingan_{$skripsi->mahasiswa->nim}.pdf");

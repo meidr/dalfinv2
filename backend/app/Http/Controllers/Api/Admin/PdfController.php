@@ -229,12 +229,16 @@ class PdfController extends Controller
     public function notaBimbingan(Request $request, Skripsi $skripsi)
     {
         $skripsi->load([
-            'mahasiswa.prodi',
+            'mahasiswa.prodi.fakultas',
             'pembimbing.dosen',
             'bimbingan' => function ($q) {
                 $q->with('dosen')->orderBy('tanggal', 'asc');
             }
         ]);
+
+        // Resolve Kaprodi for Nota Pembimbing page
+        $prodi = $skripsi->mahasiswa->prodi;
+        $kaprodi = $this->resolveKaprodi($prodi);
 
         // Get or create Nota Bimbingan
         $nota = $skripsi->notaBimbingan;
@@ -271,6 +275,7 @@ class PdfController extends Controller
             'tanggal' => now()->translatedFormat('d F Y'),
             'signatureMode' => $signatureMode,
             'qrData' => $qrData,
+            'kaprodi' => $kaprodi,
         ];
 
         $pdf = Pdf::loadView('pdf.nota-bimbingan', $data);
