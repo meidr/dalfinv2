@@ -601,16 +601,18 @@ const semhasWithNilai = computed(() =>
 const ujianFromSeminar = computed(() =>
   (skripsi.value?.seminar || []).filter((s) => s.jenis === "sidang"),
 );
-const ujianList = computed(() => [
-  ...ujianFromSeminar.value,
-  ...(skripsi.value?.ujian || []),
-]);
+const ujianList = computed(() => {
+  const list = [...ujianFromSeminar.value];
+  if (skripsi.value?.ujian && Object.keys(skripsi.value.ujian).length > 0) {
+    list.push(skripsi.value.ujian);
+  }
+  return list;
+});
 
 const ujianWithNilai = computed(() => {
-  const ujians = skripsi.value?.ujian || [];
-  return ujians.filter(
+  return ujianList.value.filter(
     (u) =>
-      (u.penguji?.length > 0 && u.scored_count > 0) || u.status === "selesai",
+      (u.penguji?.length > 0 && u.scored_count > 0) || u.status === "selesai" || u.status === "lulus" || u.status === "revisi"
   );
 });
 
