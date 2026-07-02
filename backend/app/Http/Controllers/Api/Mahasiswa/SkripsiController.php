@@ -818,7 +818,17 @@ class SkripsiController extends Controller
 
         $seminar = $skripsi->seminar()->where('jenis', $jenis)->first();
 
-        if (!$seminar || $seminar->penguji->isEmpty()) {
+        if (!$seminar) {
+            return response()->json([
+                'success' => false,
+                'message' => "SK Penguji {$label} belum tersedia"
+            ], 404);
+        }
+
+        // Eager-load penguji with dosen for PdfController
+        $seminar->load('penguji.dosen');
+
+        if ($seminar->penguji->isEmpty()) {
             return response()->json([
                 'success' => false,
                 'message' => "SK Penguji {$label} belum tersedia"

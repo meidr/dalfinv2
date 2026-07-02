@@ -358,7 +358,7 @@ export const adminService = {
 
   // PDF Generation
   async getSuratMentorSempro(skripsiId) {
-    const response = await api.get(`/admin/pdf/mentor-sempro/${skripsiId}`, {
+    const response = await api.get(`/admin/pdf/surat-mentor/${skripsiId}`, {
       responseType: "blob",
     });
     return response;

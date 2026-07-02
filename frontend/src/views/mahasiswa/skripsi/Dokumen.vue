@@ -658,19 +658,22 @@ const officialDocuments = computed(() => {
     subtitle: skTugasSubtitle,
   });
 
-  // 2. Nota / Kartu Bimbingan
+  // 2. Nota / Kartu Bimbingan (only available if mahasiswa has pembimbing)
+  const hasPembimbing = s.pembimbing && s.pembimbing.length > 0;
   docs.push({
     type: "nota-bimbingan",
     label: "Nota / Kartu Bimbingan",
     icon: "picture_as_pdf",
     iconClass: "bg-blue-50 dark:bg-blue-900/20 text-blue-500",
-    available: true,
-    subtitle: s.nota_bimbingan
-      ? "Diterbitkan " +
-        formatDateTime(
-          s.nota_bimbingan.tanggal_terbit || s.nota_bimbingan.created_at,
-        )
-      : "Otomatis diperbarui",
+    available: hasPembimbing,
+    subtitle: !hasPembimbing
+      ? "Menunggu penentuan dosen pembimbing"
+      : s.nota_bimbingan
+        ? "Diterbitkan " +
+          formatDateTime(
+            s.nota_bimbingan.tanggal_terbit || s.nota_bimbingan.created_at,
+          )
+        : "Otomatis diperbarui",
   });
 
   const latestSk6 = dokumenList.value

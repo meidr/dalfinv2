@@ -55,6 +55,14 @@ class PdfController extends Controller
         $prodi = $skripsi->mahasiswa->prodi;
         $signer = $this->resolveKaprodi($prodi);
 
+        // Validate KAPRODI is properly configured
+        if ($signer['name'] === '-') {
+            return response()->json([
+                'success' => false,
+                'message' => 'KAPRODI belum dikonfigurasi di Otoritas Jabatan untuk prodi ' . ($prodi->nama ?? '-') . '. Pastikan periode jabatan aktif dan pejabat KAPRODI sudah ditentukan.',
+            ], 422);
+        }
+
         // QR Signature
         $signatureMode = $this->getSignatureMode($request);
         $qrData = null;

@@ -427,9 +427,21 @@ const generateSK = async (item) => {
     await fetchSKTugas();
   } catch (error) {
     console.error("Failed to generate SK:", error);
-    alert(
-      "Gagal generate SK Tugas. Pastikan KAPRODI sudah dikonfigurasi di Otoritas Jabatan.",
-    );
+    // Try to parse error message from blob response
+    let errorMsg = "Gagal generate SK Tugas. Pastikan KAPRODI sudah dikonfigurasi di Otoritas Jabatan.";
+    if (error.response?.data) {
+      try {
+        const data = error.response.data;
+        if (data instanceof Blob) {
+          const text = await data.text();
+          const parsed = JSON.parse(text);
+          if (parsed.message) errorMsg = parsed.message;
+        } else if (data.message) {
+          errorMsg = data.message;
+        }
+      } catch (e) { /* fallback to default message */ }
+    }
+    alert(errorMsg);
   } finally {
     generating.value = null;
   }
